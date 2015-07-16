@@ -1,0 +1,15 @@
+{"name": "Set Owner by AWS Tag",
+ "description": "Testing set_owner_by_aws_tag",
+ "shared": "True",
+ "type": "CloudBolt Plug-in",
+ "script-filename": "set_owner_by_aws_tag.py",
+ "_links": {"self": {"href": "/api/v2/actions/24",
+ "title": "Sample Set Owner by AWS Tag"},
+ "actions": [{"export": {"href": "/api/v2/actions/24/export",
+ "title": "Export 'Sample Set Owner by AWS Tag'"}}],
+ "dependents": {"blueprints": [],
+ "total": 1,
+ "server_actions": [],
+ "orchestration_actions": [{"href": "/api/v2/orchestration-actions/24",
+ "title": "Sample Set Owner by AWS Tag"}]}}
+}
