@@ -6,11 +6,11 @@ Welcome to the CloudBolt Forge, a public github repository used for sharing powe
 If you have interesting hooks that you have developed, please share them! Even if they are rough-hewn, others may admire your work, improve on it, and re-share those improvements back with you.
 
 ## File & Directory Naming Conventions
- * Each importable piece of content should have its own directory
+ * Each importable piece of content should have its own directory.
  * Use no spaces or special characters in file & directory names other than underscores.
 
 ## Coding Conventions
- * Please comment your code well, with a dostring at the top of each Python module and on most methods.
+ * Please comment your code well, with a docstring at the top of each Python module and on most methods.
  * Configure your editor to help keep your code [PEP8 compliant](https://www.python.org/dev/peps/pep-0008/).
 
 ## Contact Us
