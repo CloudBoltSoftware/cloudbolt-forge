@@ -1,5 +1,5 @@
 """
-An example CloudBolt post-sync-vms hook script that updates the owner of all
+A post-sync-vms CloudBolt Plugin that updates the owner of all
 synced AWS servers to the CB user that has the username in the AWS tag
 'VM_Owner'.
 
