@@ -13,6 +13,11 @@ If you have interesting hooks that you have developed, please share them! Even i
  * Please comment your code well, with a docstring at the top of each Python module and on most methods.
  * Configure your editor to help keep your code [PEP8 compliant](https://www.python.org/dev/peps/pep-0008/).
 
+## Contribution Process
+ * First, fork the cloudbolt-forge repository.
+ * Make your changes in your forked repository.
+ * Then, submit a pull request to merge your changes into the CloudBoltSoftware repository.
+
 ## Contact Us
 We'd love to hear from you if you have any questions or ideas you'd like to discuss with us.
 
