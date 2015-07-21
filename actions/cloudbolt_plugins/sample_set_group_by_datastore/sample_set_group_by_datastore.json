@@ -24,7 +24,7 @@
             "title": "Sample Set Group by Datastore"
         }
     },
-    "description": "Typically run as a Post-Sync VMS action, assigns a group based on a match between a datastore regex and the datastore a VM is on.",
+    "description": "Run as a Post-Sync VMs action, assigns servers to groups based on a match between a datastore regex and the datastore a VM is on.",
     "name": "Sample Set Group by Datastore",
     "script-filename": "group_datastore_regex_4.py",
     "shared": "True",
