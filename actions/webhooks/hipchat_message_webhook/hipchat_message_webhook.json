@@ -1,0 +1,15 @@
+{
+    "auth-header-name": "Authorization",
+    "auth-header-value": "YOUR_AUTH_INFO",
+    "authentication-method": "token",
+    "description": "Sends a message to the HipChat room with the given text and color",
+    "http-method": "post",
+    "http-password": "YOUR_AUTH_INFO",
+    "http-username": "",
+    "name": "HipChat Message Webhook",
+    "payload": "{\"color\": \"{{message_color}}\", \"message\": \"{{message_text}}\"}",
+    "resource-technologies": [],
+    "shared": "True",
+    "type": "Webhook",
+    "url": "https://api.hipchat.com/v2/room/{{room_id}}/notification"
+}
