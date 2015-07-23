@@ -1,0 +1,10 @@
+{
+    "description": "Deletes current CloudBolt snapshot from server",
+    "name": "Delete Snapshot",
+    "resource-technologies": [
+        "VMware vCenter"
+    ],
+    "script-filename": "delete_cb_snapshot.py",
+    "shared": "True",
+    "type": "CloudBolt Plug-in"
+}
