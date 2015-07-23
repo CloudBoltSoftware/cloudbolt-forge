@@ -1,0 +1,15 @@
+{
+    "auth-header-name": "",
+    "auth-header-value": "",
+    "authentication-method": "basic",
+    "description": "Schedules build of the Jenkins job specified by the URL",
+    "http-method": "post",
+    "http-password": "YOUR_AUTH_INFO",
+    "http-username": "lpercival",
+    "name": "Start Jenkins Job",
+    "payload": "",
+    "resource-technologies": [],
+    "shared": "True",
+    "type": "Webhook",
+    "url": "https://{{jenkins_host_ip}}/jenkins/job/{{job_name}}/build"
+}
