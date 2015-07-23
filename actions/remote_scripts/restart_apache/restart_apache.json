@@ -4,7 +4,7 @@
     "execution-timeout": 120,
     "name": "Restart Apache",
     "resource-technologies": [],
-    "script-filename": "restart_apache-37681579.sh",
+    "script-filename": "restart_apache.sh",
     "shared": "True",
     "target-os-families": [
         "Linux"
