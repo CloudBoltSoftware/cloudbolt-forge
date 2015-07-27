@@ -1,0 +1,12 @@
+{
+  "name": "puppet-28-agent-install",
+  "shared": "True",
+  "type": "Remote Script",
+  "script-filename": "puppet-28-agent-install.sh",
+  "target-os-families": [
+    "Linux -> CentOS",
+    "Linux -> Red Hat"
+  ],
+  "execution-timeout": 600,
+  "commandline-args": ""
+}
