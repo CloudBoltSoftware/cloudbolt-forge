@@ -6,7 +6,7 @@ PUPPET_CONF=$(cat <<'END_OF_CONFIG'
     logdir = /var/log/puppet
     rundir = /var/run/puppet
     ssldir = $vardir/ssl
-    server = puppetee28.lab.iad.cloudboltsw.com
+    server = YOUR_PUPPET_ENTERPRISE_HOSTNAME
     pluginsync = true
 [agent]
     classfile = $vardir/classes.txt
