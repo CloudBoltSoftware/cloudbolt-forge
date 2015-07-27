@@ -1,0 +1,7 @@
+{
+    "description": "Sets the expiration date on newly discovered servers to a number of days from today based on the Days Before Expire setting.",
+    "name": "Set Server Expiration Date",
+    "resource-technologies": [],
+    "script-filename": "set_server_expiration.py",
+    "type": "CloudBolt Plug-in"
+}
