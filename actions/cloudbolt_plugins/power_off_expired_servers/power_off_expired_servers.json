@@ -1,0 +1,7 @@
+{
+    "description": "This action powers off all expired servers and adds a history event to each stating why they were powered off.",
+    "name": "Power off Expired Servers",
+    "resource-technologies": [],
+    "script-filename": "power_off_expired_servers.py",
+    "type": "CloudBolt Plug-in"
+}
