@@ -1,0 +1,8 @@
+{
+    "description": "A post-expire action that powers off  servers that are expired beyond a given cutoff point, then deletes them if they expire beyond a second cutoff point. Sends pertinent emails to the server's owner.",
+    "name": "Power off then Delete Expired Servers",
+    "resource-technologies": [],
+    "script-filename": "power_off_then_delete_expired_servers.py",
+    "shared": "True",
+    "type": "CloudBolt Plug-in"
+}
