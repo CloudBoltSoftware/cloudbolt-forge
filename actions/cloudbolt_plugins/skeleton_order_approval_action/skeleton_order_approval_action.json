@@ -1,0 +1,8 @@
+{
+    "description": "This action will be run upon order submission, and will override CB's default behavior of emailing approvers when an order is submitted. This provides a mechanism to integrate CB with a separate change management system.",
+    "name": "Skeleton Order-Approval Action",
+    "resource-technologies": [],
+    "script-filename": "order_approval_skeleton.py",
+    "shared": "True",
+    "type": "CloudBolt Plug-in"
+}
