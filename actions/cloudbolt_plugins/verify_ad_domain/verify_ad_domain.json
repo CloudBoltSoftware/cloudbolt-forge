@@ -1,0 +1,8 @@
+{
+    "description": "Confirms that a new Windows server has correctly joined the requested AD domain.",
+    "name": "Verify AD Domain",
+    "resource-technologies": [],
+    "script-filename": "verify_domain.py",
+    "shared": "True",
+    "type": "CloudBolt Plug-in"
+}
