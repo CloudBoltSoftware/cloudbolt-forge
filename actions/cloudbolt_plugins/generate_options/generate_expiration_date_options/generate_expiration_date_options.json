@@ -1,0 +1,8 @@
+{
+    "description": "This sample action generates 'expiration_date' options as offsets from the current date.",
+    "name": "Generate 'Expiration Date' Options",
+    "resource-technologies": [],
+    "script-filename": "generate_expiration_date_options.py",
+    "shared": "True",
+    "type": "CloudBolt Plug-in"
+}
