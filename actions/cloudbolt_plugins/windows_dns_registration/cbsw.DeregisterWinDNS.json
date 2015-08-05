@@ -1,0 +1,6 @@
+{
+    "description": "Given a hostname, attempt to deregister it with a Windows DNS server via VMware remote execution and the dnscmd.exe.",
+    "name": "cbsw.DeregisterWinDNS",
+    "script-filename": "deregister_with_win_dns.py",
+    "type": "CloudBolt Plug-in"
+}

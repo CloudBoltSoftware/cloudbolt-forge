@@ -1,0 +1,6 @@
+{
+    "description": "Take IP address and hostname assigned to a new server and register it with a Windows DNS server via VMware remote execution and the dnscmd.exe.",
+    "name": "cbsw.RegisterWinDNS",
+    "script-filename": "register_with_win_dns.py",
+    "type": "CloudBolt Plug-in"
+}
