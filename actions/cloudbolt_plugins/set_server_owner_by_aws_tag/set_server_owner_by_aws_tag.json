@@ -3,14 +3,5 @@
  "description": "A post-sync-vms hook that updates the owner of all synced AWS servers to the CB user that has the username in the AWS tag 'VM_Owner'.",
  "shared": "True",
  "type": "CloudBolt Plug-in",
- "script-filename": "set_server_owner_by_aws_tag.py",
- "_links": {"self": {"href": "/api/v2/actions/24",
- "title": "Sample Set Owner by AWS Tag"},
- "actions": [{"export": {"href": "/api/v2/actions/24/export",
- "title": "Export 'Sample Set Owner by AWS Tag'"}}],
- "dependents": {"blueprints": [],
- "total": 1,
- "server_actions": [],
- "orchestration_actions": [{"href": "/api/v2/orchestration-actions/24",
- "title": "Set Server Owner by AWS Tag"}]}}
+ "script-filename": "set_server_owner_by_aws_tag.py"
 }
