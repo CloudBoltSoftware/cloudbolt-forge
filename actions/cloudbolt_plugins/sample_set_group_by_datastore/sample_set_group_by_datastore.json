@@ -1,29 +1,4 @@
 {
-    "_links": {
-        "actions": [
-            {
-                "export": {
-                    "href": "/api/v2/actions/25/export",
-                    "title": "Export 'Sample Set Group by Datastore'"
-                }
-            }
-        ],
-        "dependents": {
-            "blueprints": [],
-            "orchestration_actions": [
-                {
-                    "href": "/api/v2/orchestration-actions/25",
-                    "title": "Sample Set Group by Datastore"
-                }
-            ],
-            "server_actions": [],
-            "total": 1
-        },
-        "self": {
-            "href": "/api/v2/actions/25",
-            "title": "Sample Set Group by Datastore"
-        }
-    },
     "description": "Run as a Post-Sync VMs action, assigns servers to groups based on a match between a datastore regex and the datastore a VM is on.",
     "name": "Sample Set Group by Datastore",
     "script-filename": "group_datastore_regex_4.py",
