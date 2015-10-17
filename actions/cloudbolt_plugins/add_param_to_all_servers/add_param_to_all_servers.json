@@ -1,0 +1,8 @@
+{
+    "description": "Lets user add or modify a parameter value on all servers in this deployed service.",
+    "name": "Add param to all servers",
+    "resource-technologies": [],
+    "script-filename": "add_param_to_all_servers_9.py",
+    "shared": "True",
+    "type": "CloudBolt Plug-in"
+}
