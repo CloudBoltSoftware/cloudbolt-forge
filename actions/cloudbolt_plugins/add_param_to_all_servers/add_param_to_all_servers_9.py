@@ -5,6 +5,11 @@ service.
 
 Set the PARAM_NAME constant below to the name of the desired parameter.
 
+To enable:
+    Go to Admin > Service Actions
+    Click "New Service Action" > CloudBolt Plug-in > "Add new cloudbolt plugin"
+    Fill out the form and upload this Python script.
+
 When uploading this script, CB recognizes the 'param_value' below as an "Action
 Input" (due to the double curly braces) and lets you set additional properties
 on this such as a label, description, type, and constraints on its value.
