@@ -1,16 +1,11 @@
-import sys
 import time
 
-from infrastructure.models import Server
 from jobs.models import Job
 
 TIMEOUT = 600
 
 
 def is_reachable(server):
-    """
-    :type server: Server
-    """
     instance_id = server.ec2serverinfo.instance_id
     ec2_region = server.ec2serverinfo.ec2_region
 
@@ -19,14 +14,12 @@ def is_reachable(server):
     wc = rh.resource_technology.work_class
 
     instance = wc.get_instance(instance_id)
-    conn = instance.connection
-    status = conn.get_all_instance_status(instance_id)
+    status = instance.connection.get_all_instance_status(instance_id)
     return True if status[0].instance_status.details[u'reachability'] == u'passed' else False
 
 
-def run(job, logger=None):
-    assert isinstance(job, Job)
-    assert job.type == u'provision'
+def run(job, logger=None, **kwargs):
+    assert isinstance(job, Job) and job.type == u'provision'
 
     server = job.server_set.first()
     timeout = time.time() + TIMEOUT
@@ -42,11 +35,3 @@ def run(job, logger=None):
             time.sleep(2)
 
     return "", "", ""
-
-
-if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print '  Usage:  {} <job_id>'.format(sys.argv[0])
-        sys.exit(1)
-
-    print run(Job.objects.get(id=sys.argv[1]))
