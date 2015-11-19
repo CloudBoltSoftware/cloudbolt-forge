@@ -1,0 +1,92 @@
+from common.methods import set_progress
+from infrastructure.models import CustomField
+from orders.models import CustomFieldValue
+from azure import *
+from azure.servicemanagement import *
+
+def run(job, logger=None, **kwargs):
+	
+    # PREREQUISITE: Must Create Custom Fields Under Infrastructure -> CustomField For Each Customfield Object
+    # Any references to a template variable will be automatically created ion custom fields for you.
+
+    # Example: FinalName = CustomField.objects.get(label='Azure Website Name')
+    # You Would Create A Custom Field In The DB With The Label "Azure Website Name"
+
+    #THIS PLUGIN ASSUMES YOU ARE DEPLOYING THIS SERVICE FOR A HOSTED WEBSITE WITH AZURE
+    #This will be expanded over time to include all service tiers and configurations.
+
+    #Define Service Variables
+    subscription_id = '3ba523b7-5b38-430c-9ae7-b89b6051f756'
+    certificate_path = '/var/opt/cloudbolt/resourcehandlers/azure/azureclient.pem'
+    FailedMessage = 'Failed to Provision Website'
+
+    #Init Service Management Service
+    set_progress("Connecting To Azure Management Service...")
+    sms = ServiceManagementService(subscription_id, certificate_path)
+    wms = WebsiteManagementService(subscription_id, certificate_path)
+    set_progress("Successfully Connected To Azure Management Service!")
+
+    #Define Azure Website Name
+    Azure_Name = '{{ Azure_Website_Name }}'
+    set_progress("Setting Azure Website Name To: " + Azure_Name)
+
+    #Define Azure Website Host Names
+    Azure_Hostnames = ['{}.azurewebsites.net'.format(Azure_Name)]
+    set_progress("Setting Azure Hostname To " + '{{ Azure_Website_Name }}.azurewebsites.net')
+    Azure_URL = Azure_Hostnames[0]
+    set_progress("Setting Azure Website URL To " + Azure_URL)
+
+    #Define Azure Website Plan
+    Azure_Plan = 'VirtualDedicatedPlan'
+
+    #Define Azure Compute Mode
+    Azure_Compute_Mode = 'Shared'
+
+    #Define Azure Server Farm
+    Azure_Server_Farm='None'
+
+    #Define Azure Site Mode
+    Azure_Site_Mode='Basic'
+
+    #Define Azure Location
+    Azure_Location = 'West US'
+
+    try:
+        #Create The Service
+        set_progress("Creating New Azure Website...")
+        siteinfo = wms.create_site('westuswebspace', Azure_Name, Azure_Location, Azure_Hostnames, Azure_Plan, Azure_Compute_Mode, Azure_Server_Farm, Azure_Site_Mode)
+        set_progress("Successfully Created New Azure Website!")
+    except:
+        #Change Webservice Name To Indicate Failure
+        set_progress("Site Creation Failed! Setting Website Name To Failed.")
+        FailedName = CustomField.objects.get(label='Azure Website Name')
+        FailedNameCV = CustomFieldValue(field=FailedName, value=FailedMessage)
+        FailedNameCV.save()
+        service.attributes.add(FailedNameCV)	
+
+    #Capture The Generated Web Service Parameters
+    #NEED TO FINISH - Use siteinfo variable
+
+    #Get The Service (Assuming One Per Job, For Multiple Jobs Add Loop Here)
+    services = job.parent_job.service_set.all()
+    service = services[0]
+
+    #Bind The Service Values And Save Them To A CFV (Custom Field Value)
+    FinalHostnames = CustomField.objects.get(label='Azure Website Hostname')
+    FinalHostnamesCV = CustomFieldValue(field=FinalHostnames, value=Azure_Hostnames[0])
+    FinalHostnamesCV.save()
+    service.attributes.add(FinalHostnamesCV)
+
+    FinalURL = CustomField.objects.get(label='Azure Website URL')
+    FinalURLCV = CustomFieldValue(field=FinalURL, value=Azure_URL)
+    FinalURLCV.save()
+    service.attributes.add(FinalURLCV)
+
+    #Check The State Of The Job And Output The Result To The Console 
+    success = True
+    if success:
+        set_progress("Successfully Deployed Azure Website Service")
+        return "", "", ""
+    else:
+        set_progress("Failed To Deploy Azure Website Service")
+        return "FAILURE", "Failed To Deploy Azure Website Service", ""
