@@ -18,13 +18,14 @@ def run(job, logger=None, **kwargs):
     #Define Service Variables
     subscription_id = '3ba523b7-5b38-430c-9ae7-b89b6051f756'
     certificate_path = '/var/opt/cloudbolt/resourcehandlers/azure/azureclient.pem'
-    FailedMessage = 'Failed to Provision Website'
 
     #Init Service Management Service
     set_progress("Connecting To Azure Management Service...")
-    sms = ServiceManagementService(subscription_id, certificate_path)
     wms = WebsiteManagementService(subscription_id, certificate_path)
     set_progress("Successfully Connected To Azure Management Service!")
+
+    #Define Azure Webspace
+    Azure_Webspace = 'westuswebspace'
 
     #Define Azure Website Name
     Azure_Name = '{{ Azure_Website_Name }}'
@@ -51,36 +52,61 @@ def run(job, logger=None, **kwargs):
     #Define Azure Location
     Azure_Location = 'West US'
 
+    #Create The Service
     try:
-        #Create The Service
         set_progress("Creating New Azure Website...")
-        siteinfo = wms.create_site('westuswebspace', Azure_Name, Azure_Location, Azure_Hostnames, Azure_Plan, Azure_Compute_Mode, Azure_Server_Farm, Azure_Site_Mode)
+        siteinfo = wms.create_site(Azure_Webspace, Azure_Name, Azure_Location, Azure_Hostnames, Azure_Plan, Azure_Compute_Mode, Azure_Server_Farm, Azure_Site_Mode)
         set_progress("Successfully Created New Azure Website!")
     except:
-        #Change Webservice Name To Indicate Failure
         set_progress("Site Creation Failed! Setting Website Name To Failed.")
+        FailedMessage = 'Failed to Provision Website'
         FailedName = CustomField.objects.get(label='Azure Website Name')
         FailedNameCV = CustomFieldValue(field=FailedName, value=FailedMessage)
         FailedNameCV.save()
         service.attributes.add(FailedNameCV)	
 
-    #Capture The Generated Web Service Parameters
-    #NEED TO FINISH - Use siteinfo variable
+    #Retrieve Publish Profile XML
+    try:
+        set_progress("Retrieving Website Publishing Profile")
+        PublishProfileXML = wms.get_publish_profile_xml(Azure_Webspace, Azure_Name)
+        Azure_Publish_Profile = PublishProfileXML.encode('ascii', 'ignore')
+        set_progress("Sucessfully Retrieved Website Publishing Profile!")
+    except:
+        set_progress("Failed To Retrieve Website Publishing Profile!")
+        FailedMessage = 'Failed To Retrieve Website Publishing Profile!'
+        FailedName = CustomField.objects.get(label='Azure Publish Profile XML')
+        FailedNameCV = CustomFieldValue(field=FailedName, value=FailedMessage)
+        FailedNameCV.save()
+        service.attributes.add(FailedNameCV)        
 
-    #Get The Service (Assuming One Per Job, For Multiple Jobs Add Loop Here)
+    #Get The Service
     services = job.parent_job.service_set.all()
     service = services[0]
 
     #Bind The Service Values And Save Them To A CFV (Custom Field Value)
+    set_progress("Updating Azure Location Information To: " + Azure_Location)
+    FinalLocation = CustomField.objects.get(label='Azure Website Location')
+    FinalLocationCV = CustomFieldValue(field=FinalLocation, value=Azure_Location)
+    FinalLocationCV.save()
+    service.attributes.add(FinalLocationCV)
+
+    set_progress("Updating Hostnames Information To: " + Azure_Hostnames[0])
     FinalHostnames = CustomField.objects.get(label='Azure Website Hostname')
     FinalHostnamesCV = CustomFieldValue(field=FinalHostnames, value=Azure_Hostnames[0])
     FinalHostnamesCV.save()
     service.attributes.add(FinalHostnamesCV)
 
+    set_progress("Updating Azure Website URL Information To: " + Azure_URL)
     FinalURL = CustomField.objects.get(label='Azure Website URL')
     FinalURLCV = CustomFieldValue(field=FinalURL, value=Azure_URL)
     FinalURLCV.save()
     service.attributes.add(FinalURLCV)
+
+    set_progress("Updating Azure Publishing Profile Information")
+    PublishProfile = CustomField.objects.get(label='Azure Publish Profile XML')
+    PublishProfileCV = CustomFieldValue(field=PublishProfile, value=Azure_Publish_Profile)
+    PublishProfileCV.save()
+    service.attributes.add(PublishProfileCV)
 
     #Check The State Of The Job And Output The Result To The Console 
     success = True
