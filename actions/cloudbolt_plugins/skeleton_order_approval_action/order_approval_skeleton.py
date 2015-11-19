@@ -3,31 +3,50 @@ import time
 from orders.models import Order
 
 """
-Skeleton Order Approval hook, which allows changing CloudBolt's default approval
-behavior, possibly to integrate with a separate change management system.
+Plug-in example for an Orchestration Action at the "Order Approval" trigger
+point.  May change CloudBolt's default approval behavior to implement custom
+logic or integrate with an external change management system.
+
+The context passed to the plug-in includes the order.
 
 If the order is already ACTIVE when this hook is executed, this indicates that
 the order was previously auto approved. If that was not the case, the current
 hook randomly approves or denies the order. This is a skeleton and will
 need to be changed to match your particular environment.
+
+Args:
+`order`: the order to be approved or denied.
+`job`: always None in this context.
+`logger`: write messages to the log for this action.
 """
 
 
 def run(order, job=None, logger=None):
-    if int(time.time()) % 2 == 0:
-        # Randomly approves or denies the order, replace this logic with your own
-        order.approve()
-        return "", "", ""
-    else:
-        order.deny()
-        # Note: The hook was still successful, so we return an empty status,
-        # even though we have rejected the order
-        return "", "", ""
+    if order.status != 'PENDING':
+        logger.info('Order approval plugin skipped because order is not pending approval.')
+        return '', '', ''
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.stderr.write("usage: %s <CloudBolt order id>\n" % (sys.argv[0]))
-        sys.exit(2)
-    order_id = sys.argv[1]
-    order = Order.objects.get(pk=order_id)
-    status, msg, err = run(order)
+    owner = order.owner
+    group = order.group
+    env = order.environment
+
+    # number of servers to be provisioned by this order
+    number_of_servers = order.prov_server_count()
+
+    # "Order items" are the line items added to an order. They may be of
+    # several types: ProvisionServerOrderItem, ServerModOrderItem,
+    # InstallServiceOrderItem, ProvisionNetworkOrderItem, etc.
+    # Not all of them involve servers.
+    items = [oi.cast() for oi in order.orderitem_set.filter()]
+
+    conforms = False
+    # Add your logic to determine if this order conforms to your policies
+
+    if conforms:
+        order.approve()
+    else:
+        order.deny(reason='Sorry, your order was invalid because...')
+
+    # Return 'success' response even if we have rejected the order, since this
+    # plug-in action succeeded.
+    return '', '', ''
