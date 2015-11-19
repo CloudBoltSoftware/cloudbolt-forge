@@ -19,7 +19,7 @@ def run(job, logger=None, **kwargs):
     subscription_id = '3ba523b7-5b38-430c-9ae7-b89b6051f756'
     certificate_path = '/var/opt/cloudbolt/resourcehandlers/azure/azureclient.pem'
 
-    #Init Service Management Service
+    #Init Website Management Service
     set_progress("Connecting To Azure Management Service...")
     wms = WebsiteManagementService(subscription_id, certificate_path)
     set_progress("Successfully Connected To Azure Management Service!")
