@@ -16,7 +16,10 @@ def run(job, logger=None, **kwargs):
     #This will be expanded over time to include all service tiers and configurations.
 
     #Define Service Variables
-    subscription_id = '3ba523b7-5b38-430c-9ae7-b89b6051f756'
+    subscription_id = 'YOUR-AZURE-SUBSCRIPTION-ID'
+
+    # This key file is typically created when you first create your Azure
+    # resource handler.
     certificate_path = '/var/opt/cloudbolt/resourcehandlers/azure/azureclient.pem'
 
     #Init Website Management Service
