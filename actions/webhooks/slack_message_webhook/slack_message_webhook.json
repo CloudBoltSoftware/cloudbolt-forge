@@ -1,0 +1,14 @@
+{
+    "auth-header-name": "",
+    "auth-header-value": "",
+    "authentication-method": "none",
+    "description": "{\r\n  \"channel\": \"#cloudbolt\",\r\n  \"username\": \"cloudbolt\",\r\n  \"text\": \"A server was just built from CloudBolt.\",\r\n  \"icon_emoji\": \":zap:\"\r\n}",
+    "http-method": "post",
+    "http-password": "",
+    "http-username": "",
+    "name": "Post build completion to #cloudbolt in Slack",
+    "payload": "{\r\n\"channel\": \"#cloudbolt\",\r\n\"username\": \"cloudbolt\",\r\n\"text\": \"{{ server.hostname }} - {{ server.ip }} was just built from CloudBolt in {{ server.server_location }} with lifecycle of {{ server.lifecycle }} and build type {{ server.build_type }} and OS type is {{ server.os_family.name }}. Requested by: {{ server.owner.user.first_name}} {{ server.owner.user.last_name }}\",\r\n\"icon_emoji\": \":zap:\"\r\n}",
+    "resource-technologies": [],
+    "type": "Webhook",
+    "url": "YOUR SLACK WEBHOOK URL"
+}
