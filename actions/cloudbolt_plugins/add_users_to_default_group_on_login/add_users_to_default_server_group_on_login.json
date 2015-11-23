@@ -1,0 +1,6 @@
+{
+    "name": "Add users to default group on login",
+    "resource-technologies": [],
+    "script-filename": "cbDefaultGroupAssignment.py",
+    "type": "CloudBolt Plug-in"
+}
