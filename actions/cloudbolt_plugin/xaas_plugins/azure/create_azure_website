@@ -58,12 +58,7 @@ def run(job, logger=None, **kwargs):
         siteinfo = wms.create_site(Azure_Webspace, Azure_Name, Azure_Location, Azure_Hostnames, Azure_Plan, Azure_Compute_Mode, Azure_Server_Farm, Azure_Site_Mode)
         set_progress("Successfully Created New Azure Website!")
     except:
-        set_progress("Site Creation Failed! Setting Website Name To Failed.")
-        FailedMessage = 'Failed to Provision Website'
-        FailedName = CustomField.objects.get(label='Azure Website Name')
-        FailedNameCV = CustomFieldValue(field=FailedName, value=FailedMessage)
-        FailedNameCV.save()
-        service.attributes.add(FailedNameCV)	
+        set_progress("Failed to Provision Website! Please Try Again!")
 
     #Retrieve Publish Profile XML
     try:
@@ -84,6 +79,18 @@ def run(job, logger=None, **kwargs):
     service = services[0]
 
     #Bind The Service Values And Save Them To A CFV (Custom Field Value)
+    set_progress("Updating Azure Website URL Information To: " + Azure_URL)
+    FinalURL = CustomField.objects.get(label='Azure Website URL')
+    FinalURLCV = CustomFieldValue(field=FinalURL, value=Azure_URL)
+    FinalURLCV.save()
+    service.attributes.add(FinalURLCV)
+
+    set_progress("Updating Azure Webspace Information To: " + Azure_Webspace)
+    FinalWebspace = CustomField.objects.get(label='Azure Webspace')
+    FinalWebspaceCV = CustomFieldValue(field=FinalWebspace, value=Azure_Webspace)
+    FinalWebspaceCV.save()
+    service.attributes.add(FinalWebspaceCV)
+
     set_progress("Updating Azure Location Information To: " + Azure_Location)
     FinalLocation = CustomField.objects.get(label='Azure Website Location')
     FinalLocationCV = CustomFieldValue(field=FinalLocation, value=Azure_Location)
@@ -95,12 +102,6 @@ def run(job, logger=None, **kwargs):
     FinalHostnamesCV = CustomFieldValue(field=FinalHostnames, value=Azure_Hostnames[0])
     FinalHostnamesCV.save()
     service.attributes.add(FinalHostnamesCV)
-
-    set_progress("Updating Azure Website URL Information To: " + Azure_URL)
-    FinalURL = CustomField.objects.get(label='Azure Website URL')
-    FinalURLCV = CustomFieldValue(field=FinalURL, value=Azure_URL)
-    FinalURLCV.save()
-    service.attributes.add(FinalURLCV)
 
     set_progress("Updating Azure Publishing Profile Information")
     PublishProfile = CustomField.objects.get(label='Azure Publish Profile XML')
