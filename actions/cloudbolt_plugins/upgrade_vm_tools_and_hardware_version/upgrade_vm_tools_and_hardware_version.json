@@ -4,6 +4,6 @@
     "resource-technologies": [
         "VMware vCenter"
     ],
-    "script-filename": "shutdown-snap-hw-on_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1.ps1",
+    "script-filename": "upgrade_vm_tools_and_hardware_version.py",
     "type": "CloudBolt Plug-in"
 }
