@@ -1,0 +1,12 @@
+{
+    "commandline-args": "",
+    "execution-timeout": 120,
+    "name": "Configure NTP",
+    "resource-technologies": [],
+    "script-filename": "configure_ntp.sh",
+    "target-os-families": [
+        "Linux -> CentOS",
+        "Linux -> Red Hat"
+    ],
+    "type": "Remote Script"
+}
