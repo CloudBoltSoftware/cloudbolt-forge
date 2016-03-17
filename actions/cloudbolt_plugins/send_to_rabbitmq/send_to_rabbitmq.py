@@ -8,16 +8,16 @@ from jobs.models import Job
 def run(job, logger=None, **kwargs):
     status = job.status
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-            host='<rabbitmq ip>'))
+            host='{{ rabbitmq_ip }}')
     for server in job.server_set.all():
         hostname = server.hostname
 	mem_size = server.mem_size
 	cpu = server.cpu_cnt
         channel = connection.channel()
-        channel.queue_declare(queue='<queuename>', durable=True)
+        channel.queue_declare(queue='{{ queue_name }}', durable=True)
         job.set_progress("Sending Message that %s resources changed..." % server.hostname)
-        channel.basic_publish(exchange='<exchangename>',
-                      routing_key='<routingkey>',
+        channel.basic_publish(exchange='{{ exchange_name }}',
+                      routing_key='{{ routing_key }}',
                       body="Server:{}\nMem:{}\nCpu:{}\nStatus:{}".format(hostname, mem_size, cpu, status),
                       properties=pika.BasicProperties(
                          delivery_mode = 2, # make message persistent
