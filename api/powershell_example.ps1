@@ -108,12 +108,11 @@ Do
 	Sleep 10
 	
 	#Go Grab The Status Of The Order
-  $Order_RequestURL = "https://$CloudBoltIP/api/v2/orders/$OrderNumber/"
-  $Order = Invoke-RestMethod -Credential $Credential -Method GET -URI $Order_RequestURL
-  $OrderStatus = $($Order.Status)
-	
-	#If Job Is Done, Switch The Close Flag
-	Write-Host "Close Order Status"
-	$OrderStatus = 1
+  	$Order_RequestURL = "https://$CloudBoltIP/api/v2/orders/$OrderNumber/"
+  	$Order = Invoke-RestMethod -Credential $Credential -Method GET -URI $Order_RequestURL
+  	$OrderStatus = $($Order.Status)
 }
-While (($OrderStatus -ne "FAILURE") -OR ($OrderStatus -ne "SUCCESS"))
+While ($OrderStatus -eq "")
+
+#Update The User The Job Is Done
+Write-Host "Order Has Been Completed And Returned The Status: $OrderStatus"
