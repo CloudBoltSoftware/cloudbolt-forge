@@ -108,7 +108,7 @@ Do
 	Sleep 10
 	
 	#Go Grab The Status Of The Order
-  $Order_RequestURL = "https://$CloudBoltIP/api/v2/orders/719/"
+  $Order_RequestURL = "https://$CloudBoltIP/api/v2/orders/$OrderNumber/"
   $Order = Invoke-RestMethod -Credential $Credential -Method GET -URI $Order_RequestURL
   $OrderStatus = $($Order.Status)
 	
