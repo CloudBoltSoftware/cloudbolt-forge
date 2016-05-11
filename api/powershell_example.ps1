@@ -101,7 +101,7 @@ catch
 }
 
 #Check The Order Status
-$OrderStatus = ""
+$OrderStatus = "ACTIVE"
 Do
 {
 	Write-Host "Order Still Processing..."
@@ -112,7 +112,7 @@ Do
   	$Order = Invoke-RestMethod -Credential $Credential -Method GET -URI $Order_RequestURL
   	$OrderStatus = $($Order.Status)
 }
-While ($OrderStatus -eq "")
+While ($OrderStatus -eq "ACTIVE")
 
 #Update The User The Job Is Done
 Write-Host "Order Has Been Completed And Returned The Status: $OrderStatus"
