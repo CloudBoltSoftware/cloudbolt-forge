@@ -9,9 +9,8 @@ servers are tagged according to their priority group in CloudBolt. These groups
 are power-01 and power-02. Servers tagged with power-01 should be powered down
 before servers tagged with power-02.
 
-This script can be added to a service blueprint as actions that get executed
-in order and can control the power state (ON/OFF) of the servers tagged with
-the specified tag name.
+This script could be added to a service blueprint as actions that get executed
+in a specific order to control server power by tag.
 """
 
 
