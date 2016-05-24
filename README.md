@@ -1,4 +1,4 @@
-![CB Logo](http://www.cloudbolt.io/static/brand/cb-sw-horizontal.svg)
+<img src="https://www.cloudbolt.io/wp-content/uploads/CloudBolt_hlogo_blue_cloud_w_text2-1.png" width="500">
 
 # CloudBolt Forge
 Welcome to the CloudBolt Forge, a public github repository used for sharing powerful content in CloudBolt.  Initially, this holds CloudBolt actions (AKA hooks), but will soon store Blueprints and other content.
