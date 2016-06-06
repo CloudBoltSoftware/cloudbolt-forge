@@ -33,11 +33,19 @@ def run(job, logger=None, **kwargs):
         for element in dn.split(",")[::-1]:
             if element.startswith("OU="):
                 group_name = element[3:]
-                debug("Creating group {} as part of external user sync".format(group_name),
-                      logger)
-                group = Group.objects.create(
-                    name=group_name, type=ou_group_type, parent=parent_group
-                )
+                group = Group.objects.filter(name=group_name)
+                if not group:
+                    debug("Creating group {} as part of external user sync".format(group_name),
+                          logger)
+                    group = Group.objects.create(
+                        name=group_name, type=ou_group_type, parent=parent_group
+                    )
+                else:
+                    group = group[0]
+                    if group.parent != parent_group:
+                        #this is a duplicate OU in LDAP/AD, skip permission setting
+                        skip_user = True
+                        break
                 parent_group = group
 
         if skip_user:
