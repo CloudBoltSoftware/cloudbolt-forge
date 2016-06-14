@@ -52,7 +52,7 @@ def run(job, logger=None):
         return ("", "", "")
 
     if server.key_name is not None:
-            msg = (
+        msg = (
             "New keypair name '{}' to create was entered "
             "but existing key '{}' was also selected."
         ).format(key_name, server.key_name)
