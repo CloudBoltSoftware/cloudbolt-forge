@@ -1,0 +1,10 @@
+{
+    "description": "",
+    "name": "Reset VM",
+    "resource-technologies": [
+        "VMware vCenter"
+    ],
+    "script-filename": "reset_vm.py",
+    "shared": "True",
+    "type": "CloudBolt Plug-in"
+}
