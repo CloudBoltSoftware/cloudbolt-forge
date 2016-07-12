@@ -1,0 +1,6 @@
+{
+    "name": "Add the parent group's users to a subgroup after creating it",
+    "resource-technologies": [],
+    "script-filename": "add_parent_group_users_to_subgroup.py",
+    "type": "CloudBolt Plug-in"
+}
