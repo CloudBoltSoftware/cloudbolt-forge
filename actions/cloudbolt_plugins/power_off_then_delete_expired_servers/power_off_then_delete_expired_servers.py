@@ -40,7 +40,7 @@ def run(job, *args, **kwargs):
         job.set_progress(' Server expired {} days ago'.format(days_expired))
         if days_expired >= DELETE_AFTER_DAYS:
             job.set_progress(' Deleting server...')
-            delete_server_and_send_email(server)
+            delete_server_and_send_email(server, job)
         elif days_expired >= POWEROFF_AFTER_DAYS:
             job.set_progress(' Powering off server...')
             power_off_and_send_email(server, days_expired, job)
@@ -81,11 +81,11 @@ def warn_and_send_email(server, days_expired):
     email_owner(email_body, server)
 
 
-def delete_server_and_send_email(server):
+def delete_server_and_send_email(server, job):
     """
     If the server is old enough, delete it and send an email to inform the owner
     """
-    create_decom_job_for_servers([server])
+    create_decom_job_for_servers([server], parent_job=job)
 
     email_body = (
         'This is an email notifying you that your server "{}" '
