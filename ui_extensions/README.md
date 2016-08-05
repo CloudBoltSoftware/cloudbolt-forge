@@ -1,5 +1,5 @@
 # UI Extensions
-*A new feature coming soon to an early alpha release of CloudBolt 6.1.*
+*A new framework in CloudBolt 6.1-alpha2 and better
 
 An extension is a Python package structured like this:
 
