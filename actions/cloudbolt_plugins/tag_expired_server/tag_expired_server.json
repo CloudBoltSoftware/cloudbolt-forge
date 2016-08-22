@@ -1,0 +1,7 @@
+{
+    "description": "This script will tag a server that is expired with the \"Expired\" tag, so it is easy to search for servers that are past their expiration date.",
+    "name": "Tag expired server",
+    "resource-technologies": [],
+    "script-filename": "tag_expired_server.py",
+    "type": "CloudBolt Plug-in"
+}

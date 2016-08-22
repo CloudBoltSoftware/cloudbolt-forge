@@ -1,0 +1,16 @@
+{
+    "auth-header-name": "",
+    "auth-header-value": "",
+    "authentication-method": "basic",
+    "content-type": "application/json",
+    "description": "Send server data to slack channel",
+    "http-method": "post",
+    "http-password": "",
+    "http-username": "",
+    "name": "Slack Server Details",
+    "payload": "{\r\n    \"username\": \"CloudBolt\",\r\n\t\"icon_emoji\": \":cloud:\",\r\n\t\"attachments\": [\r\n        {\r\n            \"fallback\": \"Required plain-text summary of the attachment.\",\r\n            \"color\": \"#4492bb\",\r\n            \"pretext\": \"Webhook from CloudBolt Server\",\r\n            \"title\": \"{{ server.hostname }}\",\r\n            \"title_link\": \"http://0.0.0.0:8000{{ server.get_absolute_url }}#tab-details\",\r\n            \"fields\": [\r\n                {\r\n                    \"title\":\"Details\",\r\n             \t\t\"value\":\"Group: {{ server.group }}\\nEnvironment: {{ server.environment }}\\nIP Address: {{ server.ip }}\\nMAC Address: {{ server.mac }}\",\r\n                    \"short\": false\r\n                }\r\n           ]\r\n        }\r\n    ]\r\n}",
+    "resource-technologies": [],
+    "shared": "True",
+    "type": "Webhook",
+    "url": "https://hooks.slack.com/services/"
+}

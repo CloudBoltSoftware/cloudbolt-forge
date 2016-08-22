@@ -1,0 +1,6 @@
+{
+    "name": "User Group Permission Sync from LDAP",
+    "resource-technologies": [],
+    "script-filename": "user_group_perm_sync_from_ldap.py",
+    "type": "CloudBolt Plug-in"
+}

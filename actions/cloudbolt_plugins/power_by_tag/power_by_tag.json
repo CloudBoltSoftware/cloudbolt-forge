@@ -1,0 +1,7 @@
+{
+    "name": "Power By Tag",
+    "resource-technologies": [],
+    "script-filename": "poweron_by_tag.py",
+    "shared": "True",
+    "type": "CloudBolt Plug-in"
+}

@@ -1,0 +1,7 @@
+{
+    "description": "Bases approval on whether the order exceeds a rate threshold that is set in the CB UI for this hook point.\r\n\r\nIf the order is below the threshold, the order is auto-approved by this plug-in.\r\n\r\nIf the order exceeds that threshold, this plug-in adds a comment to the order indicating that it needs manual approval and why.\r\n",
+    "name": "Auto-approve all orders below a threshold",
+    "resource-technologies": [],
+    "script-filename": "order_approval.py",
+    "type": "CloudBolt Plug-in"
+}

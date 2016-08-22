@@ -1,0 +1,9 @@
+{
+    "description": "Shuts down a VMware guest, takes a snapshot and upgrades the hardware version to 8 and restarts the server. ",
+    "name": "Upgrade VM Tools and Hardware Version",
+    "resource-technologies": [
+        "VMware vCenter"
+    ],
+    "script-filename": "upgrade_vm_tools_and_hardware_version.py",
+    "type": "CloudBolt Plug-in"
+}

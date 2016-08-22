@@ -1,0 +1,7 @@
+{
+    "description": "An example hook that will update (creating when needed) group membership and permissions based on the user's AD security group membership.\r\n\r\nThe script takes as action inputs the security group names, and creates 3 groups (Silver, Bronze, and Gold) to put the users into.\r\n",
+    "name": "Parameterized Metal User Sync",
+    "resource-technologies": [],
+    "script-filename": "parameterized_metal_user_sync.py",
+    "type": "CloudBolt Plug-in"
+}

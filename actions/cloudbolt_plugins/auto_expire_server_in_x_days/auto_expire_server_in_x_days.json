@@ -1,0 +1,6 @@
+{
+    "name": "Auto-expire Server in X Days",
+    "resource-technologies": [],
+    "script-filename": "autoexpire_in_x_days.py",
+    "type": "CloudBolt Plug-in"
+}
