@@ -1,0 +1,10 @@
+{
+    "description": "",
+    "name": "Hard Power Down VM",
+    "resource-technologies": [
+        "VMware vCenter"
+    ],
+    "script-filename": "hard_powe_down_vm.py",
+    "shared": "True",
+    "type": "CloudBolt Plug-in"
+}
