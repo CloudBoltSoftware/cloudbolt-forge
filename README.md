@@ -27,7 +27,7 @@ If you have interesting hooks that you have developed, please share them! Even i
  * By submitting a pull request for this project, you agree to license your contribution under the Apache License to this project.
 
 ## License
-Contributions to this project are goverened by the CONTRIBUTING file and the Apache License.
+Contributions to this project are governed by the CONTRIBUTING file and the Apache License.
 
 ## Contact Us
 We'd love to hear from you if you have any questions or ideas you'd like to discuss with us.
