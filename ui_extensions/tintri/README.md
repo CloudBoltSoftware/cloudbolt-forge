@@ -30,12 +30,12 @@ Upload UI Extnesion:
 
 ## Install Server Actions
 Upload **clone** Server Action:
-
+* Not currently enabled
 * Zip up 'tintri_action_clone' **dir including the subfolders**
 * Go to *Admin > Server Actions* and **upload** the zip file
 
 Upload **Snapshot** Server Action:
-* Zip up 'tintri_action_clone' **dir including the subfolders**
+* Zip up 'tintri_action_snapshot' **dir including the subfolders**
 * Go to *Admin > Server Actions* and **upload** the zip file
 
 ## Enable Server Tab
