@@ -64,24 +64,15 @@ def get_appliance_info(tintri):
     Returns:
         appliance: Dict of apliance details
     '''
-    conn = get_ci()
-    version_info = tintri.version
     appliance = {}
-    spec = PageFilterSpec()
-    spec.name = conn['ip']
-    results = tintri.get_appliances(filters=spec)
-    if len(results) == 0:
-        raise TintriServerError(0, cause="No VMs found for get VM request")
-    elif len(results) >= 1:
-        record = results[0]
-        # appliance['uuid'] = record.uuid.uuid
-        appliance['serial'] = record.info.serialNumber
-        appliance['model'] = record.info.modelName
-        appliance['os_version'] = record.info.osVersion
-        appliance['host'] = conn['ip']
-        # appliance['version'] = version_info.preferredVersion
-        appliance['name'] = version_info.productName
-        return appliance
+    info = tintri.get_appliance_info('default')
+    if tintri.is_vmstore():
+        product = 'Tintri VMstore'
+    elif tintri.is_tgc():
+        product = 'Tintri Global Center'
+    appliance['product'] = product
+    appliance['model'] = info.modelName
+    return appliance
 
 
 def get_vm(tintri, vm_name):
@@ -304,9 +295,7 @@ def server_tab_tintri(request, obj_id=None):
     server = get_object_or_404(Server, pk=obj_id)
     vm_name = server.hostname
     tintri = get_session()
-    # API call for appliance info is extremely slow
-    # appliance_info = get_appliance_info(tintri)
-    appliance_info = {}
+    appliance_info = get_appliance_info(tintri)
     vm = get_vm(tintri, vm_name)
     vm_uuid = vm.uuid.uuid
     qos_config = vm.qosConfig
