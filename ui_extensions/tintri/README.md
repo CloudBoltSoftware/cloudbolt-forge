@@ -3,6 +3,8 @@
 * Disk usage
 * Tintri Snapshot action
 
+![Sample](sample.png)
+
 ## Requirements
 Install Tintri PySDK:
 
