@@ -1,0 +1,16 @@
+{
+    "commandline-args": "",
+    "credentials": "YOUR_CREDENTIALS",
+    "description": "Uses yum to install the latest stable Jenkins version.",
+    "execution-timeout": 300,
+    "name": "Install Jenkins",
+    "resource-technologies": [],
+    "run-with-sudo": true,
+    "script-filename": "remote_script_KGKnZ3x",
+    "shared": "True",
+    "target-os-families": [
+        "Linux -> CentOS",
+        "Linux -> Red Hat"
+    ],
+    "type": "Remote Script"
+}

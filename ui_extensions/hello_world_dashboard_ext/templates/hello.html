@@ -1,0 +1,71 @@
+{% extends "dashboard/card.html" %}
+{% comment %}
+Dashboard extensions should generally extend the dashboard/card.html
+template.  This provides some common blocks that you can customize:
+- card_id
+- heading
+- heading_right
+- card-body
+
+For more on templates:
+https://docs.djangoproject.com/en/1.8/topics/templates/#the-django-template-language
+{% endcomment %}
+
+{% comment %}
+Choose a unique ID for this panel in this page. You'll use this to bind
+javascript event handlers, place it elsewhere in the DOM, etc.
+{% endcomment %}
+{% block card_id %}hello-world{% endblock %}
+
+{% block heading %}Hello World{% endblock %}
+
+{% block heading_right %}
+    {# This content is pulled right. #}
+    Go ahead, serve yourself:
+    <a href="/service_catalog/"><i class="fa fa-chart"></i> Service Catalog</a>
+{% endblock %}
+
+{% block card_body %}
+<style type="text/css">
+    .greetings em {
+      color: rgb(124, 181, 236);
+      font-size: 1.5em;
+      font-style: normal;
+    }
+    .greetings i {
+      color: #aaa;
+    }
+</style>
+    {% for column in columns %}
+
+        <ul class="greetings pull-left">
+            {% for greeting in column %}
+                <li>
+                    <em>{{ greeting.words }}</em> - <i>{{ greeting.language }}</i>
+                </li>
+            {% endfor %}
+        </ul>
+
+    {% empty %}
+
+        {# This only runs when columns is empty #}
+        <p>Sorry, there are no greetings.</p>
+
+    {% endfor %}
+
+<script>
+    {% comment %}
+    You can locate your dashboard extension panel using Javascript.  Find an
+    existing panel P that will be either the predecessor or successor of this
+    panel.  Then use jQuery to insert your panel before or after P.
+
+    Examples:
+        $('#hello-world').insertBefore('#servers-by-env-card');
+        or
+        $('#hello-world').insertAfter('#servers-by-env-card');
+
+    {% endcomment %}
+
+    $('#hello-world').insertBefore('#servers-by-env-card');
+</script>
+{% endblock card_body %}

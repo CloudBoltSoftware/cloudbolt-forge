@@ -1,5 +1,5 @@
 # UI Extensions
-*A new feature coming soon to an early alpha release of CloudBolt 6.1.*
+*A new framework in CloudBolt 6.1-alpha2 and better
 
 An extension is a Python package structured like this:
 
@@ -21,7 +21,7 @@ Extension views are decorated to register themselves at one of 3 extension point
 
     from accounts.models import Group
     @tab_extension(model=Group, title='Service Stats')
-    def group_deployed_service_stats(request):
+    def group_deployed_service_stats(request, obj_id):
         # Shown on group detail pages as a new tab named "Service Stats"
         # Tab extensions are currently supported on the following models:
         #    accounts.models.Group

@@ -1,0 +1,29 @@
+{
+    "build-service-items": [
+        {
+            "deploy-seq": 1,
+            "description": "Base Linux server on which to install Jenkins",
+            "execute-in-parallel": false,
+            "hostname-template": "jenkins-00X",
+            "name": "Jenkins on CentOS",
+            "os-build": "CentOS-6 x86_64",
+            "show-on-order-form": true,
+            "type": "provserver"
+        },
+        {
+            "continue-on-failure": false,
+            "deploy-seq": 2,
+            "description": null,
+            "execute-in-parallel": false,
+            "name": "Install Jenkins",
+            "run-on-scale-up": true,
+            "show-on-order-form": true,
+            "type": "script"
+        }
+    ],
+    "description": "Jenkins helps to automate the non-human part of the software development process and achieve continuous integration/continuous delivery.",
+    "icon": "headshot.png",
+    "name": "Jenkins",
+    "service-management-actions": [],
+    "teardown-service-items": []
+}

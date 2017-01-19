@@ -1,0 +1,311 @@
+{% load helper_tags %}
+<div class="row">
+    <div class="col-md-3">
+        <a href="https://www.tintri.com">
+            <img
+            src="https://info.tintri.com/rs/010-FIO-934/images/Email_Logo.png"
+            alt="Tintri Logo"></img>
+        </a><br><br>
+        <div class="btn-toolbar">
+            <div class="btn-group btn-wrapper">
+                <button type="button" data-toggle="dropdown"
+                        class="edit-action btn btn-default dropdown-toggle selection-action">
+                    All Trintri Actions&nbsp;&nbsp;<span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li role="presentation">
+                        <a role="menuitem"
+                            class="default open-dialog"
+                            tabindex="-1"
+                            data-href="{% url 'run_server_action' server.id tintri_actions.snapshot %}">
+                            <span class="fa fa-camera"
+                                style="font-size:20px;color:#5A7FAB;"></span>
+                            Snapshot
+                        </a>
+                    </li>
+                    <!--
+                    <li role="presentation">
+                        <a role="menuitem"
+                            class="open-dialog"
+                            tabindex="-1"
+                            data-href="{% url 'run_server_action' server.id tintri_actions.clone %}">
+                            <span class="fa fa-copy"
+                                style="font-size:20px;color:orange;"></span>
+                            Clone
+                        </a>
+                    </li>
+                    -->
+                    <!--
+                    # Not implemented yet
+                    <li role="presentation">
+                        <a role="menuitem"
+                            class="open-dialog"
+                            tabindex="-1"
+                            data-href="{% url 'run_server_action' server.id '1' %}">
+                            <span class="fa fa-rotate-left"
+                                style="font-size:20px;color:red;"></span>
+                            Restore VM
+                        </a>
+                    </li>
+                    -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="font-weight:bold; text-align:center; background:#468875; color:white">Disk Used</div>
+            <div class="panel-body" style="text-align:center">
+                <h4>{{ tintri_data.disk_used }} GB</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="font-weight:bold; text-align:center; background:#828282; color:white">Disk Provisioned</div>
+            <div class="panel-body" style="text-align:center">
+                <h4>{{ tintri_data.disk_provisioned|title }} GB</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="font-weight:bold; text-align:center; background:#5A7FAB; color:white">Disk Changed</div>
+            <div class="panel-body" style="text-align:center">
+                <h4>{{ tintri_data.disk_changed }} GB</h4></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_iops"></div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_throughput"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_latency"></div>
+            </div>
+        </div>
+        <div>
+            <img align="top" src="https://www.tintri.com/sites/default/files/paragraph-images/Tintri_T5000.jpg" alt="Tintri Logo"></img>
+            # Current API call for appliance data is too slow
+            <br> <b>Product:</b> {{ appliance_info.product }}
+            <br> <b>Model:</b> {{ appliance_info.model }}
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+
+$('#chart_latency').highcharts({
+    title: {
+        text: 'Latency'
+    },
+    subtitle: {
+        text: document.ontouchstart === undefined ?
+            '' :
+            ''
+    },
+    chart: {
+        type: 'area',
+        zoomType: 'x',
+        backgroundColor: "#e5e5e5"
+    },
+    xAxis: {
+        type: 'datetime'
+    },
+    yAxis: {
+        title: {
+            text: 'Milliseconds'
+        }
+    },
+    tooltip: {
+        formatter: function() {
+            return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x)  +'<br/>'
+                + this.series.name +': <b>'+ this.y +' ms</b>';
+        }
+    },
+    credits: {
+        enabled: false
+    },
+    exporting: {
+        enabled: false
+    },
+    plotOptions: {
+        area: {
+            marker: {
+                radius: 2,
+                lineColor: 'black',
+                fillColor: 'black',
+            },
+            lineWidth: 1,
+            states: {
+                hover: {
+                    lineWidth: 1,
+                    marker: {
+                        radius: 2,
+                    },
+                }
+            },
+            threshold: null
+        }
+    },
+    series: {{ tintri_data.chart_latency|to_json }}
+});
+
+    });
+</script>
+
+<script type="text/javascript">
+$(function () {
+
+$('#chart_iops').highcharts({
+    title: {
+        text: 'IOPS'
+    },
+    subtitle: {
+        text: document.ontouchstart === undefined ?
+            '' :
+            ''
+    },
+    chart: {
+        type: 'area',
+        zoomType: 'x',
+        backgroundColor: "#e5e5e5"
+    },
+    xAxis: {
+        type: 'datetime'
+    },
+    yAxis: {
+        title: {
+            text: 'Operations / Second'
+        },
+        plotLines:
+        [
+            {
+                color: '{{ tintri_data.max_line_color }}',
+                dashStyle: 'Solid',
+                width: 2,
+                value: {{ tintri_data.max_iops }},
+                zIndex: 0,
+                label : {
+                    style: {
+                        color: 'black',
+                        fontWeight: 'bold',
+                        fontSize: '16px',
+                    },
+                    align : 'center',
+                    text : 'Max',
+                }
+            },
+        ]
+    },
+    tooltip: {
+        formatter: function() {
+            return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x)  +'<br/>'
+                + this.series.name +': <b>'+ this.y +' IOPS</b>';
+        }
+    },
+    credits: {
+        enabled: false
+    },
+    exporting: {
+        enabled: false
+    },
+    plotOptions: {
+        area: {
+            marker: {
+                radius: 2,
+                lineColor: 'black',
+                fillColor: 'black',
+            },
+            lineWidth: 1,
+            states: {
+                hover: {
+                    lineWidth: 1,
+                    marker: {
+                        radius: 2,
+                    },
+                }
+            },
+            threshold: null
+        }
+    },
+    series: {{ tintri_data.chart_iops|to_json }}
+});
+
+    });
+</script>
+
+<script type="text/javascript">
+$(function () {
+
+$('#chart_throughput').highcharts({
+    title: {
+        text: 'Throughput'
+    },
+    subtitle: {
+        text: document.ontouchstart === undefined ?
+            '' :
+            ''
+    },
+    chart: {
+        type: 'area',
+        zoomType: 'x',
+        backgroundColor: "#e5e5e5"
+    },
+    xAxis: {
+        type: 'datetime'
+    },
+    yAxis: {
+        title: {
+            text: 'MBps'
+        }
+    },
+    tooltip: {
+        formatter: function() {
+            return Highcharts.dateFormat('%b %e %Y %H:%M:S', this.x)  +'<br/>'
+                + this.series.name +': <b>'+ this.y +' MBps</b>';
+        }
+    },
+    credits: {
+        enabled: false
+    },
+    exporting: {
+        enabled: false
+    },
+    plotOptions: {
+        area: {
+            marker: {
+                radius: 2,
+                lineColor: 'black',
+                fillColor: 'black',
+            },
+            lineWidth: 1,
+            states: {
+                hover: {
+                    lineWidth: 1,
+                    marker: {
+                        radius: 2,
+                    },
+                }
+            },
+            threshold: null
+        }
+    },
+    series: {{ tintri_data.chart_throughput|to_json }}
+});
+
+    });
+</script>
