@@ -1,0 +1,31 @@
+{% load helper_tags %}
+<div>{{ table_caption }}</div>
+
+{% for table in tables %}
+    <h1>{{ table.caption }}</h1>
+    <table id="table-{{ pagetitle|slugify }}-{{ table.caption|slugify }}"
+        {% if table.sort_by_column %} data-table-sort="{{ table.sort_by_column }}" {% endif %}
+        {% if table.unsortable_column_indices %} data-table-sort-disabled="{{ table.unsortable_column_indices|to_csv }}" {% endif %}
+        class="table"
+        data-table>
+        <thead>
+            <tr>
+                {% for heading in table.column_headings %}
+                    <th class="a"> {{ heading|safe }} </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table.rows %}
+                <tr>
+                    {% for col in row %}
+                        <td>{{ col|safe }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <script>
+        c2.dataTables.init($("#table-{{ pagetitle|slugify }}-{{ table.caption|slugify }}"));
+    </script>
+{% endfor %}

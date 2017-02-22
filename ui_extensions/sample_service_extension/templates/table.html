@@ -1,0 +1,29 @@
+{% load helper_tags %}
+
+{{ table_caption }}
+
+<table id="table-{{ pagetitle|slugify }}"
+    {% if sort_by_column %} data-table-sort="{{ sort_by_column }}" {% endif %}
+    {% if unsortable_column_indices %} data-table-sort-disabled="{{ unsortable_column_indices|to_csv }}" {% endif %}
+    class="table"
+    data-table>
+    <thead>
+        <tr>
+            {% for heading in column_headings %}
+                <th class="a"> {{ heading|safe }} </th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+            <tr>
+                {% for col in row %}
+                    <td>{{ col|safe }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+    c2.dataTables.init($("#table-{{ pagetitle|slugify }}"));
+</script>
