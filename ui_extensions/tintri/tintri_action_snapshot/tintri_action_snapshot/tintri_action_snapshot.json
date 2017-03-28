@@ -1,0 +1,18 @@
+{
+    "action-inputs": [
+        {
+            "description": null,
+            "hide-single-value": false,
+            "label": "Tintri Snapshot Name",
+            "name": "tintri_snapshot_name_a84",
+            "required": true,
+            "type": "String"
+        }
+    ],
+    "description": "",
+    "name": "tintri_action_snapshot",
+    "resource-technologies": [],
+    "script-filename": "cb_plugin_1482264675724517_zr86kMC.py",
+    "shared": "False",
+    "type": "CloudBolt Plug-in"
+}

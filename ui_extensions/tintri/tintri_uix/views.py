@@ -1,17 +1,19 @@
+import os
+
 from django.shortcuts import get_object_or_404, render
 from extensions.views import tab_extension, TabExtensionDelegate
 from utilities.models import ConnectionInfo
 from infrastructure.models import Server
 from cbhooks.models import ServerAction
 from tintri.common import TintriServerError
-from tintri.v310 import Tintri
+from tintri.v310 import Tintri, VirtualMachineStat
 from tintri.v310 import VirtualMachineFilterSpec
-from tintri.v310 import PageFilterSpec
 from tintri.v310 import SnapshotSpec
 from tintri.v310 import VirtualMachineCloneSpec
 from tintri.v310 import VMwareCloneInfo
 from dateutil import parser
 import datetime
+import json
 import time
 import logging
 """
@@ -19,9 +21,16 @@ UI Extension view using Tintri PySDK
 https://github.com/Tintri/tintri-python-sdk
 """
 
+COLOR1="#2A17B1"
+COLOR2="#FF9E00"
+COLOR3="#00A67C"
 
-def get_ci():
-    ci = ConnectionInfo.objects.get(name='tintri')
+
+def get_ci(server):
+    ci = ConnectionInfo.objects.filter(name='Tintri VMstore for Environment {}'.format(
+        server.environment.id)).first()
+    if not ci:
+        return None
     t = {}
     t['ip'] = ci.ip
     t['username'] = ci.username
@@ -29,12 +38,13 @@ def get_ci():
     return t
 
 
-def get_session():
+def get_session(server):
     '''
-    Get authenticated Tintri Session
+    Get authenticated Tintri Session for the given server
 
     Requires:
-        ConnectionInfo object with name 'tintri'
+        ConnectionInfo object with name 'Tintri VMstore for Environment X'
+        Otherwise return None
 
     Args:
         host (str): Tintri VMSTore IP/Hostname
@@ -44,8 +54,9 @@ def get_session():
     Returns:
         tintri: Tintri object
     '''
-    # ci = ConnectionInfo.objects.get(name='tintri')
-    conn = get_ci()
+    conn = get_ci(server)
+    if not conn:
+        return None
     # instantiate the Tintri server.
     tintri = Tintri(conn['ip'])
     # Login to VMstore
@@ -102,7 +113,7 @@ def get_vm(tintri, vm_name):
 
 def get_vm_stats(tintri, vm_uuid, days):
     '''
-    Get all Tintri Virtual Machine stats for X days
+    Get all Tintri Virtual Machine stats for the past X days (from now)
 
     Args:
         tintri  (obj): Tintri object with session_id
@@ -168,11 +179,13 @@ def get_tintri_actions():
     Returns:
         tintri_actions: {} of action ID's
     '''
-    snapshot_id = ServerAction.objects.get(label='tintri_action_snapshot').id
-    clone_id = ServerAction.objects.get(label='tintri_action_clone').id
-    tintri_actions = {}
-    tintri_actions['snapshot'] = snapshot_id
-    tintri_actions['clone'] = clone_id
+    tintri_actions = []
+    snapshot_action = ServerAction.objects.filter(label='tintri_action_snapshot').first()
+    if snapshot_action:
+        tintri_actions.append(snapshot_action)
+    clone_action = ServerAction.objects.filter(label='tintri_action_clone').first()
+    if clone_action:
+        tintri_actions.append(clone_action)
     return tintri_actions
 
 
@@ -272,12 +285,16 @@ def vm_restore(tinri, tintri_vm):
 class TintriTabDelegate(TabExtensionDelegate):
     def should_display(self):
         if hasattr(self, 'instance'):
-            if self.instance.tags.filter(name='tintri'):
-                return True
-        elif hasattr(self, 'model'):
-            if self.model.tags.filter(name='tintri'):
+            if get_ci(server=self.instance):
                 return True
         return False
+
+
+def dict_to_vmstat(statdict):
+    vmstat = VirtualMachineStat()
+    for k, v in statdict.items():
+        setattr(vmstat, k, v)
+    return vmstat
 
 
 @tab_extension(model=Server,
@@ -293,43 +310,62 @@ def server_tab_tintri(request, obj_id=None):
         VCenter cluster with Tintri VMStore
     """
     server = get_object_or_404(Server, pk=obj_id)
-    vm_name = server.hostname
-    tintri = get_session()
-    appliance_info = get_appliance_info(tintri)
-    vm = get_vm(tintri, vm_name)
-    vm_uuid = vm.uuid.uuid
-    qos_config = vm.qosConfig
-    vm_stats = get_vm_stats(tintri, vm_uuid, days=1)
+
+    mydir = os.path.dirname(os.path.realpath(__file__))
+
+    if server.tags.filter(name='demo'):
+        with open(os.path.join(mydir, 'demo.json')) as data_file:
+            # When using the demo JSON, to get the graphs to appear, the 'time' and 'endTime'
+            # values need to be updated to be within the last day. TODO: automate this here
+            vm_stat_dicts = json.load(data_file)
+            vm_stats = []
+            for statdict in vm_stat_dicts:
+                vm_stats.append(dict_to_vmstat(statdict))
+
+        maxNormalizedIops = 1000
+        appliance_info = {
+            'product': 'Tintri VMstore',
+            'model': 'T5000'
+        }
+    else:
+        # get real stats from Tintri
+        vm_name = server.hostname
+        tintri = get_session(server)
+        appliance_info = get_appliance_info(tintri)
+        vm = get_vm(tintri, vm_name)
+        maxNormalizedIops = vm.qosConfig.maxNormalizedIops
+        vm_stats = get_vm_stats(tintri, vm.uuid.uuid, days=1)
     sorted_stats = vm_stats[-1]
+
     latency = [
         get_chart_plotline(vm_stats,
                            attr='latencyNetworkMs',
                            name='Network',
-                           color='#DFC245'),
+                           color=COLOR1),
         get_chart_plotline(vm_stats,
                            attr='latencyHostMs',
                            name='Host',
-                           color='#468875'),
+                           color=COLOR2),
         get_chart_plotline(vm_stats,
                            attr='latencyDiskMs',
                            name='Storage',
-                           color='#5A7FAB'),
+                           color=COLOR3),
     ]
     iops = [
         get_chart_plotline(vm_stats,
                            attr='normalizedTotalIops',
                            name='Total',
-                           color='#DFC245'),
+                           color=COLOR1),
     ]
     throughput = [
         get_chart_plotline(vm_stats,
                            attr='throughputReadMBps',
                            name='Read',
-                           color='#5A7FAB'),
+                           color=COLOR3),
         get_chart_plotline(vm_stats,
                            attr='throughputWriteMBps',
                            name='Write',
-                           color='#468875'),
+                           color=COLOR2),
     ]
     tintri_data = {
         "disk_used": format(sorted_stats.spaceUsedGiB,
@@ -341,12 +377,15 @@ def server_tab_tintri(request, obj_id=None):
         "chart_latency": latency,
         "chart_iops": iops,
         "chart_throughput": throughput,
-        "max_iops": qos_config.maxNormalizedIops,
+        "max_iops": maxNormalizedIops,
         "max_line_color": "red",
     }
 
-    return render(request, 'tintri/templates/server_tab.html', dict(
-                  appliance_info=appliance_info,
-                  tintri_data=tintri_data,
-                  tintri_actions=get_tintri_actions(),
-                  server=server,))
+    return render(
+        request, 'tintri/templates/server_tab.html', dict(
+            appliance_info=appliance_info,
+            tintri_data=tintri_data,
+            tintri_actions=get_tintri_actions(),
+            server=server,
+            connection_info=get_ci(server),
+    ))

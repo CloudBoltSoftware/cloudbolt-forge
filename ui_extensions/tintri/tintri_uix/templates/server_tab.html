@@ -13,41 +13,18 @@
                     All Trintri Actions&nbsp;&nbsp;<span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu" role="menu">
-                    <li role="presentation">
-                        <a role="menuitem"
-                            class="default open-dialog"
-                            tabindex="-1"
-                            data-href="{% url 'run_server_action' server.id tintri_actions.snapshot %}">
-                            <span class="fa fa-camera"
-                                style="font-size:20px;color:#5A7FAB;"></span>
-                            Snapshot
-                        </a>
-                    </li>
-                    <!--
-                    <li role="presentation">
-                        <a role="menuitem"
-                            class="open-dialog"
-                            tabindex="-1"
-                            data-href="{% url 'run_server_action' server.id tintri_actions.clone %}">
-                            <span class="fa fa-copy"
-                                style="font-size:20px;color:orange;"></span>
-                            Clone
-                        </a>
-                    </li>
-                    -->
-                    <!--
-                    # Not implemented yet
-                    <li role="presentation">
-                        <a role="menuitem"
-                            class="open-dialog"
-                            tabindex="-1"
-                            data-href="{% url 'run_server_action' server.id '1' %}">
-                            <span class="fa fa-rotate-left"
-                                style="font-size:20px;color:red;"></span>
-                            Restore VM
-                        </a>
-                    </li>
-                    -->
+                    {% for action in tintri_actions %}
+                        <li role="presentation">
+                            <a role="menuitem"
+                                class="default open-dialog"
+                                tabindex="-1"
+                                data-href="{% url 'run_server_action' server.id action.id %}">
+                                <span class="fa fa-camera"
+                                    style="font-size:20px;color:#5A7FAB;"></span>
+                                {{ action.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
                 </ul>
             </div>
         </div>
@@ -97,8 +74,10 @@
             </div>
         </div>
         <div>
-            <img align="top" src="https://www.tintri.com/sites/default/files/paragraph-images/Tintri_T5000.jpg" alt="Tintri Logo"></img>
-            # Current API call for appliance data is too slow
+            <a href="http://{{ connection_info.ip }}/" target="blank" title="Browse to this VMstore">
+            <img align="top" src="https://www.tintri.com/sites/default/files/paragraph-images/Tintri_T5000.jpg" alt="Tintri Logo" width="100%"></img>
+            </a>
+            <!-- Current API call for appliance data is too slow -->
             <br> <b>Product:</b> {{ appliance_info.product }}
             <br> <b>Model:</b> {{ appliance_info.model }}
         </div>
@@ -158,7 +137,7 @@ $('#chart_latency').highcharts({
                     },
                 }
             },
-            threshold: null
+            threshold: 0
         }
     },
     series: {{ tintri_data.chart_latency|to_json }}
@@ -239,7 +218,7 @@ $('#chart_iops').highcharts({
                     },
                 }
             },
-            threshold: null
+            threshold: 0
         }
     },
     series: {{ tintri_data.chart_iops|to_json }}
@@ -301,7 +280,7 @@ $('#chart_throughput').highcharts({
                     },
                 }
             },
-            threshold: null
+            threshold: 0
         }
     },
     series: {{ tintri_data.chart_throughput|to_json }}

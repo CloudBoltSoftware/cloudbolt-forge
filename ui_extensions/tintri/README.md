@@ -1,7 +1,5 @@
 # Tintri UI Extension
 
-[TOC]
-
 ![Sample](sample.png)
 
 ## Features
@@ -19,11 +17,11 @@ pip install Tintri_PySDK-1.0-py2-none-any.whl
 ```
 
 CloudBolt Connection Info:
-* Go to *Admin > Connection Info* and **Add** new connection info
+* Go to *Admin > Connection Info* and **Add** at least one new connection info
 
 ```
-Name: tintri
-IP/Hostname: <hostname of Tintri VM Store>
+Name: Tintri VMstore for Environment <the CloudBolt Environment ID>
+IP/Hostname: <hostname or IP of Tintri VM Store>
 Port: 443
 Protocol: https
 Username: <Tintri Username>
@@ -47,8 +45,7 @@ Upload **Snapshot** Server Action:
 * Zip up 'tintri_action_snapshot' dir **including the subfolders**
 * Go to *Admin > Server Actions* and **upload** the zip file
 
-## Enable Server Tab
-* Go to *Server Details* tab of a Virtual Machine using Tintri VM Store
-* Click the *edit icon* next to Labels and add the following label
-    * *tintri*
-* The *Trintri Server Tab* will now display for this Virtual Machine
+## Test It
+
+* Navigate to *Servers* and click on any server in the environment that is Tintri-enabled.
+* Click on its Tintri tab to begin.
