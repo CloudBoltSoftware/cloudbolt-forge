@@ -1,4 +1,8 @@
 import os
+import datetime
+import json
+import time
+import logging
 
 from django.shortcuts import get_object_or_404, render
 from extensions.views import tab_extension, TabExtensionDelegate
@@ -12,18 +16,14 @@ from tintri.v310 import SnapshotSpec
 from tintri.v310 import VirtualMachineCloneSpec
 from tintri.v310 import VMwareCloneInfo
 from dateutil import parser
-import datetime
-import json
-import time
-import logging
 """
 UI Extension view using Tintri PySDK
 https://github.com/Tintri/tintri-python-sdk
 """
 
-COLOR1="#2A17B1"
-COLOR2="#FF9E00"
-COLOR3="#00A67C"
+COLOR1 = '#2A17B1'
+COLOR2 = '#FF9E00'
+COLOR3 = '#00A67C'
 
 
 def get_ci(server):
@@ -47,9 +47,7 @@ def get_session(server):
         Otherwise return None
 
     Args:
-        host (str): Tintri VMSTore IP/Hostname
-        uid  (str): Tintri username
-        pwd  (str): Tintri password
+        server (obj): CB server object
 
     Returns:
         tintri: Tintri object
@@ -70,7 +68,6 @@ def get_appliance_info(tintri):
 
     Args:
         tintri (obj): Tintri object
-        host   (str): Tintri VMSTore IP/Hostname
 
     Returns:
         appliance: Dict of apliance details
@@ -388,4 +385,5 @@ def server_tab_tintri(request, obj_id=None):
             tintri_actions=get_tintri_actions(),
             server=server,
             connection_info=get_ci(server),
-    ))
+        )
+    )
