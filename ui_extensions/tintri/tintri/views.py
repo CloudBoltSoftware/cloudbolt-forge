@@ -177,12 +177,12 @@ def get_tintri_actions():
         tintri_actions: {} of action ID's
     '''
     tintri_actions = []
-    snapshot_action = ServerAction.objects.filter(label='tintri_action_snapshot').first()
+    snapshot_action = ServerAction.objects.filter(label='Tintri Snapshot').first()
     if snapshot_action:
         tintri_actions.append(snapshot_action)
-    clone_action = ServerAction.objects.filter(label='tintri_action_clone').first()
-    if clone_action:
-        tintri_actions.append(clone_action)
+    # clone_action = ServerAction.objects.filter(label='Tintri Clone').first()
+    # if clone_action:
+    #     tintri_actions.append(clone_action)
     return tintri_actions
 
 
