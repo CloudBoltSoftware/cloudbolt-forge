@@ -1,0 +1,10 @@
+{
+    "description": "",
+    "max-retries": 0,
+    "name": "Static AD/LDAP Group Mappings",
+    "resource-technologies": [],
+    "script-filename": "static_group_map.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}
