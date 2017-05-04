@@ -1,0 +1,6 @@
+Set-ExecutionPolicy Unrestricted
+Get-WindowsFeature | Where-Object Name -like *domain*
+Get-WindowsFeature | Where-Object Name -like *dns*
+Install-WindowsFeature -name AD-Domain-services, DNS -IncludeManagementTools
+$SMPass = ConvertTo-SecureString "{{ domainpassword }}" –AsPlainText -Force
+Install-ADDSForest -DomainName {{ domain }} –SafeModeAdministratorPassword $SMPass –Confirm:$false
