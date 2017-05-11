@@ -51,9 +51,9 @@ def run(job, logger=None, **kwargs):
         if skip_user:
             continue
 
+        # Pre-7.2 version
         # set users permissions based on special group membership in LDAP/AD
         # for each permission first remove the group if there
-
         user_profile.requestors.remove(group)
         user_profile.approvers.remove(group)
         user_profile.user_admins.remove(group)
@@ -79,6 +79,34 @@ def run(job, logger=None, **kwargs):
                 if "CB-ResourceManagers" in lgroup:
                     # Resource Admin
                     user_profile.resource_admins.add(group)
+
+        # 7.2+ version
+        # set users permissions based on special group membership in LDAP/AD
+        # for each permission first remove the group if there
+        # user_profile.grouprolemembership_set.filter(group=group).delete()
+
+        # # add Viewer permission
+        # from accounts.models import Role
+        # role = Role.objects.get(name='viewer')
+        # user_profile.add_role_for_group(role, group)
+
+        # # Add additional permissions based on LDAP/AD group membership
+        # if 'memberOf' in data[0][1]:
+        #     ldap_groups = data[0][1]['memberOf']
+
+        #     for lgroup in ldap_groups:
+        #         if "CB-Requestors" in lgroup:
+        #             role = Role.objects.get(name='requestor')
+        #             user_profile.add_role_for_group(role, group)
+        #         if "CB-Approvers" in lgroup:
+        #             role = Role.objects.get(name='approver')
+        #             user_profile.add_role_for_group(role, group)
+        #         if "CB-GroupManagers" in lgroup:
+        #             role = Role.objects.get(name='group_admin')
+        #             user_profile.add_role_for_group(role, group)
+        #         if "CB-ResourceManagers" in lgroup:
+        #             role = Role.objects.get(name='resource_admin')
+        #             user_profile.add_role_for_group(role, group)
 
     return "", "", ""
 

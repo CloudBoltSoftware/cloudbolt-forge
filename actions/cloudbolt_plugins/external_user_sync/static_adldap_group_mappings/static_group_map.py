@@ -72,6 +72,7 @@ def run(job, logger=None, **kwargs):
                     except:
                         return "FAILURE", "", ""
 
+                # Pre-7.2 version
                 # by default add user to viewer role
                 user_profile.viewers.add(cb_group)
 
@@ -94,6 +95,23 @@ def run(job, logger=None, **kwargs):
 
                         if role == ROLE_GROUP_ADMIN:
                             user_profile.user_admins.add(cb_group)
+
+                # 7.2+ version
+                # from account.models import Role
+
+                # # reset user roles
+                # user_profile.groupmembership_set.filter(group=cb_group).delete()
+
+                # # by default add user to viewer role
+                # role = Role.objects.get(name=ROLE_VIEWER)
+                # user_profile.add_role_for_group(role, cb_group)
+
+                # if mapping['roles']:
+                #     for role in mapping['roles']:
+                #         if role in [ROLE_REQUESTOR, ROLE_APPROVER,
+                #                     ROLE_RESOURCE_ADMIN, ROLE_GROUP_ADMIN]:
+                #             r = Role.objects.get(name=role)
+                #             user_profile.add_role_for_group(r, cb_group)
 
     return 'SUCCESS', '', ''
 

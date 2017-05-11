@@ -4,6 +4,9 @@
 An example hook that will update (creating when needed) group membership and permissions
 based on the user's ldap settings.
 
+This script is written for an older version of CloudBolt. It will not work on version 7.2
+and above.
+
 This will create 3 groups in CB: Silver, Bronze, and Gold, and place users in those groups based
 on whether they are in corresponding security groups in AD.
 

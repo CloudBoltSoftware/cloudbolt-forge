@@ -1,5 +1,8 @@
 This external user sync CloudBolt Plugin will update (creating when needed) group membership and permissions based on the user's AD security group membership.
 
+This script is written for an older version of CloudBolt. It will not work on version 7.2
+and above.
+
 The script takes as action inputs the security group names, and creates 3 groups (Silver, Bronze, and Gold) to put the users into.
 
 This Plugin can be useful for the case where you want some users in AD to have access to all groups in CB, but some users to only be a requester on certain groups.
