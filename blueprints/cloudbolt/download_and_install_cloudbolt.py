@@ -1,4 +1,5 @@
 #!/bin/sh
+# edit on 06122017
 
 echo "Removing any old CB installers, in case they exist"
 rm -f cloudbolt_installer_*.tgz
