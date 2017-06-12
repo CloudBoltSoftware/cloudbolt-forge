@@ -1,5 +1,5 @@
 #!/bin/sh
-
+# this is a test
 echo "Updating all RPMs presently installed"
 yum update
 
