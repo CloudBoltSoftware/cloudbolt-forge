@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# This CB plugin is used by the 'LAMP CloudFormation' blueprint
 
 import boto3
 from common.methods import set_progress
