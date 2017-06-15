@@ -1,7 +1,4 @@
-This Blueprint build action installs the latest version of Jenkins on a
-CentOS/RedHat server.
-
-### Hosted on the Content Library
+### Hosted on the CloudBolt Content Library
 
 This sample content is not intended for direct consumption.  Please use the Content
-Library feature within CloudBolt to import it.
+Library feature within CloudBolt to import the Jenkins blueprint.

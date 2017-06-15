@@ -1,8 +1,0 @@
-{
-    "description": "",
-    "name": "Create LAMP Stack from CFT",
-    "resource-technologies": [],
-    "script-filename": "deploy_stack_from_cloud_formation.py",
-    "shared": "False",
-    "type": "CloudBolt Plug-in"
-}
