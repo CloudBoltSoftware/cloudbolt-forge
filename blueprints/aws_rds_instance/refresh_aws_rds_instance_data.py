@@ -1,3 +1,8 @@
+"""
+This service action is intended to be used as a management action on the AWS
+RDS Instance blueprint. Importing the blueprint from the CloudBolt Content
+Library will automatically import this action.
+"""
 import json
 import boto3
 
