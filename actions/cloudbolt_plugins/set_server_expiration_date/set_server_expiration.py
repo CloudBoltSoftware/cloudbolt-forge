@@ -16,7 +16,7 @@ because our current datepicker widget does not handle these values.
 
 
 def run(job, logger=None):
-    expiry_days = {{days_before_expire}}
+    expiry_days = int('{{days_before_expire}}')
     jp = job.job_parameters.cast()
     job.set_progress(
         "Setting expiration date on newly discovered servers "

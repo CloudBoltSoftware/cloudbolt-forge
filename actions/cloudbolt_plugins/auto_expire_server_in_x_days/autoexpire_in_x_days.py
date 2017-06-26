@@ -16,7 +16,7 @@ def run(job, logger=None):
 
     :param job: Job
     """
-    one_day = datetime.datetime.now() + datetime.timedelta(days={{ number_of_days }})
+    one_day = datetime.datetime.now() + datetime.timedelta(days=int('{{ number_of_days }}'))
     date_string = "{:%m/%d/%Y}".format(one_day)
     job.set_progress("Setting expiration date for servers in this job to: {}".format(date_string))
 
