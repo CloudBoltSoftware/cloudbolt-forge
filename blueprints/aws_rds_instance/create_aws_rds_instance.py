@@ -25,6 +25,7 @@ def run(job, logger=None, **kwargs):
     engine = '{{ aws_rds_engine }}'
     allocated_storage = int('{{ allocated_storage }}')
     env = Environment.objects.get(id='{{ aws_environment }}')
+    job.set_progress('Connecting to AWS RDS in region {0}.'.format(env.aws_region))
     client = connect_to_rds(env)
 
     rds_settings = dict(
@@ -44,7 +45,7 @@ def run(job, logger=None, **kwargs):
     service = job.service_set.first()
     instance = boto_instance_to_dict(response['DBInstance'])
     store_instance_data_on_service(instance, service)
-    store_aws_environmetn_on_service(env, service)
+    store_aws_environment_on_service(env, service)
 
     job.set_progress('RDS instance {0} created.'.format(instance['identifier']))
     return 'SUCCESS', '', ''
@@ -54,7 +55,6 @@ def connect_to_rds(env):
     """
     Return boto connection to the RDS in the specified environment's region.
     """
-    job.set_progress('Connecting to AWS RDS in region {0}.'.format(env.aws_region))
     rh = env.resource_handler.cast()
     return boto3.client(
         'rds',
@@ -100,13 +100,13 @@ def store_instance_data_on_service(instance, service):
     service.attributes.add(cfv)
 
 
-def store_aws_environmetn_on_service(env, service):
+def store_aws_environment_on_service(env, service):
     """
     Create parameter and CFV objects as needed to store the chosen Environment's
     ID as an attribute on the deployed service. Used by the
     "Refresh RDS Instance Data" action.
     """
-    aws_env_cf = CustomField.objects.get_or_create(
+    aws_env_cf, _ = CustomField.objects.get_or_create(
         name='aws_environment',
         label='AWS Environment',
         type='INT',
