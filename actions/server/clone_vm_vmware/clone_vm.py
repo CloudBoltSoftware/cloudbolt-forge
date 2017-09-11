@@ -31,9 +31,9 @@ def run(job, logger=None, **kwargs):
     rh = server.resource_handler.cast()
     group = server.group
     env = server.environment
-    owner = server.owner
+    owner = job.owner
     new_name = str('{{ clone_name }}')
-    do_linked_clone = bool('{{ linked_clone }}')
+    do_linked_clone = True if '{{ linked_clone }}' == 'True' else False
 
     # Connect to RH
     si = get_vmware_service_instance(rh)
@@ -60,16 +60,14 @@ def run(job, logger=None, **kwargs):
     set_progress("Cloning {} to {}".format(server.hostname, new_name))
     clone_task = vm.Clone(name=new_name, folder=vm.parent, spec=cloneSpec)
 
-    # TODO Possibly replace the sync vm with create CB server object
-
     # Wait for completion and get the new vm uuid
     uuid = check_task(si, clone_task)
 
-    # Set the new vm annotation
+    # Set the new VM annotation
     set_progress("Updating new virtual machine annotation")
     clone_add_date = datetime.datetime.now()
     annotation = 'Cloned by {} using CloudBolt on {} [Job ID={}]'.format(
-        server.owner, clone_add_date, job.id)
+        owner, clone_add_date, job.id)
     new_vm = get_vm_by_uuid(si, uuid)
     assert isinstance(new_vm, pyVmomi.vim.VirtualMachine)
     configSpec = pyVmomi.vim.vm.ConfigSpec()
@@ -77,14 +75,19 @@ def run(job, logger=None, **kwargs):
     new_vm.ReconfigVM_Task(configSpec)
 
     # Sync the cloned VM to CloudBolt
+    # TODO: change this to just Server.objects.create() so that we can have the first history
+    # event for the server say it was created by this job, rather than discovered by sync VMs
     vm = {}
     vm['hostname'] = new_name
     vm['uuid'] = uuid
     vm['power_status'] = 'POWEROFF'
     sync_class = SyncVMsClass()
-    (server, status, errors) = sync_class.import_vm(vm, rh, group, env, owner)
-    if server:
-        job.server_set.add(server)
+    (newserver, status, errors) = sync_class.import_vm(vm, rh, group, env, owner)
+    if newserver:
+        set_progress("Adding server to job")
+        job.server_set.add(newserver)
+    set_progress("Updating server info from VMware")
+    newserver.refresh_info()
 
     if errors:
         return ("WARNING",
