@@ -1,8 +1,7 @@
 import pyVmomi
-import time
 import datetime
 from common.methods import set_progress
-from resourcehandlers.vmware.pyvmomi_wrapper import get_vm_by_uuid
+from resourcehandlers.vmware.pyvmomi_wrapper import get_vm_by_uuid, wait_for_tasks
 from resourcehandlers.vmware.models import VsphereResourceHandler
 from resourcehandlers.vmware.vmware_41 import TechnologyWrapper
 from jobengine.jobmodules.syncvmsjob import SyncVMsClass
@@ -20,21 +19,10 @@ def get_vmware_service_instance(vcenter_rh):
     return wc._get_connection()
 
 
-def check_task(task_id):
-    while True:
-        task_info = task_id.info
-        state = task_info.state
-        if state == "running":
-            progress = task_info.progress or 0
-            set_progress('VM clone task is {}% complete'.format(progress))
-            time.sleep(3)
-        elif state == "success":
-            if task_info.result:
-                progress = task_id.info.progress
-                set_progress('VM clone task is 100% complete')
-                if hasattr(task_info.result, 'config'):
-                    uuid = task_info.result.config.uuid
-            break
+def check_task(si, task):
+    wait_for_tasks(si, [task])
+    task_info = task.info
+    uuid = task_info.result.config.uuid
     return uuid
 
 
@@ -45,7 +33,7 @@ def run(job, logger=None, **kwargs):
     env = server.environment
     owner = server.owner
     new_name = str('{{ clone_name }}')
-    do_linked_clone = {{ linked_clone }}
+    do_linked_clone = bool('{{ linked_clone }}')
 
     # Connect to RH
     si = get_vmware_service_instance(rh)
@@ -65,6 +53,7 @@ def run(job, logger=None, **kwargs):
     cloneSpec = pyVmomi.vim.vm.CloneSpec(
         powerOn=False,
         template=False,
+        snapshot=None,
         location=relocate_spec)
 
     # Clone the Virtual Machine with provided specs
@@ -74,7 +63,7 @@ def run(job, logger=None, **kwargs):
     # TODO Possibly replace the sync vm with create CB server object
 
     # Wait for completion and get the new vm uuid
-    uuid = check_task(clone_task)
+    uuid = check_task(si, clone_task)
 
     # Set the new vm annotation
     set_progress("Updating new virtual machine annotation")
@@ -93,7 +82,14 @@ def run(job, logger=None, **kwargs):
     vm['uuid'] = uuid
     vm['power_status'] = 'POWEROFF'
     sync_class = SyncVMsClass()
-    sync_class.import_vm(vm, rh, group, env, owner)
+    (server, status, errors) = sync_class.import_vm(vm, rh, group, env, owner)
+    if server:
+        job.server_set.add(server)
+
+    if errors:
+        return ("WARNING",
+                "The clone task completed, but the new server could not be detected",
+                errors)
 
     return "", "", ""
 
