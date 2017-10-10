@@ -99,8 +99,11 @@ def add_to_pool(job, server, service, logger):
                              server.big_ip_f5_ltm_username,
                              server.big_ip_f5_ltm_password)
     try:
+        # In the past, a job that deployed a blueprint had a type of install_service.
+        # Starting in 7.5, its type will be deploy_blueprint
         if (not service and job.parent_job
-                and job.parent_job.type == 'install_service'):
+                and (job.parent_job.type == 'install_service'
+                    or job.parent_job.type == 'deploy_blueprint')):
             debug("trying one more time to set service", logger)
             service = Service.objects.last()
         debug("Service: '%s', ID: '%s'" % (service.name, service.id), logger)
