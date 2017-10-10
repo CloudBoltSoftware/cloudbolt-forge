@@ -35,7 +35,7 @@ def run(order, job=None, logger=None):
 
     # "Order items" are the line items added to an order. They may be of
     # several types: ProvisionServerOrderItem, ServerModOrderItem,
-    # InstallServiceOrderItem, ProvisionNetworkOrderItem, etc.
+    # BlueprintOrderItem, ProvisionNetworkOrderItem, etc.
     # Not all of them involve servers.
     items = [oi.cast() for oi in order.orderitem_set.filter()]
 
