@@ -1,6 +1,5 @@
 import time
 import pyVmomi
-import datetime
 from common.methods import set_progress
 from resourcehandlers.vmware.pyvmomi_wrapper import get_vm_by_uuid
 from resourcehandlers.vmware.models import VsphereResourceHandler
@@ -22,16 +21,14 @@ def get_vmware_service_instance(vcenter_rh):
 def run(job, logger=None, **kwargs):
     server = job.server_set.first()
     rh = server.resource_handler.cast()
-    owner = job.owner
 
     # Connect to RH
     si = get_vmware_service_instance(rh)
     vm = get_vm_by_uuid(si, server.resource_handler_svr_id)
     assert isinstance(vm, pyVmomi.vim.VirtualMachine)
 
-    # Set the new VM annotation
+    # Set the VM annotation
     set_progress("Updating new virtual machine annotation")
-    cur_date = datetime.datetime.now()
     annotation = str('{{ append_annotation }}')
     annotation = server.notes + annotation
     assert isinstance(vm, pyVmomi.vim.VirtualMachine)
