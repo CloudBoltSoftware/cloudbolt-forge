@@ -1,0 +1,6 @@
+{
+    "name": "Send a message to rabbitMQ",
+    "resource-technologies": [],
+    "script-filename": "send_to_rabbitmq.py",
+    "type": "CloudBolt Plug-in"
+}
