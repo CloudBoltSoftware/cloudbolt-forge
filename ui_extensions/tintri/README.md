@@ -28,7 +28,7 @@ Username: <Tintri Username>
 Password: <Tintri Password>
 ```
 
-## Install UI Exntesion
+## Install UI Extension
 
 Upload UI Extnesion:
 
