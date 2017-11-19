@@ -1,9 +1,8 @@
 <div>
-<img src="http://www.cloudbolt.io/wp-content/uploads/cloudbolt-hlogo@3x.png" width="350" align="right">
+<img src="http://www.cloudbolt.io/wp-content/uploads/cloudbolt-hlogo@3x.png" width="250">
 </div>
 
 
-# CloudBolt Forge
 Welcome to the CloudBolt Forge, a public github repository used for sharing powerful content in CloudBolt.  Initially, this holds CloudBolt actions (AKA hooks), but will soon store Blueprints and other content.
 
 If you have interesting hooks that you have developed, please share them! Even if they are rough-hewn, others may admire your work, improve on it, and re-share those improvements back with you.
