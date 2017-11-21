@@ -26,6 +26,7 @@ def hello_world(request):
         Greeting('Chinese', u'你好，世界!'),
         Greeting('Danish', 'Hej Verden!'),
         Greeting('Deutsch', 'Hallo Welt!'),
+        Greeting('Dutch', 'Hallo, wereld!'),
         Greeting('English', 'Hello World!'),
         Greeting('French', 'Bonjour le monde!'),
         Greeting('Greek', u'Γειά σου Κόσμε!'),
