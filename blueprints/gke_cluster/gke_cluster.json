@@ -14,10 +14,10 @@
         }
     ],
     "create-service": true,
-    "description": "Provisions a Kubernetes cluster into an existing Google Compute Engine environment using Google Kubernetes Engine. The cluster will be imported as a Container Orchestrator, and the nodes as Servers.",
+    "description": "Provisions a Kubernetes cluster into an existing Google Compute Engine environment using Google Kubernetes Engine. The cluster will be imported as a Container Orchestrator, and the nodes as Servers.\n\nThis blueprint requires the google-api-python-client library, which comes installed by default on CloudBolt 7.7. For prior versions, run `pip install google-api-python-client` on the CloudBolt appliance to install it.",
     "id": "20",
     "is-orderable": true,
-    "name": "GKE Cluster",
+    "name": "Google Kubernetes Engine Cluster",
     "service-management-actions": [],
     "teardown-items": [
         {
