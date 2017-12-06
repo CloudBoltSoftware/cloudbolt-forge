@@ -55,7 +55,7 @@ def run(job, logger=None, **kwargs):
       timeout = 3600
     try:
       handler.deploy_arm_template(deployment_name, resource_group, template_dir, parameters, timeout)
-    except:
+    except TypeError:
       handler.deploy_arm_template(deployment_name, resource_group, template_dir, parameters)
       # Timeout kwarg was added in CloudBolt 7.7    
     
