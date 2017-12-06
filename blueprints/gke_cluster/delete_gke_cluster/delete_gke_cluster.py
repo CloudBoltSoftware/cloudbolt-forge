@@ -1,3 +1,7 @@
+"""
+Deletes the Kubernetes cluster associated with this service. Used by the
+Google Kubernetes Engine blueprint.
+"""
 from __future__ import unicode_literals
 
 from googleapiclient.discovery import build

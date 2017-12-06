@@ -1,6 +1,7 @@
 """
-Creates a Kubernetes cluster in Google Kubernetes Engine and add it as a
-Container Orchestrator in CloudBolt.
+Creates a Kubernetes cluster in Google Kubernetes Engine and adds it as a
+Container Orchestrator in CloudBolt. Used by the Google Kubernetes Engine
+blueprint.
 
 To use this, you must have a Google Compute Engine resource handler set up in
 CloudBolt, and it must have a zone.
