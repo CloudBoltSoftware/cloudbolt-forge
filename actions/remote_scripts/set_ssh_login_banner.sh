@@ -4,7 +4,7 @@
 cat >> /etc/issue.net << EOF
 #########################################
 #                                       #
-#    ALL YOUR CASE ARE BELONG TO US     #
+#    ALL YOUR BASE ARE BELONG TO US     #
 #                                       #
 #########################################
 EOF
