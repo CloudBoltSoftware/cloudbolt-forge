@@ -30,7 +30,7 @@ Password: <Tintri Password>
 
 ## Install UI Extension
 
-Upload UI Extnesion:
+Upload UI Extension:
 
 * Zip up 'tintri' dir **including the subfolders**
 * Go to *Admin > Manage UI Extensions* and **upload** the zip file
