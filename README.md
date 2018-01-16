@@ -4,15 +4,15 @@
 <br/>
 <br/>
 
-Welcome to the CloudBolt Forge, a public github repository used for sharing powerful content in CloudBolt.  Initially, this holds CloudBolt actions (AKA hooks), but will soon store Blueprints and other content.
+Welcome to the CloudBolt Forge, a public github repository used for sharing powerful content in CloudBolt.  This repository holds CloudBolt actions (AKA hooks), Blueprints, UI extensions, webhooks and other content.
 
-If you have interesting hooks that you have developed, please share them! Even if they are rough-hewn, others may admire your work, improve on it, and re-share those improvements back with you.
+If you have interesting customizations that you have developed, please share them! Even if they are rough-hewn, others may admire your work, improve on it, and re-share those improvements back with you.
 
 ## Importing and Exporting Actions
-*New in 5.2*
- * There are import and export scripts located in c2_api/c2_api_samples/python_client/samples/.
- * To import an action into CB, use the import_action.py script and provide the username, password, host, port, and protocol arguments, as well as either a zip file or directory.
- * To export an action from CB, you can use the Export button on the Action Details page or use the export_action.py script and provide the username, password, host, port, protocol, and action ID arguments.
+
+ * To import an action into CB, you can use the Import button on the New Action page and provide either a zip file or directory.
+ * To export an action from CB, you can use the Export button on the Action Details page.
+
  * Some actions may have placeholder fields that you need to fill in manually, either in the JSON file before importing or in the UI after importing.
 
 ## File & Directory Naming Conventions
