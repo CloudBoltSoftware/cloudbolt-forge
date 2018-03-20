@@ -59,5 +59,5 @@ def hello_world(request):
         # https://docs.djangoproject.com/en/1.8/topics/templates/#the-django-template-language
 
         # Create columns of no more than 5 greetings
-        columns=columnify(greetings, len(greetings) / 5),
+        columns=columnify(greetings, len(greetings) // 5),
     ))
