@@ -19,6 +19,11 @@
 
 import re
 
+INVALID_USERNAMES = [ 'administrator', 'admin', 'user', 'user1', 'test', 'user2', 'test1', 'user3', 'admin1', '1',
+                      '123', 'a', 'actuser', 'adm', 'admin2', 'aspnet', 'backup', 'console', 'david', 'guest', 'john',
+                      'owner', 'root', 'server', 'sql', 'support', 'support_388945a0', 'sys', 'test2', 'test3', 'user4',
+                      'user5' ]
+
 def validate_order_form(requestor, group, env, quantity, hostname, cfvs, pcvss, 
                         os_build=None):
     errors_by_field_id = {}
@@ -46,7 +51,10 @@ def validate_order_form(requestor, group, env, quantity, hostname, cfvs, pcvss,
         if not re.match(pattern, username):
             error_str = 'Please provide a valid username (2-20 chars, cannot end with a (.) or contain \/"[]:|<>+=;,?*@ )'
             errors_by_field_id['username'] = error_str
-       
+        elif username in INVALID_USERNAMES:
+            error_str = 'Your chosen username is in the list of banned usernames by Azure. Please try another one.'
+            errors_by_field_id['username'] = error_str
+
     return errors_by_field_id
 
 # vim: set ts=2 et tw=78 ff=unix ft=python:
