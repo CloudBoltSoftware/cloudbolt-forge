@@ -1,0 +1,108 @@
+{
+    "any-group-can-deploy": true,
+    "build-items": [
+        {
+            "all-environments-enabled": false,
+            "allowable-os-families": [
+                "CentOS"
+            ],
+            "deploy-seq": 2,
+            "description": "",
+            "execute-in-parallel": false,
+            "hostname-template": "HOST00X",
+            "id": "218",
+            "name": "CentOS 7",
+            "show-on-order-form": false,
+            "type": "provserver"
+        },
+        {
+            "continue-on-failure": false,
+            "deploy-seq": 3,
+            "description": "",
+            "execute-in-parallel": false,
+            "id": "219",
+            "name": "Set Monitoring Parameters",
+            "run-on-scale-up": true,
+            "show-on-order-form": false,
+            "type": "plugin"
+        },
+        {
+            "continue-on-failure": false,
+            "deploy-seq": 4,
+            "description": "",
+            "execute-in-parallel": false,
+            "id": "220",
+            "name": "Enable Monitoring on host",
+            "parameter-defaults": [
+                {
+                    "label": "Monitoring Group",
+                    "name": "monitoring_group_a185",
+                    "value": "{{ service.monitoring_group }}"
+                },
+                {
+                    "label": "Monitoring Tool",
+                    "name": "monitoring_tool_a185",
+                    "value": "{{ service.monitoring_tool }}"
+                }
+            ],
+            "run-on-scale-up": true,
+            "show-on-order-form": false,
+            "type": "script"
+        }
+    ],
+    "create-service": true,
+    "description": "Cloudbolt Partner: <a href=\"http://www.riverturn.com\" target=\"_blank\">Riverturn, Inc</a><BR>\r\nAuthor: Steven Manross<BR>\r\nCreate Date: 3/15/2018<BR>\r\nTested on: Cloudbolt 7.7.2<BR>\r\nDescription: This Sample Blueprint illustrates the use of Regenerated Option Lists and sets customized monitoring_groups based on the Cloudbolt Group a user is a member of and the Monitoring Group chosen at build time.  This blueprint is dependent on a Cloudbolt Orchestration Action to generate parameter option lists  (Admin -> Orchestration Actions -> Other -> Generate Parameter Lists)<BR>",
+    "icon": "riverturn_logo.png",
+    "id": "18",
+    "is-orderable": true,
+    "name": "Monitoring Parameters using Regenerated Options",
+    "parameters": [
+        {
+            "available-all-servers": false,
+            "constraints": "Unconstrained",
+            "description": "",
+            "destination": "Service Items",
+            "label": "Monitoring Group",
+            "name": "monitoring_group",
+            "options": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "constraints": "Unconstrained",
+            "description": "",
+            "destination": "Service Items",
+            "label": "Monitoring Tool",
+            "name": "monitoring_tool",
+            "options": [
+                "ServiceNow",
+                "Zabbix"
+            ],
+            "required": false,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "constraints": "Unconstrained",
+            "description": "",
+            "destination": "Service Items",
+            "label": "Enable Monitoring",
+            "name": "enable_monitoring",
+            "options": [
+                "True",
+                "False"
+            ],
+            "required": false,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "BOOL"
+        }
+    ],
+    "service-management-actions": [],
+    "teardown-items": []
+}

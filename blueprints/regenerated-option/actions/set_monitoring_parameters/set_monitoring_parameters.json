@@ -1,0 +1,10 @@
+{
+    "description": "",
+    "max-retries": 0,
+    "name": "Set Monitoring Parameters",
+    "resource-technologies": [],
+    "script-filename": "cb_plugin_1521219466868743_Vhgg08I_eCTI2yl.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}

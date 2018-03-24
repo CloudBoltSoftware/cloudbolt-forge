@@ -1,0 +1,18 @@
+{% if enable_monitoring == True %}
+  echo "enable_monitoring = True"
+  echo "  mon group: {{ monitoring_group }}"
+  echo "  mon tool: {{ monitoring_tool }}"
+
+  {% if monitoring_tool == "ServiceNow" %}
+    echo "    ServiceNow Monitoring:"
+    #add some command to add your monitoring for ServiceNow
+  {% elif monitoring_tool == "Zabbix" %}
+    echo "    Zabbix Monitoring:"
+    #add some command to add your monitoring for Zabbix"
+  {% endif %}
+{% else %}
+  #monitoring is not set to enabled -- dont run monitoring on this host
+  echo "enable_monitoring = False"
+  echo "  group: {{monitoring_group }}"
+  echo "  tool: {{ monitoring_tool }}"
+{%  endif %}
