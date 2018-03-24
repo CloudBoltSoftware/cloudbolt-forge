@@ -1,0 +1,41 @@
+{
+    "action-inputs": [
+        {
+            "available-all-servers": false,
+            "description": null,
+            "hide-if-default-value": false,
+            "label": "Monitoring Group",
+            "name": "monitoring_group",
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": null,
+            "hide-if-default-value": false,
+            "label": "Monitoring Tool",
+            "name": "monitoring_tool",
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        }
+    ],
+    "commandline-args": null,
+    "credentials": "YOUR_CREDENTIALS",
+    "description": "",
+    "execution-timeout": 120,
+    "max-retries": 0,
+    "name": "Enable Monitoring on Host",
+    "remove-after-run": true,
+    "resource-technologies": [],
+    "run-with-sudo": true,
+    "script-filename": "remote_script_NRtzR0K",
+    "shared": "True",
+    "target-os-families": [
+        "Linux -> CentOS"
+    ],
+    "type": "Remote Script"
+}
