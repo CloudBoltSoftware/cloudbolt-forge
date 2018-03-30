@@ -214,7 +214,8 @@ def run(job=None, logger=None, **kwargs):
     job.set_progress('Importing nodes...')
     for node in nodes:
         # Generate libcloud UUID from GCE ID
-        uuid = hashlib.sha1(b'%s:%s' % (node['id'], 'gce')).hexdigest()
+        id_unicode = '{}:{}'.format(node['id'], 'gce')
+        uuid = hashlib.sha1(id_unicode.encode('utf-8')).hexdigest()
         # Create a barebones server record. Other details like CPU and Mem Size
         # will be populated the next time the GCE handler is synced.
         Server.objects.create(
