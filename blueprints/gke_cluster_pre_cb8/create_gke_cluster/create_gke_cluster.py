@@ -159,13 +159,13 @@ def run(job=None, logger=None, **kwargs):
     """
     environment = Environment.objects.get(id=ENV_ID)
 
-    # Save cluster data on the resource so teardown works later
+    # Save cluster data on the service so teardown works later
     create_required_parameters()
-    resource = kwargs['resource']
-    resource.create_gke_k8s_cluster_env = environment.id
-    resource.create_gke_k8s_cluster_name = CLUSTER_NAME
-    resource.name = CLUSTER_NAME
-    resource.save()
+    service = kwargs['service']
+    service.create_gke_k8s_cluster_env = environment.id
+    service.create_gke_k8s_cluster_name = CLUSTER_NAME
+    service.name = CLUSTER_NAME
+    service.save()
 
     job.set_progress('Connecting to GKE...')
     builder = GKEClusterBuilder(environment, CLUSTER_NAME)
@@ -203,8 +203,8 @@ def run(job=None, logger=None, **kwargs):
         servicepasswd=cluster['masterAuth']['password'],
         container_technology=tech,
     )
-    resource.create_gke_k8s_cluster_id = kubernetes.id
-    resource.save()
+    service.create_gke_k8s_cluster_id = kubernetes.id
+    service.save()
     url = 'https://{}{}'.format(
         PortalConfig.get_current_portal().domain,
         reverse('container_orchestrator_detail', args=[kubernetes.id])
@@ -214,8 +214,7 @@ def run(job=None, logger=None, **kwargs):
     job.set_progress('Importing nodes...')
     for node in nodes:
         # Generate libcloud UUID from GCE ID
-        id_unicode = '{}:{}'.format(node['id'], 'gce')
-        uuid = hashlib.sha1(id_unicode.encode('utf-8')).hexdigest()
+        uuid = hashlib.sha1(b'%s:%s' % (node['id'], 'gce')).hexdigest()
         # Create a barebones server record. Other details like CPU and Mem Size
         # will be populated the next time the GCE handler is synced.
         Server.objects.create(
@@ -223,8 +222,8 @@ def run(job=None, logger=None, **kwargs):
             resource_handler_svr_id=uuid,
             environment=environment,
             resource_handler=environment.resource_handler,
-            group=resource.group,
-            owner=resource.owner,
+            group=service.group,
+            owner=service.owner,
         )
 
     job.set_progress('Waiting for cluster to report as running...')

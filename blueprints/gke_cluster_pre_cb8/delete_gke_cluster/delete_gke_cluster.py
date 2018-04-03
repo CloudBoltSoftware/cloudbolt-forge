@@ -12,12 +12,12 @@ from containerorchestrators.kuberneteshandler.models import Kubernetes
 from infrastructure.models import Environment
 
 
-def run(job=None, logger=None, resource=None, **kwargs):
+def run(job=None, logger=None, service=None, **kwargs):
     # Get cluster information
-    cluster_name = resource.create_gke_k8s_cluster_name
+    cluster_name = service.create_gke_k8s_cluster_name
     if not cluster_name:
-        return "WARNING", "No cluster associated with this resource", ""
-    env_id = resource.create_gke_k8s_cluster_env
+        return "WARNING", "No cluster associated with this service", ""
+    env_id = service.create_gke_k8s_cluster_env
     try:
         environment = Environment.objects.get(id=env_id)
     except Environment.DoesNotExist:
@@ -54,5 +54,5 @@ def run(job=None, logger=None, resource=None, **kwargs):
 
     # In CB 7.6 and before, this will delete any existing KubernetesResources.
     # Starting in CB 7.7, they will be marked HISTORICAL instead.
-    kubernetes = Kubernetes.objects.get(id=resource.create_gke_k8s_cluster_id)
+    kubernetes = Kubernetes.objects.get(id=service.create_gke_k8s_cluster_id)
     kubernetes.delete()
