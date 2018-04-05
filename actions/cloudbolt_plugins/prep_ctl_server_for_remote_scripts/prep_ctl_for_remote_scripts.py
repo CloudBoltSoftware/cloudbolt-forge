@@ -45,7 +45,7 @@ def run(job, logger=None, **kwargs):
                  "IP {}. This may take a while.".format(
                      server.hostname, server.ip))
     url = "servers/{}/{}/publicIPAddresses".format(wrapper.account_alias,
-                                                     server.ctlserverinfo.ctl_server_id)
+                                                   server.ctlserverinfo.ctl_server_id)
     payload = {
         "internalIPAddress": server.ip,
         "ports": [
@@ -63,4 +63,4 @@ def run(job, logger=None, **kwargs):
 if __name__ == '__main__':
     from utilities.logger import ThreadLogger
     logger = ThreadLogger(__name__)
-    print run(None, logger)
+    print(run(None, logger))

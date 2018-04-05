@@ -48,4 +48,4 @@ if __name__ == "__main__":
     order = Order.objects.get(pk=order_id)
     logger = ThreadLogger(__name__)
     status, msg, err = run(order, logger=logger)
-    print "status, msg, err = ", (status, msg, err)
+    print("status, msg, err = {}, {}, {}".format(status, msg, err))

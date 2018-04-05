@@ -51,4 +51,4 @@ if __name__ == '__main__':
     sys.path.append(localpath)
     os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
     job_id = sys.argv[1]
-    print run(job=job_id)
+    print(run(job=job_id))

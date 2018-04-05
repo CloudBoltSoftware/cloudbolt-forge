@@ -58,4 +58,4 @@ if __name__ == '__main__':
 
     job = Job.objects.get(id=job_id)
 
-    print run(job, logger)
+    print(run(job, logger))

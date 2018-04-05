@@ -127,7 +127,7 @@ def debug(message, logger):
     if logger:
         logger.debug(message)
     else:
-        print message
+        print(message)
 
 
 if __name__ == "__main__":
@@ -138,8 +138,8 @@ if __name__ == "__main__":
     username = sys.argv[1]
     try:
         profile = UserProfile.objects.get(user__username=username)
-    except:
-        print "Failed to fetch user with username: ", username
+    except Exception:
+        print("Failed to fetch user with username: {}".format(username))
         exit(1)
     status, msg, err = run(None, None, users=[profile])
-    print "status, msg, err = ", (status, msg, err)
+    print("status, msg, err = {}, {}, {}".format(status, msg, err))

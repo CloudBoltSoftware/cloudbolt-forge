@@ -13,8 +13,8 @@ from common.methods import set_progress
 from utilities.logger import ThreadLogger
 logger = ThreadLogger(__name__)
 from jobs.models import Job
-from common.methods import set_progress
 from django.conf import settings
+
 
 def run(job, logger, *args, **kwargs):
     params = job.job_parameters.cast().arguments
@@ -30,4 +30,4 @@ def run(job, logger, *args, **kwargs):
     return ("SUCCESS", "", "")
 
 if __name__ == "__main__":
-    print run(job=Job.objects.get(id=sys.argv[1]), logger=None)
+    print(run(job=Job.objects.get(id=sys.argv[1]), logger=None))

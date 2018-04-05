@@ -9,7 +9,8 @@ from utilities.models import ConnectionInfo
 
 
 def run(job, logger=None):
-    if not logger: logger = get_thread_logger(__name__)
+    if not logger:
+        logger = get_thread_logger(__name__)
 
     # if job.status == 'FAILURE': return "", "", ""
 
@@ -53,7 +54,7 @@ def lookup_ci_sysid(asset_id, base_url, conn, logger=None):
 
     try:
         sysid = response.json()["result"][0]["sys_id"]
-    except:
+    except Exception:
         pass
 
     return sysid
@@ -78,8 +79,8 @@ def delete_ci(sysid, base_url, conn, logger=None):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print '  Usage:  {} <job_id>'.format(sys.argv[0])
+        print('  Usage:  {} <job_id>'.format(sys.argv[0]))
         sys.exit(1)
 
     job = Job.objects.get(id=sys.argv[1])
-    print run(job)
+    print(run(job))

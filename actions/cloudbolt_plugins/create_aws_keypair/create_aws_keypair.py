@@ -131,4 +131,4 @@ def debug(message, logger, job):
     if logger:
         logger.debug(message)
     else:
-        print message
+        print(message)

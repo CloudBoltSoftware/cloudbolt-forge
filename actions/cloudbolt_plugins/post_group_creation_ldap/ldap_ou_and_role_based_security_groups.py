@@ -31,9 +31,9 @@ def create_security_group(bind, dn, name):
     attrs['groupType'] = '-2147483640'
     attrs['cn'] = name
     attrs['sAMAccountName'] = name
-    print attrs
+    print(attrs)
     ldif = modlist.addModlist(attrs)
-    print ldif
+    print(ldif)
     new_security_group = bind.add_s(dn, ldif)
     return new_security_group
 
@@ -43,9 +43,9 @@ def create_ou(bind, dn, name):
     attrs = {}
     attrs['objectClass'] = ['top', 'organizationalUnit']
     attrs['name'] = name
-    print attrs
+    print(attrs)
     ldif = modlist.addModlist(attrs)
-    print ldif
+    print(ldif)
     new_ou = bind.add_s(dn, ldif)
     return new_ou
 
@@ -70,6 +70,7 @@ def run(group, *args, **kwargs):
     create_security_group(bind, dn=new_dn, name=name + ' CB Resource Admin')
     bind.unbind_s()
     return "", "", ""
+
 
 if __name__ == '__main__':
     group_id = sys.argv[1]
