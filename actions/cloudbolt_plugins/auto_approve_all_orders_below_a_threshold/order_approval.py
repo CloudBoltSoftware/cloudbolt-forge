@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
+from decimal import Decimal
 import sys
 from costs.models import render_rate
 from orders.models import Order
 
 from utilities.logger import ThreadLogger
 
-RATE_THRESHOLD = '{{ rate_threshold }}'
+RATE_THRESHOLD = Decimal('{{ rate_threshold }}')
 
 """
 Plug-in example for an Orchestration Action at the "Order Approval" trigger
