@@ -7,10 +7,10 @@ import boto3
 
 
 def run(job, logger=None, **kwargs):
-    service = job.service_set.first()
+    resource = kwargs.pop('resources').first()
 
-    bucket_name = service.attributes.get(field__name='s3_bucket_name').value
-    rh_id = service.attributes.get(field__name='aws_rh_id').value
+    bucket_name = resource.attributes.get(field__name='s3_bucket_name').value
+    rh_id = resource.attributes.get(field__name='aws_rh_id').value
     rh = AWSHandler.objects.get(id=rh_id)
 
     set_progress('Connecting to Amazon S3')

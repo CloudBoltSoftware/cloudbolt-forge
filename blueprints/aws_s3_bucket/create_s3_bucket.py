@@ -32,15 +32,15 @@ def run(job, logger=None, **kwargs):
         description='Used by the AWS S3 Bucket blueprint'
     )
 
-    service = job.service_set.first()
-    service.name = 'S3 Bucket - ' + new_bucket_name
-    # Store bucket name and region on this service as attributes
-    service.s3_bucket_name = new_bucket_name
-    service.s3_bucket_region = region
-    # Store the resource handler's ID on this service so the teardown action
+    resource = kwargs.pop('resources').first()
+    resource.name = 'S3 Bucket - ' + new_bucket_name
+    # Store bucket name and region on this resource as attributes
+    resource.s3_bucket_name = new_bucket_name
+    resource.s3_bucket_region = region
+    # Store the resource handler's ID on this resource so the teardown action
     # knows which credentials to use.
-    service.aws_rh_id = rh.id
-    service.save()
+    resource.aws_rh_id = rh.id
+    resource.save()
 
     set_progress('Connecting to Amazon S3')
     conn = boto3.resource(
