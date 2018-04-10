@@ -8,10 +8,15 @@ from resourcehandlers.aws.models import AWSHandler
 from utilities.exceptions import CloudBoltException
 
 
-def run(job, logger, service=None):
-    if not service:
-        raise CloudBoltException("No service provided, this needs to be run as a pre-delete "
-                                 "service action")
+def run(job, logger, resources=None):
+    """
+    `resources` is a queryset (of length 1) of resources being acted on.
+    That resource should have a 'aws_stack_name' attribute or nothing is deleted.
+    """
+    resource = resources.first()
+    if not resource:
+        raise CloudBoltException("No resource provided, this needs to be run as a pre-delete "
+                                 "resource action")
 
     rh = AWSHandler.objects.first()
     # See http://boto3.readthedocs.io/en/latest/guide/configuration.html#method-parameters
@@ -22,12 +27,13 @@ def run(job, logger, service=None):
     )
     client = session.client('cloudformation')
 
-    stack_name = service.attributes.filter(field__name="aws_stack_name").first()
+    stack_name = resource.attributes.filter(field__name="aws_stack_name").first()
     if not stack_name:
-        return "", "", ""
+        set_progress("No aws_stack_name attribute set on resource; skipping.")
+        return "FAILURE", "", ""
+
     stack_name = stack_name.value
     set_progress("Deleting Stack {}".format(stack_name))
     response = client.delete_stack(StackName=stack_name)
     logger.debug("Response: {}".format(response))
     return "", "", ""
-
