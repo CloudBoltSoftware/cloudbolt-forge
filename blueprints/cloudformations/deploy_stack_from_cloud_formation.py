@@ -45,9 +45,9 @@ def run(job, logger):
     logger.debug("Response: {}".format(response))
     stack_id = response['StackId']
 
-    service = job.parent_job.service_set.first()
+    resource = job.parent_job.resource_set.first()
     cf, _ = CustomField.objects.get_or_create(name="aws_stack_name", type="STR")
     cfv, _ = CustomFieldValue.objects.get_or_create(field=cf, value=stack_name)
-    service.attributes.add(cfv)
+    resource.attributes.add(cfv)
     return ("", "Stack installation initiated, the new stack has name {} and ID {}".format(
-        stack_name, stack_id), "")
+            stack_name, stack_id), "")
