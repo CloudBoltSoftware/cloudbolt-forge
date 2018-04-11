@@ -4,9 +4,14 @@ from common.methods import set_progress
 Sample for appending any-any edge firewall rule with HTTP and HTTPS
 """
 
-def run(job, service=None, **kwargs):
+def run(job, resources=None, **kwargs):
+    """
+    `resources` is a queryset of length 1 containing the resource being operated on.
+    """
+    resource = resources.first()
+
     # Get the resource handler from the network environment
-    network = service.servicenetwork_set.first()
+    network = resource.servicenetwork_set.first()
     environment = network.environment
     vcenter = environment.resource_handler.cast()
 
