@@ -1,0 +1,40 @@
+{
+    "any-group-can-deploy": true,
+    "build-items": [
+        {
+            "deploy-seq": 1,
+            "description": "",
+            "execute-in-parallel": false,
+            "id": "732",
+            "name": "Web Tier",
+            "show-on-order-form": true,
+            "type": "blueprint"
+        },
+        {
+            "continue-on-failure": false,
+            "deploy-seq": 2,
+            "description": null,
+            "execute-in-parallel": false,
+            "id": "743",
+            "name": "Fetch info from sub-blueprint deployment",
+            "run-on-scale-up": true,
+            "show-on-order-form": true,
+            "type": "plugin"
+        }
+    ],
+    "description": "This blueprint contains a sub-blueprint that deploys a web server, then a plug-in which fetches the IP address from the newly deployed server.",
+    "icon": "nest.jpeg",
+    "id": "250",
+    "is-orderable": true,
+    "management-actions": [],
+    "name": "Nested Blueprint Example",
+    "resource-type": {
+        "icon": "",
+        "label": "Service",
+        "lifecycle": "ACTIVE",
+        "list-view-columns": [],
+        "name": "service",
+        "plural-label": null
+    },
+    "teardown-items": []
+}

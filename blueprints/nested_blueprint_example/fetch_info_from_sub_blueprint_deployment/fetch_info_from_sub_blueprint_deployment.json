@@ -1,0 +1,10 @@
+{
+    "description": "This is a sample of how a CB plug-in can access information that is generated during the deployment of a previous step that deploys a sub-blueprint. In this case, this plug-in fetches the IP address from the Web Server tier deployed in the previous step.",
+    "max-retries": 0,
+    "name": "Fetch info from sub-blueprint deployment",
+    "resource-technologies": [],
+    "script-filename": "cb_plugin_1524076708633454_zsp72iH.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}

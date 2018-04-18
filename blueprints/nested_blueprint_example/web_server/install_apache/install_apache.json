@@ -1,0 +1,18 @@
+{
+    "commandline-args": null,
+    "credentials": "YOUR_CREDENTIALS",
+    "description": "",
+    "execution-timeout": 600,
+    "max-retries": 0,
+    "name": "Install Apache ",
+    "remove-after-run": true,
+    "resource-technologies": [],
+    "run-with-sudo": true,
+    "script-filename": "httpd_install_centos-60125694-60128313-6041965-61012185_MbE0NEI_wqjlxA8.sh",
+    "shared": "True",
+    "target-os-families": [
+        "Linux -> CentOS",
+        "Linux -> Red Hat"
+    ],
+    "type": "Remote Script"
+}

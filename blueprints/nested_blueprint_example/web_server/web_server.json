@@ -1,0 +1,38 @@
+{
+    "any-group-can-deploy": true,
+    "build-items": [
+        {
+            "all-environments-enabled": true,
+            "allowable-os-families": [
+                "CentOS",
+                "Red Hat"
+            ],
+            "deploy-seq": 1,
+            "description": "",
+            "execute-in-parallel": false,
+            "hostname-template": "btest-0000X",
+            "id": "730",
+            "name": "Web Server",
+            "show-on-order-form": true,
+            "type": "provserver"
+        },
+        {
+            "continue-on-failure": false,
+            "deploy-seq": 2,
+            "description": null,
+            "execute-in-parallel": false,
+            "id": "742",
+            "name": "Install Apache ",
+            "run-on-scale-up": true,
+            "show-on-order-form": true,
+            "type": "script"
+        }
+    ],
+    "description": "",
+    "icon": "apache-logo.png",
+    "id": "249",
+    "is-orderable": true,
+    "management-actions": [],
+    "name": "Web Server",
+    "teardown-items": []
+}
