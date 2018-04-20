@@ -3,6 +3,14 @@ SolarWinds IPAM
 Add Node and Pollers
 IV. Pre-Create Resource
 """
+if __name__ == '__main__':
+    import os
+    import sys
+    import django
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+    sys.path.append('/opt/cloudbolt')
+    django.setup()
+
 import re
 import orionsdk
 import requests
@@ -23,14 +31,20 @@ def run(job=None, *args, **kwargs):
     swis = SwisClient(solarwinds.ip, solarwinds.username, solarwinds.password)
     if not solarwinds:
         return "FAILURE", "", "Missing required SolarWinds connection info. (Admin -> Connection Info -> New Connection Info)"
-    # Get Node Info
-    server = job.server_set.first()
-    hostname = "{}.{}".format(server.hostname, server.env_domain)
 
-    # Get/set next available IP
-    subnet_name = '{{ sw_ipnet }}'
-    next_ip = swis.query("SELECT TOP 1 I.Status, I.DisplayName FROM IPAM.IPNode I WHERE Status=2 AND I.Subnet.DisplayName = '{}'".format(subnet_name))
-    server.ip = next_ip.values()[0][0].values()[1]
+    # Get Server
+    server = job.server_set.first()
+
+    # Get subnet server.ip
+    sep = '.'
+    octets = server.ip.split(sep='.')
+    network = sep.join(octets[:3] + list('0'))
+
+    # Get next available IP from SW based on subnet
+    next_ip = swis.query("SELECT TOP 1 I.Status, I.DisplayName FROM IPAM.IPNode I WHERE Status=2 AND I.Subnet.Address = '{}'".format(network))
+
+    # Set the server ip
+    server.ip = next_ip['results'][0]['DisplayName']
     server.save()
 
     # Setup Node Properties
@@ -38,14 +52,14 @@ def run(job=None, *args, **kwargs):
         'IPAddress': server.ip,
         'EngineID': 1,
         'ObjectSubType': 'Agent',
-        'Caption': hostname,
-        'DNS': hostname,
+        'Caption': server.hostname,
+        'DNS': server.hostname,
         'Description': 'Added by CloudBolt',
         'Contact': server.owner,
         }
 
     #Create the Node
-    job.set_progress("Adding '{}' to SolarWinds".format(hostname))
+    job.set_progress("Adding '{}' to SolarWinds".format(server.hostname))
     results = swis.create('Orion.Nodes', **props)
 
     # Extract NodeID from results
@@ -81,7 +95,9 @@ def run(job=None, *args, **kwargs):
     for poller in pollers:
         job.set_progress("Adding poller type: '{}' with status {}...".format(poller['PollerType'], poller['Enabled']))
         response = swis.create('Orion.Pollers', **poller)
+
     #Poll the node
     swis.invoke('Orion.Nodes', 'PollNow', 'N:'+nodeid)
 
-    return "","",""
+    return "", "", ""
+

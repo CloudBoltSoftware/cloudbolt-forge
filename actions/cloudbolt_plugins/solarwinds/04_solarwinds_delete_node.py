@@ -17,10 +17,9 @@ def run(job=None, *args, **kwargs):
 
     # Get Server Info
     server = job.server_set.first()
-    ip_address = server.ip
 
     # Find the Uri you want to delete based on a SWQL query
-    results = swis.query("select ipaddress, caption, uri from orion.nodes where ipaddress = '{}'".format(ip_address))
+    results = swis.query("select ipaddress, caption, uri from orion.nodes where ipaddress = '{}'".format(server.ip))
 
     # Use as needed
     if len(results['results']) > 1:

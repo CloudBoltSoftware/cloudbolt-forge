@@ -1,8 +1,16 @@
 """
 SolarWinds IPAM
 Validate Unique IP & Hostname
-Provision Server - Trigger Point III.
+Trigger Point III.
 """
+if __name__ == '__main__':
+    import os
+    import sys
+    import django
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+    sys.path.append('/opt/cloudbolt')
+    django.setup()
+
 import orionsdk
 import requests
 from common.methods import set_progress
@@ -25,17 +33,21 @@ def run(job=None, *args, **kwargs):
 
     # Get Server Info
     server = job.server_set.first()
-    hostname = "{}.{}".format(server.hostname, server.env_domain)
-    #ip_address = server.ip
 
     # Query Solarwinds for the FQDN & IP
-    job.set_progress("Checking if hostname '{}' is already in SolarWinds".format(hostname))
-    hostname_results = swis.query("select n.ipaddress, n.nodename from orion.nodes n where nodename = '{}'".format(hostname))
-    #ip_results = swis.query("select n.ipaddress, status from orion.nodes n where status=2 and ipaddress ='{}'".format(ip_address))
+    job.set_progress("Checking if node '{}' is already in SolarWinds".format(server.hostname))
+    hostname_results = swis.query("select n.ipaddress, n.nodename from orion.nodes n where nodename = '{}'".format(server.hostname))
 
-    #if len(hostname_results) | len(ip_results) > 0:
-    if len(hostname_results.values()[0]) > 0:
-        return 'FAILURE', '', "Found hostname '{}' in Solarwinds.".format(hostname)
+    if len(next(iter(hostname_results.values()))) == 0:
+        set_progress("'{}' not found in Solarwinds.".format(server.hostname))
     else:
-        job.set_progress("'{}' not found in Solarwinds.".format(hostname))
-    return "","",""
+        return 'FAILURE', '', "Found node '{}' in Solarwinds.".format(server.hostname)
+
+    return "", "", ""
+
+if __name__ == '__main__':
+    job_id = sys.argv[1]
+    job = Job.objects.get(id=job_id)
+    run = run(job)
+    if run[0] == 'FAILURE':
+        set_progress(run[1])
