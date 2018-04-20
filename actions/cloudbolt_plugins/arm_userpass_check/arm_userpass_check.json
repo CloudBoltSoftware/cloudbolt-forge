@@ -1,0 +1,8 @@
+{
+    "continue-on-failure": false,
+    "description": "This checks if the provided username and password for an ARM node are valid",
+    "enabled": "True",
+    "hook-point": "Order Form Validation",
+    "name": "Check ARM Username/Password"
+}
+

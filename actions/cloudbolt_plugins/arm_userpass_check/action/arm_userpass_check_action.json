@@ -1,0 +1,11 @@
+{
+    "description": "Checks ARM username/password for complexity rules",
+    "max-retries": 0,
+    "name": "ARM username/password complexity validation",
+    "resource-technologies": [
+        "Azure Resource Manager"
+    ],
+    "script-filename": "arm_userpass_check.py",
+    "shared": "False",
+    "type": "CloudBolt Plug-in"
+}
