@@ -8,20 +8,22 @@ from resourcehandlers.vmware.models import VsphereResourceHandler
 from resourcehandlers.vmware.vmware_41 import TechnologyWrapper
 
 
-def get_vmware_service_instance(vcenter_rh):
+def get_vmware_service_instance(rh):
     """
-    Write docstring
+    Gets a service instance object that represents a connection to vCenter,
+    and which can be used for making API calls.
 
-    :param vcenter_rh:
-    :return:
+    :param rh: ResourceHandler to get a ServiceInstance for
+    :type rh: ResourceHandler
+    :return: ServiceInstance object
     """
-    assert isinstance(vcenter_rh, VsphereResourceHandler)
-    vcenter_rh.init()
 
-    wc = vcenter_rh.resource_technology.work_class
-    assert isinstance(wc, TechnologyWrapper)
+    assert isinstance(rh.cast(), VsphereResourceHandler)
+    rh_api = rh.get_api_wrapper()
 
-    return wc._get_connection()
+    assert isinstance(rh_api, TechnologyWrapper)
+
+    return rh_api._get_connection()
 
 
 def run(job, logger=None, server=None, **kwargs):
