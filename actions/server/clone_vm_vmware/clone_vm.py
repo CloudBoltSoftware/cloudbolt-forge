@@ -25,7 +25,7 @@ def get_vmware_service_instance(rh):
     return rh_api._get_connection()
 
 def check_task(si, task):
-    wait_for_tasks(si, [task])
+    wait_for_tasks(si, [task], timeout=3600)
     task_info = task.info
     uuid = task_info.result.config.uuid
     return uuid
