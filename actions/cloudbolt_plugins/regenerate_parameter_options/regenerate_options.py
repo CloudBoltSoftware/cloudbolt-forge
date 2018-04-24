@@ -8,6 +8,13 @@ The following example is to set monitoring values, depending on the chosen
 monitoring plaftorm.
 
 Feel free to edit it to fulfill your needs.
+
+To make a parameter dependent on another:
+    - click on parameter name, e.g. Mode
+    - under dependencies, click on pencil next to 'This parameter is not dependent on any other parameters'
+    - for Controlling Field, select controlling parameter, e.g. Monitoring Tool
+    - for Dependency Type, select Regenerate Options
+    - click Next
 """
 
 
