@@ -1,0 +1,21 @@
+<div class="panel panel-default">
+    <div class="panel-heading">VMWare Details for ({{server.hostname}})</div>
+    <div class="panel-body">
+        <table width="100%" class="table table-striped">
+            <tbody>
+            <tr>
+                <td>VM Hardware version</td>
+                <td>{{ vm_details.vmx_version }}</td>
+            </tr>
+            <tr>
+                <td>Tools Status</td>
+                <td>{{ vm_details.vmtools_status }}</td>
+            </tr>
+            <tr>
+                <td>Tools Details</td>
+                <td>{{ vm_details.vmtools_version }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
