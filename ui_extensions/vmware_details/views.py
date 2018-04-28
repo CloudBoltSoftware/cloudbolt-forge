@@ -86,4 +86,4 @@ def vmware_details_server_tab(request, obj_id):
         'vmtools_version': conv.get(vm.guest.toolsVersionStatus2, 'Unknown ({})'.format(vm.guest.toolsVersionStatus2))
     }
 
-    return render(request, 'vmware_details/templates/vmware_tab.html', dict(server=server, vm_detils=vm_details))
+    return render(request, 'vmware_details/templates/vmware_tab.html', dict(server=server, vm_details=vm_details))
