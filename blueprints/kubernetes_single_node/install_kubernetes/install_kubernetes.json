@@ -1,0 +1,17 @@
+{
+    "commandline-args": null,
+    "credentials": "YOUR_CREDENTIALS",
+    "description": "",
+    "execution-timeout": 1800,
+    "max-retries": 5,
+    "name": "Install Kubernetes",
+    "remove-after-run": true,
+    "resource-technologies": [],
+    "run-with-sudo": true,
+    "script-filename": "install_kubernetes.sh",
+    "shared": "False",
+    "target-os-families": [
+        "Linux -> CentOS"
+    ],
+    "type": "Remote Script"
+}

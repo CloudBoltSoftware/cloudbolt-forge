@@ -1,0 +1,25 @@
+{
+    "action-inputs": [
+        {
+            "available-all-servers": false,
+            "description": null,
+            "hide-if-default-value": false,
+            "label": "Name",
+            "name": "name",
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        }
+    ],
+    "description": "",
+    "max-retries": 0,
+    "name": "Create Kubernetes Record",
+    "resource-technologies": [],
+    "script-filename": "create_kubernetes_record.py",
+    "shared": "False",
+    "target-os-families": [
+        "Linux -> CentOS"
+    ],
+    "type": "CloudBolt Plug-in"
+}
