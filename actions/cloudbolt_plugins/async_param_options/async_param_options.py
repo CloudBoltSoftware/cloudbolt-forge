@@ -48,4 +48,4 @@ def get_options_list(*args, **kwargs):
     Options" action.  It will be ignored as long as `suggest_options` is
     present.
     """
-    return []
+    return None
