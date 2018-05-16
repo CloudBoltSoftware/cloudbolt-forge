@@ -42,7 +42,7 @@ def run(job, logger=None, **kwargs):
     rds_settings.update(dict(MasterUserPassword=db_password))
     response = client.create_db_instance(**rds_settings)
 
-    service = job.service_set.first()
+    service = job.resource_set.first() # Change resource_set to service_set if you are using this script in CB version pre-8.0
     instance = boto_instance_to_dict(response['DBInstance'])
     store_instance_data_on_service(instance, service)
     store_aws_environment_on_service(env, service)
