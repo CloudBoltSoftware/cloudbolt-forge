@@ -5,7 +5,7 @@ from infrastructure.models import Environment
 
 
 def run(job, logger=None, **kwargs):
-    service = job.service_set.first()
+    service = job.resource_set.first() # Change resource_set to service_set if you are using this script in CB version pre-8.0
 
     # The Environment ID and RDS Instance data dict were stored as attributes on
     # this service by a build action.
