@@ -1,0 +1,14 @@
+{
+    "description": "",
+    "max-retries": 0,
+    "name": "Delete Kubernetes Master",
+    "resource-technologies": [
+        "Google Compute Engine"
+    ],
+    "script-filename": "delete_kubernetes_master.py",
+    "shared": "False",
+    "target-os-families": [
+        "Linux -> CentOS"
+    ],
+    "type": "CloudBolt Plug-in"
+}

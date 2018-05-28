@@ -1,0 +1,61 @@
+{
+    "any-group-can-deploy": true,
+    "build-items": [
+        {
+            "all-environments-enabled": true,
+            "allowable-os-families": [
+                "CentOS"
+            ],
+            "deploy-seq": 1,
+            "description": "",
+            "execute-in-parallel": false,
+            "hostname-template": "kubernetes-sn-0X",
+            "name": "Create server",
+            "show-on-order-form": true,
+            "type": "provserver"
+        },
+        {
+            "continue-on-failure": false,
+            "deploy-seq": 2,
+            "description": null,
+            "execute-in-parallel": false,
+            "name": "Install Kubernetes",
+            "run-on-scale-up": true,
+            "show-on-order-form": true,
+            "type": "script"
+        },
+        {
+            "continue-on-failure": false,
+            "deploy-seq": 3,
+            "description": null,
+            "execute-in-parallel": false,
+            "name": "Create Kubernetes Record",
+            "run-on-scale-up": true,
+            "show-on-order-form": true,
+            "type": "plugin"
+        }
+    ],
+    "description": "Creates a single-node Kubernetes cluster. Currently limited to CentOS 7.",
+    "icon": "kubernetes.png",
+    "is-orderable": true,
+    "management-actions": [],
+    "name": "Kubernetes Single Node",
+    "resource-type": {
+        "icon": "",
+        "label": "Service",
+        "lifecycle": "ACTIVE",
+        "list-view-columns": [],
+        "name": "service",
+        "plural-label": null
+    },
+    "teardown-items": [
+        {
+            "continue-on-failure": false,
+            "deploy-seq": 4,
+            "description": null,
+            "execute-in-parallel": false,
+            "name": "Delete Kubernetes Master",
+            "type": "teardown_plugin"
+        }
+    ]
+}
