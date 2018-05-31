@@ -1,5 +1,8 @@
 """
 Creates website in Azure.
+
+Service Plan parameter to be dependant(regenerate options) on Resource Group
+
 """
 from common.methods import set_progress
 from infrastructure.models import CustomField
