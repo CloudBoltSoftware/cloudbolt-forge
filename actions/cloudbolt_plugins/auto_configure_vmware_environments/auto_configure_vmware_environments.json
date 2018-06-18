@@ -1,0 +1,14 @@
+{
+    "description": "Copy parameter options from the main VMware template environment.",
+    "environments": [],
+    "groups": [],
+    "max-retries": 0,
+    "name": "Auto-Configure VMware Environments",
+    "resource-technologies": [
+        "VMware vCenter"
+    ],
+    "script-filename": "auto_configure_vmware_envs.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}
