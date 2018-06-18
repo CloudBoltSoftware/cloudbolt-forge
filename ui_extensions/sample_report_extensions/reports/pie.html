@@ -1,0 +1,48 @@
+{% extends "reports/simple_base.html" %}
+
+{% load helper_tags %}
+{% load i18n %}
+
+{% block report_content %}
+    {% if categories %}
+        <div id="chart-{{ report_slug|slugify }}" class="panel panel-default"></div>
+    {% else %}
+        <p>{% trans "No data" %}</p>
+    {% endif %}
+{% endblock %}
+
+{% block onReady %}
+    {{ block.super }}
+
+    {% if categories %}
+        var categories = {{ categories|to_json }};
+        var values = {{ values|to_json }};
+        var rows = _.zip(categories, values);
+
+        // Use blue colors by default
+        c2.charts.distributeMonochromePieColors(values.length);
+
+        c2.charts.pie($('#chart-{{ report_slug|slugify }}'), {
+            title: {text: '{{ pagetitle }}'},
+            subtitle: {text: '{{ subtitle }}'},
+            series: [{
+                type: 'pie',
+                name: '{{ series_name }}',
+                data: rows
+            }],
+            {% if export %}
+                 exporting: {
+                    // Export filename can be specified by the view; otherwise
+                    // pagetitle is slugified.
+                    filename: '{{ export.filename|default:report_slug|slugify }}',
+                    toCSV: function() {
+                        return c2.downloads.arrayToCSV({{ export.csv_headings|to_json }}, rows);
+                    }
+                }
+            {% else %}
+                exporting: { enabled: false }
+            {% endif %}
+        });
+    {% endif %}
+
+{% endblock %}
