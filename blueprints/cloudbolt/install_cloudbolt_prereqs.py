@@ -60,10 +60,8 @@ yum install -y \
     unzip \
     uuid \
     wget
-    
-# Disable SElinux and schedule shutdown in 1 minute. Clean exit afterwards.
-sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
-sed -i 's/SELINUX=permissive/SELINUX=disabled/' /etc/sysconfig/selinux
-/sbin/shutdown -r +1
 
-# vim: set ts=2 et tw=78 ff=unix ft=sh:
+# Disable SElinux, both in the config file and in the running configuration
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+sed -i 's/SELINUX=permissive/SELINUX=disabled/' /etc/selinux/config
+setenforce 0

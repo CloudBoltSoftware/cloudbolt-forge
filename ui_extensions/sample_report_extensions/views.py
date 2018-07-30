@@ -55,6 +55,7 @@ def sample_pie_report(request):
     #     'base.html' to start from scratch from the basic CloudBolt template
     return render(request, 'reports/pie.html', dict(
         pagetitle='Server Counts by Group (Pie)',
+        report_slug='Server Counts by Group',
         subtitle='Excludes historical servers',
         intro="""
             Sample report extension draws a pie chart.
@@ -102,6 +103,7 @@ def sample_bar_report(request):
     return render(request, 'reports/bar.html', dict(
         pagetitle='Server Counts by Group (Bar)',
         subtitle='Excludes historical servers',
+        report_slug='Server Counts by Group',
         intro="""
             Sample report extension draws a bar chart.
         """,
@@ -193,6 +195,7 @@ def sample_table_report(request):
     #     'base.html' to start from scratch from the basic CloudBolt template
     return render(request, 'reports/table.html', dict(
         pagetitle='Environment Server Stats',
+        report_slug='Environment Server Stats',
         intro="""
             Sample report extension draws a table and demonstrates use of a form.
             Date range is used to filter servers to those added in that period.
