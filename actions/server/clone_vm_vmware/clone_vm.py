@@ -91,8 +91,8 @@ def run(job, logger=None, **kwargs):
     if newserver:
         set_progress("Adding server to job")
         job.server_set.add(newserver)
-    set_progress("Updating server info from VMware")
-    newserver.refresh_info()
+        set_progress("Updating server info from VMware")
+        newserver.refresh_info()
 
     if errors:
         return ("WARNING",
