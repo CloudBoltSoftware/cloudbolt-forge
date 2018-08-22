@@ -7,7 +7,7 @@ from django.shortcuts import render
 
 from extensions.views import tab_extension, TabExtensionDelegate
 from infrastructure.models import Server
-from services.models import Service
+from resource.models import Resource
 from resourcehandlers.models import ResourceHandler
 
 import os_info_helpers
