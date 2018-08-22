@@ -3,9 +3,9 @@ Functions used by os_info.views
 """
 import json
 from infrastructure.models import CustomField
-from utilities.logger import get_thread_logger
+from utilities.logger import ThreadLogger
 
-logger = get_thread_logger(__name__)
+logger = ThreadLogger(__name__)
 
 
 WIN_SVC_TYPES = {

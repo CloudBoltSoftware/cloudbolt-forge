@@ -7,10 +7,8 @@ from django.shortcuts import render
 
 from extensions.views import tab_extension, TabExtensionDelegate
 from infrastructure.models import Server
-from resource.models import Resource
-from resourcehandlers.models import ResourceHandler
 
-import os_info_helpers
+from . import os_info_helpers
 
 
 os_info_helpers.create_os_info_parameters_if_needed()
@@ -232,25 +230,4 @@ def os_cron_server_tab(request, obj_id):
         intro="""
         """,
         tables=tables,
-    ))
-
-
-@tab_extension(model=Service)
-def service_tab(request, obj_id):
-    instance = Service.objects.get(id=obj_id)
-
-    return render(request, 'os_info/templates/service.html', dict(
-        instance=instance,
-        model=instance.__class__.__name__,
-    ))
-
-
-@tab_extension(model=ResourceHandler)
-def rh_tab(request, obj_id):
-    instance = ResourceHandler.objects.get(id=obj_id)
-    instance = instance.cast()
-
-    return render(request, 'os_info/templates/service.html', dict(
-        instance=instance,
-        model=instance.__class__.__name__,
     ))
