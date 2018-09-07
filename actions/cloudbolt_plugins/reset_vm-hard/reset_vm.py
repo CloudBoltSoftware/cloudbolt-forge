@@ -1,5 +1,6 @@
 import pyVmomi
 
+from pyVmomi import vim
 from common.methods import set_progress
 from resourcehandlers.vmware.pyvmomi_wrapper import get_vm_by_uuid, wait_for_tasks
 from resourcehandlers.vmware.models import VsphereResourceHandler
@@ -46,8 +47,15 @@ def run(job, logger=None, server=None, **kwargs):
 
         server_original_power_status = server.power_status
         set_progress("Performing VM hard reset for VM {}".format(server.hostname))
-        task = vm.ResetVM_Task()
-        wait_for_tasks(si, [task])
+        try:
+            task = vm.ResetVM_Task()
+            wait_for_tasks(si, [task])
+        except (vim.fault.InvalidPowerState, vim.fault.InvalidState, vim.fault.NotEnoughLicenses,
+                vim.fault.NotSupported, vim.fault.RuntimeFault, vim.fault.TaskInProgress) as err:
+            failed_msg = "Could not reset VM, an error was reported: {}".format(err)
+            set_progress(failed_msg)
+
+            return "FAILURE", "", failed_msg
 
         server.refresh_info()
 
