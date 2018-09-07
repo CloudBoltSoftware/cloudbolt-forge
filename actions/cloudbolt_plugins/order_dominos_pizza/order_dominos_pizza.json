@@ -1,0 +1,203 @@
+{
+    "action-inputs": [
+        {
+            "available-all-servers": false,
+            "description": "In the format MMYY",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Credit Card Expiration",
+            "maximum": "4.00",
+            "minimum": "4.00",
+            "name": "credit_card_expiration",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "With no dashes, just digits",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Credit Card Number",
+            "name": "credit_card_number",
+            "regex-constraint": "^[0-9]+$",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "PWD"
+        },
+        {
+            "available-all-servers": false,
+            "description": "",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Credit Card Pin",
+            "maximum": "4.00",
+            "minimum": "3.00",
+            "name": "credit_card_pin",
+            "regex-constraint": "^[0-9]+$",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "PWD"
+        },
+        {
+            "available-all-servers": false,
+            "description": null,
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Credit Card Zip",
+            "name": "credit_card_zip",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": null,
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [
+                {
+                    "controlling-field": {
+                        "name": "full_address_a301"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "REGENOPTIONS",
+                    "dependent-field": {
+                        "name": "store_a301"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                }
+            ],
+            "hide-if-default-value": false,
+            "label": "Full Address",
+            "name": "full_address",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": null,
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Pizza Type",
+            "name": "pizza_type",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Quantity",
+            "maximum": "4.00",
+            "minimum": "1.00",
+            "name": "quantity",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "INT"
+        },
+        {
+            "available-all-servers": false,
+            "description": "",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Recipient Phone",
+            "name": "recipient_phone",
+            "regex-constraint": "(\\d{3}[-\\.\\s]??\\d{3}[-\\.\\s]??\\d{4}|\\(\\d{3}\\)\\s*\\d{3}[-\\.\\s]??\\d{4}|\\d{3}[-\\.\\s]??\\d{4})",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": null,
+            "field-dependency-controlling-set": [
+                {
+                    "controlling-field": {
+                        "name": "full_address_a301"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "REGENOPTIONS",
+                    "dependent-field": {
+                        "name": "store_a301"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                }
+            ],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Store",
+            "name": "store",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Add a Stuffed Cheesy Bread?",
+            "name": "stuffed_cheesy_bread",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "BOOL"
+        },
+        {
+            "available-all-servers": false,
+            "description": "",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Test Only",
+            "name": "test_only",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "BOOL"
+        }
+    ],
+    "description": "",
+    "max-retries": 0,
+    "name": "Order Dominos Pizza",
+    "resource-technologies": [],
+    "script-filename": "order_a_veggie.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}
