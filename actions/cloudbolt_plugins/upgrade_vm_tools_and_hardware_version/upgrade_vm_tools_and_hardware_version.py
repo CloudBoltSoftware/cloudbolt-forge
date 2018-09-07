@@ -127,8 +127,12 @@ def run(job, logger=None, server=None, **kwargs):
             set_progress("Updating HW version to {} on {}".format(DESIRED_VMX_VERSION, server.hostname))
             task = vm.UpgradeVM_Task(version=desired_version)
             wait_for_tasks(si, [task])
-        except Exception as err:
-            failure_msg = "Failed to upgrade hardware version"
+        except vim.fault.AlreadyUpgraded:
+            set_progress("VM was already at the desired version")
+            pass
+        except (vim.fault.InvalidPowerState, vim.fault.InvalidState, vim.fault.NoDiskFound, vim.fault.RuntimeFault,
+                vim.fault.TaskInProgress) as err:
+            failure_msg = "Failed to upgrade hardware version because of {}".format(err)
             set_progress("{}. Will now return VM to original power state.".format(failure_msg))
             pass
 
