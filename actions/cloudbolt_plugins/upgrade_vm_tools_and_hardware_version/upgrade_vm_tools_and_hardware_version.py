@@ -1,8 +1,8 @@
 import time
 import pyVmomi
 
+from pyVmomi import vim
 from common.methods import set_progress
-from infrastructure.models import Server
 from resourcehandlers.vmware.pyvmomi_wrapper import get_vm_by_uuid, wait_for_tasks
 from resourcehandlers.vmware.models import VsphereResourceHandler
 from resourcehandlers.vmware.vmware_41 import TechnologyWrapper
@@ -60,9 +60,11 @@ def run(job, logger=None, server=None, **kwargs):
         try:
             rh.cast().create_snapshot(server, "version{}-{}".format(current_hw_version, time.time()),
                                       "Pre Hardware / Tools Upgrade Snapshot ({})".format(current_hw_version))
-        except:
+
+        # TODO: Figure out what all can be thrown at us by create_snapshot()
+        except Exception as err:
             failure_msg = "Could not create a snapshot for VM {}".format(server.hostname)
-            set_progress("{}, aborting upgrade".format(failure_msg))
+            set_progress("{}, the error was: {}, aborting upgrade".format(failure_msg, err))
             continue
 
         # Usually tools needs an upgrade before we convert the VMX version, so doing that first
@@ -71,7 +73,7 @@ def run(job, logger=None, server=None, **kwargs):
 
             try:
                 server.power_on()
-            except:
+            except Exception as err:
                 if ALWAYS_UPGRADE_TOOLS:
                     set_progress("Could not turn on server to upgrade VMware Tools. Skipping server {}".format(server.hostname))
                     continue
@@ -84,14 +86,14 @@ def run(job, logger=None, server=None, **kwargs):
         try:
             task = vm.UpgradeTools_Task()
             wait_for_tasks(si, [task])
-        except:
+        except (vim.fault.InvalidState, vim.fault.NotSupported, vim.fault.RuntimeFault, vim.fault.TaskInProgress,
+                vim.fault.ToolsUnavailable, vim.fault.VmConfigFault, vim.fault.VmToolsUpgradeFault) as err:
             if ALWAYS_UPGRADE_TOOLS:
-                failure_msg="Could not upgrade VMware Tools on {}.".format(server.hostname)
+                failure_msg = "Could not upgrade VMware Tools on {} ({}).".format(server.hostname, err)
                 set_progress("{} Skipping server.".format(failure_msg))
                 continue
-
             set_progress(
-                "Cannot upgrade VM tools. Will still try to upgrade hardware version on {}.".format(server.hostname))
+                "Cannot upgrade VM tools because of {}. Will still try to upgrade hardware version on {}.".format(err, server.hostname))
             pass
 
         # Updating VM hw version
@@ -104,11 +106,16 @@ def run(job, logger=None, server=None, **kwargs):
             set_progress("Powering off server {} to upgrade HW version".format(server.hostname))
             try:
                 server.power_off()
-            except:
+            except Exception as err:
                 if ALLOW_FORCED_POWERDOWN:
                     set_progress("Server {} did not power down in time. Forcing.".format(server.hostname))
-                    task = vm.PowerOffVM_Task()
-                    wait_for_tasks(si, [task])
+                    try:
+                        task = vm.PowerOffVM_Task()
+                        wait_for_tasks(si, [task])
+                    except () as err:
+                        failure_msg = "Server {} reported error {} when forcing power down.".format(server.hostname, err)
+                        set_progress("{} Skipping VM hardware upgrade".format(failure_msg))
+                        continue
                 else:
                     failure_msg = "Server {} did not power down and we're not forcing it to.".format(server.hostname)
                     set_progress("{} Skipping VM hardware upgrade".format(failure_msg))
@@ -120,7 +127,7 @@ def run(job, logger=None, server=None, **kwargs):
             set_progress("Updating HW version to {} on {}".format(DESIRED_VMX_VERSION, server.hostname))
             task = vm.UpgradeVM_Task(version=desired_version)
             wait_for_tasks(si, [task])
-        except:
+        except Exception as err:
             failure_msg = "Failed to upgrade hardware version"
             set_progress("{}. Will now return VM to original power state.".format(failure_msg))
             pass
@@ -136,13 +143,3 @@ def run(job, logger=None, server=None, **kwargs):
         return "FAILURE", "", "Last error reported: {}. Please check the job logs".format(failure_msg)
 
     return "", "", ""
-
-
-if __name__ == '__main__':
-    # if len(sys.argv) != 2:
-    #     print '  Usage:  {} <server_id>'.format(sys.argv[0])
-    #     sys.exit(1)
-
-    # s = Server.objects.get(id=sys.argv[1])
-    s = Server.objects.get(id=65)
-    print(run(None, None, s))
