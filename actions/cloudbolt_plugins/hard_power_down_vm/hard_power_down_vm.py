@@ -1,5 +1,5 @@
 import pyVmomi
-
+from pyVmomi import vim
 from common.methods import set_progress
 from resourcehandlers.vmware.pyvmomi_wrapper import get_vm_by_uuid, wait_for_tasks
 from resourcehandlers.vmware.models import VsphereResourceHandler
@@ -50,8 +50,19 @@ def run(job, logger=None, server=None, **kwargs):
             continue
 
         set_progress("Performing VM power down for VM {}".format(server.hostname))
-        task = vm.PowerOffVM_Task()
-        wait_for_tasks(si, [task])
+
+        try:
+            task = vm.PowerOffVM_Task()
+            wait_for_tasks(si, [task])
+        except vim.fault.InvalidPowerState as e:
+            set_progress("Someone already powered down the VM. Thanks!")
+            pass
+
+        except (vim.fault.InvalidState, vim.fault.NotSupported, vim.fault.RuntimeFault,
+                vim.fault.TaskInProgress) as err:
+            failure_msg = "There was a problem powering down VM {}: {}".format(server.hostname, err)
+            set_progress(failure_msg)
+            return "FAILURE", "", failure_msg
 
         server.refresh_info()
 
