@@ -1,0 +1,276 @@
+﻿{% load helper_tags %}
+    <div class="row">
+        <div class="col-lg-6">
+            <!--Start Node Details-->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Node Details</h3>
+                </div>
+                <div class="panel-body">
+                    <dl class="line-height-32">
+                        <dt>Node Status</dt>
+                        <dd>
+                            <img src="{{ server_url }}{{ node_details.status_icon }}" width="24" height="24">&nbsp;
+                            <a href="{{ server_url }}{{ node_details.url }}" target="_blank">{{ node_details.status_text }}</a>
+                        </dd>
+                        <dt>Polling IP Address</dt>
+                        <dd><a href="{{ server_url }}{{ node_details.url }}" target="_blank">{{ node_details.polling_ip }}</a></dd>
+                        <dt>Dynamic IP</dt>
+                        <dd>{{ node_details.dynamic_ip }}</dd>
+                        <dt>Machine Type</dt>
+                        <dd>
+                            <img src="{{ server_url }}{{ node_details.machine_type_icon }}" width="24" height="24">&nbsp;
+                            {{ node_details.machine_type_text }}
+                        </dd>
+                        <dt>Node Category</dt>
+                        <dd>{{ node_details.category }}</dd>
+                        <dt>DNS</dt>
+                        <dd>{{ node_details.dns }}</dd>
+                        <dt>System Name</dt>
+                        <dd>{{ node_details.system_name }}</dd>
+                        <dt>Last Boot</dt>
+                        <dd>{{ node_details.last_boot }}</dd>
+                        <dt>Software Version</dt>
+                        <dd>{{ node_details.software_version }}</dd>
+                        <dt>Hardware</dt>
+                        <dd>
+							{% if node_details.virtual_host_name %}
+								Virtual hosted by <a href="{{ server_url }}{{ node_details.virtual_host_url }}" target="_blank">{{ node_details.virtual_host_name }}</a>
+							{% else %}
+								Physical
+							{% endif %}
+						</dd>
+                    </dl>
+                </div>
+            </div>
+            <!--End Node Details-->
+            <!--Start Polling Details-->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Polling Details</h3>
+                </div>
+                <div class="panel-body">
+                    <dl class="dt-30 line-height-32">
+                        <dt>Polling Method</dt>
+                        <dd>{{ node_details.polling_method }}</dd>
+                        <dt>Polling Interval</dt>
+                        <dd>{{ node_details.polling_interval }} seconds</dd>
+                        <dt>Next Poll</dt>
+                        <dd>{{ node_details.next_poll }}</dd>
+                    </dl>
+                </div>
+            </div>
+            <!--End Polling Details-->
+        </div>
+        <div class="col-lg-6">
+            <!--Start Availability Statistics-->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Availability Statistics</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Availability</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><a href="{{ server_url }}{{ availability.today_link }}" target="_blank">Today</a></td>
+                                    <td><a href="{{ server_url }}{{ availability.today_link }}" target="_blank">{{ availability.today }}%</a><td>
+                                </tr>
+                                <tr>
+                                    <td><a href="{{ server_url }}{{ availability.yesterday_link }}" target="_blank">Yesterday</a></td>
+                                    <td><a href="{{ server_url }}{{ availability.yesterday_link }}" target="_blank">{{ availability.yesterday }}%</a><td>
+                                </tr>
+                                <tr>
+                                    <td><a href="{{ server_url }}{{ availability.last_7_days_link }}" target="_blank">Last 7 Days</a></td>
+                                    <td><a href="{{ server_url }}{{ availability.last_7_days_link }}" target="_blank">{{ availability.last_7_days }}%</a><td>
+                                </tr>
+                                <tr>
+                                    <td><a href="{{ server_url }}{{ availability.last_30_days_link }}" target="_blank">Last 30 Days</a></td>
+                                    <td><a href="{{ server_url }}{{ availability.last_30_days_link }}" target="_blank">{{ availability.last_30_days }}%</a><td>
+                                </tr>
+                                <tr>
+                                    <td><a href="{{ server_url }}{{ availability.last_365_days_link }}" target="_blank">Last 365 Days</a></td>
+                                    <td><a href="{{ server_url }}{{ availability.last_365_days_link }}" target="_blank">{{ availability.last_365_days }}%</a><td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!--End Availability Statistics-->
+            <!--Start Applications-->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Applications</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Application Name</th>
+                                    <th>Availability</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                    <tr>
+                                        <td style="vertical-align:middle;">
+                                            <img src="{{ server_url }}{{ app.status_icon }}">
+                                            <a href="{{ server_url }}{{ app.link }}" target="_blank">{{ app.name }}</a>
+                                        </td>
+                                        <td style="vertical-align:middle;">{{ app.status }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="2">There are no application monitors configured for this server.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!--End Applications-->
+            <!--Start Disk Volumes / Memory-->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Disk Volumes / Memory</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Volume</th>
+                                    <th>Size</th>
+                                    <th>Used</th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for volume in volumes %}
+                                    <tr>
+                                        <td style="vertical-align:middle; position: relative;">
+                                            <img src="{{ server_url }}{{ volume.icon }}">
+                                            <img src="{{ server_url }}{{ volume.status_icon }}" style="position: absolute; width: 10px; left: 12px; top: 16px;">
+                                            <a href="{{ server_url }}{{ volume.link }}" target="_blank">{{ volume.name }}</a>
+                                        </td>
+                                        <td style="vertical-align:middle;">{{ volume.size }}</td>
+                                        <td style="vertical-align:middle;">{{ volume.used }}</td>
+                                        <td style="vertical-align:middle;">{{ volume.used_percent }} %</td>
+                                        <td style="vertical-align:middle;">
+                                            <div class="progress" style="min-width: 100px;">
+                                                <div class="progress-bar progress-bar-{{ volume.used_status }}" role="progressbar" aria-valuenow="{{ volume.used_percent }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ volume.used_percent }}%">
+                                                    <span class="sr-only">{{ volume.used_percent }}%</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5">Well this is odd, something appears to have gone wrong :(</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!--End Disk Volumes / Memory-->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <!--Start Active Alerts on this Node-->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Active Alerts on this Node</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Alert Name</th>
+                                    <th>Message</th>
+                                    <th>Triggering Object</th>
+                                    <th>Triggered Time</th>
+                                    <th>Related Node</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in active_alerts %}
+                                    <tr>
+                                        <td><a href="{{ server_url }}{{ alert.link }}" target="_blank">{{ alert.name }}</a></td>
+                                        <td>{{ alert.message }}</td>
+                                        <td><a href="{{ server_url }}{{ alert.triggered_object_link }}" target="_blank">{{ alert.triggering_object }}</a></td>
+                                        <td>
+                                            <span data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="<p><i>{{ alert.active_time }}</i></p><p>{{ alert.triggered_display }}</p>">
+                                                <span class="date-part">{{ alert.triggered_date }}</span>&nbsp;<span class="time-part">{{ alert.triggered_date }}</span>
+                                            </span>
+                                        </td>
+                                        <td><a href="{{ server_url }}{{ node_details.url }}" target="_blank">{{ alert.related_node }}</a></td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5">Celebrate, this node has no active alerts!</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!--End Active Alerts on this Node-->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <!--Start Last 25 Events-->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Last 25 Events</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Event Time</th>
+                                    <th></th>
+                                    <th>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in last_25_events %}
+                                    <tr>
+                                        <td>{{ event.event_time }}</td>
+                                        <td><img src="{{ server_url }}{{ event.icon }}"></td>
+                                        <td><a href="{{ server_url }}{{ node_details.url }}" target="_blank">{{ event.message }}</a></td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3">This node does not yet have any event history.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!--End Last 25 Events-->
+        </div>
+    </div>
+    <script>
+        $(function () {
+            $('[data-toggle="popover"]').popover()
+        })
+    </script>

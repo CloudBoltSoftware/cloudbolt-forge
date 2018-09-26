@@ -1,0 +1,13 @@
+﻿{% load helper_tags %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="alert alert-{{ alert_type }}" role="alert">
+                {{ alert_message }}
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            $('[data-toggle="popover"]').popover()
+        })
+    </script>
