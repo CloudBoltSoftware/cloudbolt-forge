@@ -1,0 +1,26 @@
+{
+    "action-inputs": [
+        {
+            "available-all-servers": false,
+            "description": null,
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "hide-if-default-value": false,
+            "label": "Azure Environment",
+            "name": "azure_environment",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        }
+    ],
+    "description": "",
+    "max-retries": 0,
+    "name": "Auto-Create Azure Resource Group",
+    "resource-technologies": [],
+    "script-filename": "auto_create_azure_resource_group.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}
