@@ -81,13 +81,16 @@ def run(job, *args, **kwargs):
 
 def generate_options_for_azure_environment(*args, **kwargs):
     """
-    Get all possible Azure environments in this CloudBolt instance by iterating through
-    all resource handlers and getting all envs for each handler. 
-    Then, format the display name for the option to include the name of the resource handler, since there could
-    be some duplicate environment names in different RHs that should be distinguishable. 
+    Get all Azure environments configured for this blueprint.
     """
-    options = []
-    for rh in AzureARMHandler.objects.all():
-        options += [(env.id, f"{env.name} ({rh.name})") for env in rh.environment_set.all()]
-    
+    bp = kwargs.get('blueprint')
+    envs = set()
+
+    for si in ProvisionServerServiceItem.objects.filter(blueprint_id=bp.id):
+        # get enabled envs
+        for group in bp.groups.all():
+            envs |= si.enabled_envs_for_group(group, only_configured=True)
+
+    options = [(env.id, env.name) for env in envs]
+
     return options
