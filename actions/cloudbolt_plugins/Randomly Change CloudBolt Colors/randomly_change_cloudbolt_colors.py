@@ -27,6 +27,12 @@ def run(*args, **kwargs):
 
 
 def set_random_colors(portal):
+    # Clear the "derived value fields" (things like the footer background color,
+    # which is by default automatically set to the same color as the top nav bar
+    # background color) so that they will be derived properly.
+    for f in portal._derived_value_fields:
+        setattr(portal, f, None)
+        
     fields = [
         'banner_bg_color',
         'topnav_bg_color',                                                  
@@ -36,8 +42,6 @@ def set_random_colors(portal):
         'heading_text_color',                                               
         'tooltip_bg_color',                                                 
         'tooltip_text_color',
-        'security_bg_color',
-        'security_text_color',
     ]
     
     for f in fields:
