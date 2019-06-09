@@ -38,8 +38,8 @@ class GKEClusterBuilder(object):
         self.environment = environment
         self.cluster_name = cluster_name
         self.handler = environment.resource_handler.cast()
-        self.zone = environment.node_location
-        self.project = self.handler.project
+        self.zone = environment.gcp_zone
+        self.project = self.handler.gpc_projects
 
         self.credentials = ServiceAccountCredentials.from_json_keyfile_dict({
             'client_email': self.handler.serviceaccount,
@@ -116,14 +116,14 @@ def generate_options_for_cloudbolt_environment(group=None, **kwargs):
     List all GCE environments that are orderable by the current group.
     """
     envs = Environment.objects.filter(
-        resource_handler__resource_technology__name='Google Compute Engine') \
+        resource_handler__resource_technology__name='Google Cloud Platform') \
         .select_related('resource_handler')
     if group:
         group_env_ids = [env.id for env in group.get_available_environments()]
         envs = envs.filter(id__in=group_env_ids)
     return [
         (env.id, u'{env} ({project})'.format(
-            env=env, project=env.resource_handler.cast().project))
+            env=env, project=env.gcp_project))
         for env in envs
     ]
 
@@ -216,7 +216,7 @@ def run(job=None, logger=None, **kwargs):
         # Generate libcloud UUID from GCE ID
         id_unicode = '{}:{}'.format(node['id'], 'gce')
         uuid = hashlib.sha1(id_unicode.encode('utf-8')).hexdigest()
-        # Create a barebones server record. Other details like CPU and Mem Size
+        # Create a bbones server record. Other details like CPU and Mem Size
         # will be populated the next time the GCE handler is synced.
         Server.objects.create(
             hostname=node['name'],
