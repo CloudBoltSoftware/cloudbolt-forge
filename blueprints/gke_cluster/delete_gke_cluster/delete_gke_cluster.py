@@ -25,8 +25,8 @@ def run(job=None, logger=None, resource=None, **kwargs):
                 "The environment used to create this cluster no longer exists",
                 "")
     handler = environment.resource_handler.cast()
-    project = handler.project
-    zone = environment.node_location
+    project = handler.gcp_projects
+    zone = environment.gcp_zone
 
     # Get client
     credentials = ServiceAccountCredentials.from_json_keyfile_dict({
@@ -52,7 +52,7 @@ def run(job=None, logger=None, resource=None, **kwargs):
                     "")
         raise
 
-    # In CB 7.6 and before, this will delete any existing KubernetesResources.
+    # In CB 7.6 and before, this will delete any existing Kubernetes Resources.
     # Starting in CB 7.7, they will be marked HISTORICAL instead.
     kubernetes = Kubernetes.objects.get(id=resource.create_gke_k8s_cluster_id)
     kubernetes.delete()
