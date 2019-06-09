@@ -13,6 +13,8 @@ Takes 3 inputs:
 """
 from __future__ import unicode_literals
 import hashlib
+import random
+import string
 import time
 
 from django.urls import reverse
@@ -61,6 +63,12 @@ class GKEClusterBuilder(object):
                 'cluster': {
                     'name': self.cluster_name,
                     'initial_node_count': node_count,
+                    'master_auth': {
+                        'username': 'cloudbolt',
+                        'password': ''.join(random.choices(
+                            string.ascii_uppercase + string.digits, k=16)
+                        )
+                    }
                 }
             })
         return request.execute()
