@@ -1,7 +1,7 @@
 {
     "description": "",
     "max-retries": 0,
-    "name": "Delete GKE Cluster",
+    "name": "Delete GKE Cluster (Legacy)",
     "resource-technologies": [],
     "script-filename": "cb_plugin_1512001080542294.py",
     "shared": "False",
