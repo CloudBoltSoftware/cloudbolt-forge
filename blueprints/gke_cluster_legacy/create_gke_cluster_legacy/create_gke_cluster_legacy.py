@@ -1,20 +1,22 @@
 """
+As of CloudBolt 8.7, The Google Compute Engine resource handler is considered legacy
+and as such this Action is as well. There is an updated version of this Action
+that works with the Google Cloud Platform resource handler.
+
 Creates a Kubernetes cluster in Google Kubernetes Engine and adds it as a
 Container Orchestrator in CloudBolt. Used by the Google Kubernetes Engine
 blueprint.
 
-To use this, you must have a Google Cloud Platform resource handler set up in
+To use this, you must have a Google Compute Engine resource handler set up in
 CloudBolt, and it must have a zone.
 
-Takes 4 inputs:
-    * GCP Project: the GCP Project (and CB env) to provision the cluster nodes in
-    * GCP Zone: The zone in which the nodes should be placed
+Takes 3 inputs:
+    * CloudBolt environment: the environment to provision the cluster nodes in
     * Cluster name: the name of the new cluster (must be unique)
     * Node count (optional): the number of nodes to provision (default=1)
 """
 from __future__ import unicode_literals
 import hashlib
-import json
 import random
 import string
 import time
@@ -26,13 +28,10 @@ from oauth2client.service_account import ServiceAccountCredentials
 from containerorchestrators.models import ContainerOrchestratorTechnology
 from containerorchestrators.kuberneteshandler.models import Kubernetes
 from infrastructure.models import CustomField, Environment, Server
-from orders.models import CustomFieldValue
 from portals.models import PortalConfig
-from resourcehandlers.gcp.models import GCPProject
 
-ENV_ID = '{{ gcp_project }}'
+ENV_ID = '{{ cloudbolt_environment }}'
 CLUSTER_NAME = '{{ name }}'
-GCP_ZONE_ID = '{{ gcp_zone }}'
 try:
     NODE_COUNT = int('{{ node_count }}')
 except ValueError:
@@ -41,21 +40,16 @@ TIMEOUT = 1800  # 30 minutes
 
 
 class GKEClusterBuilder(object):
-    def __init__(self, environment, zone, cluster_name):
+    def __init__(self, environment, cluster_name):
         self.environment = environment
         self.cluster_name = cluster_name
         self.handler = environment.resource_handler.cast()
-        self.zone = zone
-        self.project = self.environment.gcp_project
-
-        gcp_project = GCPProject.objects.get(id=self.environment.gcp_project)
-        service_account_key = json.loads(gcp_project.service_account_key)
-        client_email = service_account_key.get('client_email')
-        private_key = service_account_key.get('private_key')
+        self.zone = environment.gcp_zone
+        self.project = self.handler.gpc_projects
 
         self.credentials = ServiceAccountCredentials.from_json_keyfile_dict({
-            'client_email': client_email,
-            'private_key': private_key,
+            'client_email': self.handler.serviceaccount,
+            'private_key': self.handler.servicepasswd,
             'type': 'service_account',
             'client_id': None,
             'private_key_id': None,
@@ -129,9 +123,9 @@ class GKEClusterBuilder(object):
         return status
 
 
-def generate_options_for_gcp_project(group=None, **kwargs):
+def generate_options_for_cloudbolt_environment(group=None, **kwargs):
     """
-    List all GCP Projects that are orderable by the current group.
+    List all GCE environments that are orderable by the current group.
     """
     envs = Environment.objects.filter(
         resource_handler__resource_technology__name='Google Cloud Platform') \
@@ -140,25 +134,17 @@ def generate_options_for_gcp_project(group=None, **kwargs):
         group_env_ids = [env.id for env in group.get_available_environments()]
         envs = envs.filter(id__in=group_env_ids)
     return [
-        (env.id, u'{env}'.format(env=env)) for env in envs
+        (env.id, u'{env} ({project})'.format(
+            env=env, project=env.gcp_project))
+        for env in envs
     ]
 
-
-def generate_options_for_gcp_zone(group=None, **kwargs):
-    """
-    List all GCP zones.
-    """
-    field = CustomField.objects.get(name='gcp_zone')
-    zones = CustomFieldValue.objects.filter(field=field)
-    return [
-        (zone.id, u'{zone}'.format(zone=zone)) for zone in zones
-    ]
 
 def create_required_parameters():
     CustomField.objects.get_or_create(
-        name='create_gke_k8s_cluster_project',
+        name='create_gke_k8s_cluster_env',
         defaults=dict(
-            label="GKE Cluster: Project",
+            label="GKE Cluster: Environment",
             description="Used by the GKE Cluster blueprint",
             type="INT"
         ))
@@ -184,19 +170,17 @@ def run(job=None, logger=None, **kwargs):
     the cluster into CloudBolt.
     """
     environment = Environment.objects.get(id=ENV_ID)
-    gcp_zone = CustomFieldValue.objects.get(id=GCP_ZONE_ID).value
 
     # Save cluster data on the resource so teardown works later
     create_required_parameters()
     resource = kwargs['resource']
-    resource.create_gke_k8s_cluster_project = environment.id
-    resource.gcp_zone = gcp_zone
+    resource.create_gke_k8s_cluster_env = environment.id
     resource.create_gke_k8s_cluster_name = CLUSTER_NAME
     resource.name = CLUSTER_NAME
     resource.save()
 
     job.set_progress('Connecting to GKE...')
-    builder = GKEClusterBuilder(environment, gcp_zone, CLUSTER_NAME)
+    builder = GKEClusterBuilder(environment, CLUSTER_NAME)
 
     job.set_progress('Sending request for new cluster {}...'.format(CLUSTER_NAME))
     builder.create_cluster(NODE_COUNT)
@@ -244,7 +228,7 @@ def run(job=None, logger=None, **kwargs):
         # Generate libcloud UUID from GCE ID
         id_unicode = '{}:{}'.format(node['id'], 'gce')
         uuid = hashlib.sha1(id_unicode.encode('utf-8')).hexdigest()
-        # Create a barebones server record. Other details like CPU and Mem Size
+        # Create a bbones server record. Other details like CPU and Mem Size
         # will be populated the next time the GCE handler is synced.
         Server.objects.create(
             hostname=node['name'],

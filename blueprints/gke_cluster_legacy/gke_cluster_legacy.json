@@ -1,0 +1,34 @@
+{
+    "any-group-can-deploy": true,
+    "build-items": [
+        {
+            "continue-on-failure": false,
+            "deploy-seq": 1,
+            "description": null,
+            "execute-in-parallel": false,
+            "id": "38",
+            "name": "Create GKE Cluster (Legacy)",
+            "run-on-scale-up": true,
+            "show-on-order-form": true,
+            "type": "plugin"
+        }
+    ],
+    "create-service": true,
+    "description": "As of CloudBolt 8.7, The Google Compute Engine resource handler is considered legacy, and as such this Blueprint is as well. It will continue to work for existing GCE handlers. There is an current version of this Blueprint that works with the Google Cloud Platform resource handler.\n\nProvisions a Kubernetes cluster into an existing Google Compute Engine environment using Google Kubernetes Engine. The cluster will be imported as a Container Orchestrator, and the nodes as Servers.\n\nThis blueprint requires the google-api-python-client library, which comes installed by default on CloudBolt 7.7. For prior versions, run `pip install google-api-python-client` on the CloudBolt appliance to install it.",
+    "icon": "kubernetes.png",
+    "id": "20",
+    "is-orderable": true,
+    "name": "Google Kubernetes Engine Cluster (Legacy)",
+    "service-management-actions": [],
+    "teardown-items": [
+        {
+            "continue-on-failure": false,
+            "deploy-seq": -1,
+            "description": null,
+            "execute-in-parallel": false,
+            "id": "39",
+            "name": "Delete GKE Cluster (Legacy)",
+            "type": "teardown_plugin"
+        }
+    ]
+}
