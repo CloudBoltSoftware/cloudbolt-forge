@@ -1,10 +1,13 @@
 """
 Two User Approval
-
+~~~~~~~~~~~~~~~~~
 Overrides CloudBolt's standard Order Approval workflow. This Orchestration
-Action requires two users to approve an order before it becomes Active.
+Action requires two users to approve an Order before it becomes Active.
 
-Requires CloudBolt 8.8
+
+Version Req.
+~~~~~~~~~~~~
+CloudBolt 8.8
 """
 
 
@@ -13,7 +16,6 @@ def run(order, *args, **kwargs):
     # approved it.
 
     if len(order.approvers) < 2:
-        order.status = "PENDING"
-        order.save()
+        order.set_pending()
 
     return "SUCCESS", "", ""
