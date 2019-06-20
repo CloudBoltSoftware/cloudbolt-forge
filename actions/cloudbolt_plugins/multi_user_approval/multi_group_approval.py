@@ -28,7 +28,7 @@ def run(order, *args, **kwargs):
     if len(order.approvers) < 2:
         order.set_pending()
 
-    if not bool(approval_groups & order.approvers.groups):
+    if not order.approvers_group_contains(approval_groups):
         order.set_pending()
 
     return "SUCCESS", "", ""
