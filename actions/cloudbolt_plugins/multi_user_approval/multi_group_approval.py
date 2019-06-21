@@ -23,12 +23,12 @@ from accounts.models import Group
 
 
 def run(order, *args, **kwargs):
-    approval_groups = Group.objects.filter(name__in=["Group_B", "Group_C"])
+    need_approval_from = Group.objects.filter(name__in=["Group_B", "Group_C"])
 
     if len(order.approvers) < 2:
         order.set_pending()
 
-    if not order.approvers_group_contains(approval_groups):
+    if not order.all_groups_approved(need_approval_from):
         order.set_pending()
 
     return "SUCCESS", "", ""

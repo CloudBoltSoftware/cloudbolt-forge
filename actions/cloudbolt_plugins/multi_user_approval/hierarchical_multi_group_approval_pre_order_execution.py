@@ -38,7 +38,7 @@ def run(order, *args, **kwargs):
     # order to "Group C" for approval.
     if (
         len(order.approvers) >= 1
-        and order.approvers_group_contains([group_b])
+        and order.all_groups_approved([group_b])
     ):
         order.approval_groups = group_c
     # The order was approved, but the above conditions were not met. Return the
@@ -50,7 +50,7 @@ def run(order, *args, **kwargs):
     # and C, assign the order to "Group D" for approval.
     if (
         len(order.approvers) >= 2
-        and order.approvers_group_contains([group_b, group_c])
+        and order.all_groups_approved([group_b, group_c])
     ):
         order.approval_groups = group_d
     else:
@@ -60,7 +60,7 @@ def run(order, *args, **kwargs):
     # and D, allow the order to be approved.
     if (
         len(order.approvers) >= 3
-        and order.approvers_group_contains([group_b, group_c, group_d])
+        and order.all_groups_approved([group_b, group_c, group_d])
     ):
         pass
     else:
