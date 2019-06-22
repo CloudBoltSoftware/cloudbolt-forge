@@ -40,7 +40,7 @@ def run(order, *args, **kwargs):
         len(order.approvers) >= 1
         and order.all_groups_approved([group_b])
     ):
-        order.approval_groups = group_c
+        order.groups_for_approval = group_c
     # The order was approved, but the above conditions were not met. Return the
     # order's status to "PENDING", allowing other users to approve the order.
     else:
@@ -52,7 +52,7 @@ def run(order, *args, **kwargs):
         len(order.approvers) >= 2
         and order.all_groups_approved([group_b, group_c])
     ):
-        order.approval_groups = group_d
+        order.groups_for_approval = group_d
     else:
         order.set_pending()
 

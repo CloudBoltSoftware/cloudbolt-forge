@@ -32,4 +32,4 @@ def run(order, *args, **kwargs):
 
     # Immediately after submission, the Order is assigned to "Group B" for
     # approval.
-    order.approval_groups = Group.objects.get(name="Group_B")
+    order.groups_for_approval = Group.objects.get(name="Group_B")
