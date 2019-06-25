@@ -8,10 +8,11 @@ becomes Active.
 
 Configuration
 ~~~~~~~~~~~~~
-If the user that submitted this Order belongs to Group_A, this plugin requires
-one of two scenarios:
-    1) Both Group_B and Group_C have "Approval Permission" for Group_A;
-    2) The approving users are Approvers in both Group_A and Group_B/Group_C.
+If the user that submitted this Order belongs to "Workers", this plugin
+requires one of two scenarios:
+    1) "Finance" and "IT" groups both have "Approval Permission" for "Workers";
+    2) The approving users are Approvers in both Groups (i.e. "Finance" and
+       "IT").
 
 
 Version Req.
@@ -23,7 +24,7 @@ from accounts.models import Group
 
 
 def run(order, *args, **kwargs):
-    need_approval_from = Group.objects.filter(name__in=["Group_B", "Group_C"])
+    need_approval_from = Group.objects.filter(name__in=["Finance", "IT"])
 
     if len(order.approvers) < 2:
         order.set_pending()
