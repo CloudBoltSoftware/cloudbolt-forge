@@ -28,7 +28,8 @@ from containerorchestrators.kuberneteshandler.models import Kubernetes
 from infrastructure.models import CustomField, Environment, Server
 from orders.models import CustomFieldValue
 from portals.models import PortalConfig
-from resourcehandlers.gcp.models import GCPProject
+from resourcehandlers.gcp.models import GCPProject, GCPHandler
+from utilities.exceptions import CloudBoltException
 
 ENV_ID = '{{ gcp_project }}'
 CLUSTER_NAME = '{{ name }}'
@@ -133,6 +134,9 @@ def generate_options_for_gcp_project(group=None, **kwargs):
     """
     List all GCP Projects that are orderable by the current group.
     """
+    if not GCPHandler.objects.exists():
+        raise CloudBoltException('Ordering this Blueprint requires having a '
+                                 'configured Google Cloud Platform resource handler.')
     envs = Environment.objects.filter(
         resource_handler__resource_technology__name='Google Cloud Platform') \
         .select_related('resource_handler')
@@ -153,6 +157,7 @@ def generate_options_for_gcp_zone(group=None, **kwargs):
     return [
         (zone.id, u'{zone}'.format(zone=zone)) for zone in zones
     ]
+
 
 def create_required_parameters():
     CustomField.objects.get_or_create(
