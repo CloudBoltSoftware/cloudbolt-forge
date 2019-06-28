@@ -14,7 +14,7 @@ The four sample workflows are explained below, starting simple and getting progr
 
 The "Two Approvers" workflow requires only one Orchestration Action, a single "Post-Order Approval" action, because we're only changing the behavior of the "Approve" button. In this plugin, we check to see if there are two users in `order.approvers`, which only returns unique users by design. As mentioned in the documentation linked above, the default behavior of a "Post-Order Approval" plug-in is to approve the order -- therefore, if the condition we're requiring (the number of approvers is at least two) is not met, we return the order back to the queue via the `order.set_pending()` method. This method, in addition to sending the order back to the queue, prevents the same user from approving the order twice, and adds the approval action to an order's Order History, which can be viewed on the order's detail page.
 
-Ideas for extending this plug-in: require a different number of users approve an order, or check that at least one of the approvers is a specific user.
+_Ideas for extending this plug-in:_ require a different number of users approve an order, or check that at least one of the approvers is a specific user.
 
 The "Post-Order Approval" trigger point is especially powerful -- this plug-in demonstrates that, with only four lines of Python, we can completely change CloudBolt's order approval workflow.
 
@@ -24,7 +24,7 @@ The "Post-Order Approval" trigger point is especially powerful -- this plug-in d
 
 Similar to the previous example, the "Multiple Group Approval" workflow only requires a single "Post-Order Approval" action. This plugin is the next step in complexity, requiring not only that two users approve the order, but that those users are in two specified groups, neither of which is the group that placed the order. To use this plug-in without modifications, some minor configuration on the groups in your CloudBolt is required. Namely, this plug-in leverages the new "Approval Permission" relationship that's present on a group's detail page in CloudBolt version 8.8+. This relationship gives Approvers in a group (e.g. "Finance") approval permission over another group's orders (e.g. "Workers"), even the latter group is not a sub-group of the former. Additionally, this plug-in makes use of the `order.all_groups_approved()` method, which verifies that all of the groups passed to the method have approved the order. It is by passing two groups to this method that we allow the approvals to effectively happen in parallel, meaning that we're not concerned with the sequence in which different groups approve the order.
 
-Ideas for extending this plug-in: require that _two_ users from the "IT" group and one user from "Finance" group approve the order.
+_Ideas for extending this plug-in:_ require that _two_ users from the "IT" group and one user from "Finance" group approve the order.
 
 ## Hierarchical, Multiple Group Approval
 
@@ -32,7 +32,7 @@ Ideas for extending this plug-in: require that _two_ users from the "IT" group a
 
 With the next step up in complexity, the "Hierarchical, Multiple Group Approval" workflow is the first to require two Orchestration Actions. This workflow, in contrast to the former "Multiple Group Approval", specifies that an order must be approved by groups in a specified sequence (e.g. in series). To do so, we'll use the `order.groups_for_approval` attribute. If this attribute is set to a specific group, the order can be approved by that group only, whereas if the the attribute is set to `None`, the order can be approved all groups that have approval permission over the requesting group. This workflow uses an action at the "Order Submission" trigger point to assign the order to the "Finance" group immediately after the order is submitted, which is why we need two Orchestration Actions. The "Post-Order Approval" action, on the other hand, verifies that the first approval came from the "Finance" group and assigns the "IT" group to approve the order, again by using `order.groups_for_approval` -- then, after a second user from the "IT" group approves the order, the order is executed.
 
-Ideas for extending this plug-in: require that a second user from the "Finance" group approve the order after it's been approved by one user from "Finance" and one user from "IT".
+_Ideas for extending this plug-in:_ require that a second user from the "Finance" group approve the order after it's been approved by one user from "Finance" and one user from "IT".
 
 ## Threshold Check
 
