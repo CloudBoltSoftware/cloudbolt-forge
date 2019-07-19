@@ -1,0 +1,142 @@
+{
+    "action-inputs": [
+        {
+            "available-all-servers": false,
+            "description": "A URL pointing to a custom Terraform binary.",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [
+                {
+                    "controlling-field": {
+                        "name": "custom_file_url_a137"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "SHOWHIDE",
+                    "dependent-field": {
+                        "name": "sha_256_sum_a137"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                }
+            ],
+            "global-options": [],
+            "hide-if-default-value": true,
+            "label": "Custom Terraform Binary URL",
+            "name": "custom_file_url",
+            "regex-constraint": "^(http|https|file):\\/\\/.*$",
+            "relevant-osfamilies": [],
+            "required": false,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "Choose an installed version of Terraform. Useful when used with \"Set as Default\"",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": true,
+            "label": "Existing Terraform Version",
+            "name": "existing_version",
+            "relevant-osfamilies": [],
+            "required": false,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "Enabled: this may overwrite existing versions of Terraform.",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": true,
+            "label": "Overwrite Existing Versions?",
+            "name": "overwrite_existing",
+            "relevant-osfamilies": [],
+            "required": false,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "BOOL"
+        },
+        {
+            "available-all-servers": false,
+            "description": "Enabled: The selected/new version of Terraform is set as the global default.",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": true,
+            "label": "Set as Default",
+            "name": "set_as_default",
+            "relevant-osfamilies": [],
+            "required": false,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "BOOL"
+        },
+        {
+            "available-all-servers": false,
+            "description": "The SHA 256 Hash of the terraform binary (hex encoding).",
+            "field-dependency-controlling-set": [
+                {
+                    "controlling-field": {
+                        "name": "custom_file_url_a137"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "SHOWHIDE",
+                    "dependent-field": {
+                        "name": "sha_256_sum_a137"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                }
+            ],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": true,
+            "label": "SHA-256 Sum",
+            "maximum": "64.00",
+            "minimum": "64.00",
+            "name": "sha_256_sum",
+            "regex-constraint": "^[0-9a-f]+$",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "The version of Terraform to install. If a custom URL is given, this is the version that binary will be given.",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": true,
+            "label": "Terraform Version",
+            "name": "version",
+            "relevant-osfamilies": [],
+            "required": false,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        }
+    ],
+    "action-inputs-sequence": [
+        "version",
+        "custom_file_url",
+        "sha_256_sum",
+        "existing_version",
+        "overwrite_existing",
+        "set_as_default"
+    ],
+    "description": "Install an additional user-specified version of Terraform on CloudBolt servers.",
+    "max-retries": 0,
+    "name": "Install Custom Terraform Version",
+    "resource-technologies": [],
+    "script-filename": "install_custom_terraform_version.py",
+    "shared": "True",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}
