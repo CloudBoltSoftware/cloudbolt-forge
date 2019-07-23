@@ -4,7 +4,7 @@ Install Terraform on CloudBolt
 Install a user-specified version of Terraform on CloudBolt.
 
 
-Version Req.
+Version Requirements:
 ~~~~~~~~~~~~
 CloudBolt 9.0
 """
