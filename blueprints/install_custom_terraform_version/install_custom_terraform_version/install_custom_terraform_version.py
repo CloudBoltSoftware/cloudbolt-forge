@@ -19,7 +19,7 @@ from common.methods import set_progress
 from django.conf import settings
 
 
-HASHICORP_TERRAFORM_DOWNLOAD_FORMAT_URL=(
+HASHICORP_TERRAFORM_DOWNLOAD_FORMAT_URL = (
     'https://releases.hashicorp.com/terraform/{version}/terraform_{version}_linux_amd64.zip'
 )
 HASHICORP_TERRAFORM_SHA_256_SUM_FORMAT_URL = (
