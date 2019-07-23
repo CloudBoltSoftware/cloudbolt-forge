@@ -74,7 +74,7 @@ def run(job, *args, **kwargs):
     if make_default == True:
         make_bin_default(new_path, default_fname=TERRAFORM_BINARY)
 
-    return 'SUCCESS', 'Successfully configure Terraform v{version}'.format(version=version), ''
+    return 'SUCCESS', 'Successfully configured Terraform v{version}'.format(version=version), ''
 
 
 def set_version(version: str):
