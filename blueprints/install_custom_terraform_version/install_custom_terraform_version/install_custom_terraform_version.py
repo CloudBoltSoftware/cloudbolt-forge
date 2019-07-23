@@ -157,7 +157,7 @@ def install_custom_file_url(custom_url: str, sha_256_sum: str, version: str, ove
     if not sha_256_verify(dl_fname, sha_256_sum):
         return 'FAILURE', '', 'Downloaded artifact did not match the expected SHA checksum'
 
-    if zipped == True:
+    if zipped is True:
         set_progress('Zipped file processing')
         unzipped_fname = os.path.join(os.path.dirname(dl_fname), 'terraform')
         # We have to remove the existing `terraform` symlink first before the unzip
