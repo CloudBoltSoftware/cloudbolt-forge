@@ -140,7 +140,7 @@ def install_custom_file_url(custom_url: str, sha_256_sum: str, version: str, ove
     if version_exists is True and overwrite_existing is False:
         return 'WARNING', '', 'Skipped installation. The download would overwrite an existing Terraform binary at {dest_fname}'.format(dest_fname=dest_fname)
 
-    set_progress('Guarenteeing directories)')
+    set_progress('Guaranteeing directories')
     # Make sure the directory we are downloading to exists
     if not os.path.exists(os.path.dirname(dl_fname)):
         os.makedirs(os.path.dirname(dl_fname))
