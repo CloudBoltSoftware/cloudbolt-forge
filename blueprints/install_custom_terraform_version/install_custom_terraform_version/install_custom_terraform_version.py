@@ -137,7 +137,7 @@ def install_custom_file_url(custom_url: str, sha_256_sum: str, version: str, ove
     # Overwrite existing short-circuit check
     version_exists = file_already_exists(dest_fname)
     set_progress(f'Verfiying if we should overwrite this file {dest_fname} {version_exists} {overwrite_existing}')
-    if version_exists == True and overwrite_existing == False:
+    if version_exists is True and overwrite_existing is False:
         return 'WARNING', '', 'Skipped installation. The download would overwrite an existing Terraform binary at {dest_fname}'.format(dest_fname=dest_fname)
 
     set_progress('Guarenteeing directories)')
