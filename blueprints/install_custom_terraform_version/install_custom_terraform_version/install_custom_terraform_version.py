@@ -67,12 +67,21 @@ def run(job, *args, **kwargs):
 
 
 def generate_options_for_existing_version(**kwargs):
+    try:
+        terraform_bin_files = os.listdir(TERRAFORM_BIN_DIR)
+    except FileNotFoundError:
+        # The directory for storing Terraform binaries does not exist
+        # Create it for later and return an empty array
+        # (no previously-installed Terraforms exist!)
+        os.makedirs(TERRAFORM_BIN_DIR)
+        return []
+
     options = []
-    terraform_bin_files = os.listdir(TERRAFORM_BIN_DIR)
     for tf in terraform_bin_files:
         if tf == 'terraform':
             continue
         options.append(tf)
+
     return options
 
 
