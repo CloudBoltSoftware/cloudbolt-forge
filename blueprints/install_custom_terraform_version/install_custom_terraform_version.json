@@ -14,6 +14,7 @@
             "type": "plugin"
         }
     ],
+    "icon": "terraform-vertical-color.png",
     "description": "Install a custom version of Terraform.\r\n\r\nProvide a version of Terraform, a custom binary URL + custom version number, or select an existing version on the CloudBolt server.\r\n\r\nWhen set as the default version, all Terraform Plan Actions will use this Terraform binary.",
     "favorited": false,
     "is-orderable": true,
