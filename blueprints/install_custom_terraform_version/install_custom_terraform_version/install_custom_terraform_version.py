@@ -26,33 +26,22 @@ HASHICORP_TERRAFORM_SHA_256_SUM_FORMAT_URL = (
     'https://releases.hashicorp.com/terraform/{version}/terraform_{version}_SHA256SUMS'
 )
 
-TERRAFORM_DIR=settings.TERRAFORM_DIR
-TERRAFORM_BIN_DIR=os.path.join(TERRAFORM_DIR, 'bin')
-TERRAFORM_BINARY=os.path.join(TERRAFORM_BIN_DIR, 'terraform')
+TERRAFORM_DIR = settings.TERRAFORM_DIR
+TERRAFORM_BIN_DIR = os.path.join(TERRAFORM_DIR, 'bin')
+TERRAFORM_BINARY = os.path.join(TERRAFORM_BIN_DIR, 'terraform')
 
 
 def run(job, *args, **kwargs):
     set_progress("Terraforming your CloudBolt...")
 
     # Initialize variables
-    version = set_version(
-        '''{{ version }}'''
-    )
-    custom_file_url = set_custom_file_url(
-       '''{{ custom_file_url }}'''
-    )
-    sha_256_sum = set_sha_256_sum(
-        '''{{ sha_256_sum }}'''
-    )
-    existing_version = set_existing_version(
-        '''{{ existing_version }}'''
-    )
-    make_default = set_make_default(
-        '''{{ set_as_default }}'''
-    )
-    overwrite_existing = set_overwrite_existing(
-        '''{{ overwrite_existing }}'''
-    )
+    # Casting things as STR or BOOL as appropriate
+    version = str("{{ version }}")
+    custom_file_url = str("{{ custom_file_url }}")
+    sha_256_sum = str("{{ sha_256_sum }}")
+    existing_version = str("{{ existing_version }}")
+    make_default = bool({{ set_as_default }})
+    overwrite_existing = bool({{ overwrite_existing }})
 
     # The decision tree is as follows:
     # If selected, we use the existing_version input.
@@ -77,22 +66,6 @@ def run(job, *args, **kwargs):
     return 'SUCCESS', 'Successfully configured Terraform v{version}'.format(version=version), ''
 
 
-def set_version(version: str):
-    return str(version)
-
-
-def set_custom_file_url(custom_file_url: str):
-    return str(custom_file_url)
-
-
-def set_sha_256_sum(sha_256_sum: str):
-    return str(sha_256_sum)
-
-
-def set_existing_version(existing_version: str):
-    return str(existing_version)
-
-
 def generate_options_for_existing_version(**kwargs):
     options = []
     terraform_bin_files = os.listdir(TERRAFORM_BIN_DIR)
@@ -101,17 +74,6 @@ def generate_options_for_existing_version(**kwargs):
             continue
         options.append(tf)
     return options
-
-
-def set_make_default(make_default: str):
-    return bool(make_default)
-
-
-def set_overwrite_existing(overwrite_existing: str):
-    if overwrite_existing == 'True':
-        return True
-    else:
-        return False
 
 
 def install_existing_version(version: str):
@@ -128,8 +90,8 @@ def install_custom_file_url(custom_url: str, sha_256_sum: str, version: str, ove
     Installs a version of Terraform from a custom URL and verifies it was installed correctly.
     Processes the downloaded artifact differently if it was a ZIP file or just a raw binary.
     """
-    base_dir   = TERRAFORM_BIN_DIR
-    dl_fname   = os.path.join(base_dir, 'terraform_{version}.download'.format(version=version))
+    base_dir = TERRAFORM_BIN_DIR
+    dl_fname = os.path.join(base_dir, 'terraform_{version}.download'.format(version=version))
     dest_fname = os.path.join(base_dir, 'terraform_{version}'.format(base_dir=base_dir, version=version))
 
     set_progress('Installing Terraform from {custom_url} with verification SHA {sha_256_sum} to location {dest_fname}'.format(custom_url=custom_url, sha_256_sum=sha_256_sum, dest_fname=dest_fname))
@@ -183,6 +145,8 @@ def install_custom_file_url(custom_url: str, sha_256_sum: str, version: str, ove
         return 'FAILURE', '', 'Given URL must provide a Linux binary!'
 
     set_progress('Setting execute bit')
+    # Using 0o744 is the octal number, which is what os.chmod expects.
+    # https://stackoverflow.com/a/15607971
     os.chmod(dest_fname, 0o744)
 
     return 'SUCCESS', dest_fname, ''
