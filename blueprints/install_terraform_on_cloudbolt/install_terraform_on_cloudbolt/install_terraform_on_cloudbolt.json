@@ -1,0 +1,47 @@
+{
+    "action-inputs": [
+        {
+            "available-all-servers": false,
+            "description": "The name this version of Terraform will be given.",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": false,
+            "label": "Version Name",
+            "name": "version_name",
+            "regex-constraint": "^(\\S)+$",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "ZIP file containing a Linux `terraform` binary.",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": false,
+            "label": "Zip Url",
+            "name": "zip_url",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        }
+    ],
+    "action-inputs-sequence": [
+        "zip_url",
+        "version_name"
+    ],
+    "description": "Install an additional user-specified version of Terraform on CloudBolt servers.",
+    "max-retries": 0,
+    "name": "Install a Custom Terraform Version for CloudBolt",
+    "resource-technologies": [],
+    "script-filename": "install_custom_terraform_version.py",
+    "shared": "True",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}

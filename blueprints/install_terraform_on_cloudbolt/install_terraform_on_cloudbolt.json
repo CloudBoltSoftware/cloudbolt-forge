@@ -3,23 +3,23 @@
     "auto-historical-resources": false,
     "build-items": [
         {
-            "action-name": "Install Custom Terraform Version",
+            "action-name": "Install a Custom Terraform Version for CloudBolt",
             "continue-on-failure": false,
             "deploy-seq": 1,
             "description": null,
             "execute-in-parallel": false,
-            "name": "Install Custom Terraform Version",
+            "name": "Install a Custom Terraform Version for CloudBolt",
             "run-on-scale-up": true,
             "show-on-order-form": true,
             "type": "plugin"
         }
     ],
     "icon": "terraform-vertical-color.png",
-    "description": "Install a custom version of Terraform.\r\n\r\nProvide a version of Terraform, a custom binary URL + custom version number, or select an existing version on the CloudBolt server.\r\n\r\nWhen set as the default version, all Terraform Plan Actions will use this Terraform binary.",
+    "description": "Install a custom version of Terraform.\r\n\r\nProvide a version of Terraform, a Zip URL + custom version number.\r\n\r\n. The new version can be set as the Global Default in the Admin Miscellaneous Settings.",
     "favorited": false,
     "is-orderable": true,
     "management-actions": [],
-    "name": "Install Custom Terraform Version",
+    "name": "Install a Custom Terraform Version for CloudBolt",
     "sequence": 0,
     "teardown-items": []
 }
