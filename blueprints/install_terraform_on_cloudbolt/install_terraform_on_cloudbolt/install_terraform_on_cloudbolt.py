@@ -184,6 +184,11 @@ def _set_terraform_binary_permissions(binary_path):
     """
     try:
         os.chmod(binary_path, 0o755)
+        try:
+            shutil.chown(binary_path, user='apache', group='apache')
+        except:
+            set_progress(f'Unable to set permissions to apache:apache on {binary_path}. This may cause problems!')
+            pass
         return True
     except OSError:
         return False
