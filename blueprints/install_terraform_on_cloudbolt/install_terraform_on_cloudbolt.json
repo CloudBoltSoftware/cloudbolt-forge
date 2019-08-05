@@ -1,25 +1,25 @@
 {
-    "any-group-can-deploy": true,
+    "any-group-can-deploy": false,
     "auto-historical-resources": false,
     "build-items": [
         {
-            "action-name": "Install a Custom Terraform Version for CloudBolt",
+            "action-name": "Install Terraform on CloudBolt",
             "continue-on-failure": false,
             "deploy-seq": 1,
             "description": null,
             "execute-in-parallel": false,
-            "name": "Install a Custom Terraform Version for CloudBolt",
+            "name": "Install Terraform on CloudBolt",
             "run-on-scale-up": true,
             "show-on-order-form": true,
             "type": "plugin"
         }
     ],
-    "icon": "terraform-vertical-color.png",
-    "description": "Install a custom version of Terraform.\r\n\r\nProvide a version of Terraform, a Zip URL + custom version number.\r\n\r\n. The new version can be set as the Global Default in the Admin Miscellaneous Settings.",
+    "description": "Install a custom version of Terraform on the CloudBolt server. Copy the ZIP URL for a 64 bit Linux  versino of Terraform. Archive version of Terraform can be found at https://releases.hashicorp.com/terraform/ . This new version can be set as the global default in Admin/Miscellaneous Settings.",
     "favorited": false,
+    "icon": "terraform-vertical-color.png",
     "is-orderable": true,
     "management-actions": [],
-    "name": "Install a Custom Terraform Version for CloudBolt",
+    "name": "Install Terraform on CloudBolt",
     "sequence": 0,
     "teardown-items": []
 }
