@@ -1,5 +1,5 @@
 {
-    "any-group-can-deploy": false,
+    "any-group-can-deploy": true,
     "auto-historical-resources": false,
     "build-items": [
         {
@@ -14,7 +14,7 @@
             "type": "plugin"
         }
     ],
-    "description": "Install a custom version of Terraform on the CloudBolt server. Copy the ZIP URL for a 64 bit Linux  versino of Terraform. Archive version of Terraform can be found at https://releases.hashicorp.com/terraform/ . This new version can be set as the global default in Admin/Miscellaneous Settings.",
+    "description": "Install a custom version of Terraform on the CloudBolt server. Copy the ZIP URL for a 64 bit Linux  versino of Terraform. Archive version of Terraform can be found at https://releases.hashicorp.com/terraform/ .",
     "favorited": false,
     "icon": "terraform-vertical-color.png",
     "is-orderable": true,
