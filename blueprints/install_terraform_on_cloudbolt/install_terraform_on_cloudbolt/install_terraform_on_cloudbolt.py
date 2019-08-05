@@ -183,7 +183,7 @@ def _set_terraform_binary_permissions(binary_path):
     Sets the new terraform binary to be executable.
     """
     try:
-        os.chmod(binary_path, 0o700)
+        os.chmod(binary_path, 0o755)
         return True
     except OSError:
         return False
