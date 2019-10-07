@@ -1,0 +1,43 @@
+<div class="panel panel-default">
+    <table
+           id="netflows"
+           width="100%"
+           class="table table-striped"
+           data-table
+           data-table-sort="1,desc"
+           data-table-no-auto-init>
+        <thead>
+            <tr>
+            <th>Log Stream</th>
+            <th>Timestamp</th>
+            <th>interface-id</th>
+            <th>srcaddr</th>
+            <th>dstaddr</th>
+            <th>srcport</th>
+            <th>dstport</th>
+            <th>protocol</th>
+            <th>packets</th>
+            <th>bytes</th>
+            <th>start</th>
+            <th>end</th>
+            <th>action</th>
+            <th>log-status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+                <tr>
+                {% for eventitem in event %}
+                    <td>{{ eventitem }}</td>
+                {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function(){
+        c2.dataTables.init('#netflows');
+    });
+</script>
