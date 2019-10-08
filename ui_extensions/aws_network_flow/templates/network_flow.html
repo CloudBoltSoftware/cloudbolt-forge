@@ -1,3 +1,9 @@
+<div class="btn-toolbar">
+    <a href="#" id="reload" class="btn btn-default">
+      <i class="fas fa-sync-alt"></i> Reload the flows
+    </a>
+</div>
+
 <div class="panel panel-default">
     <table
            id="netflows"
@@ -36,5 +42,11 @@
 <script>
     $(document).ready(function(){
         c2.dataTables.init('#netflows');
+
+        $('#reload').on('click', function (e) {
+            e.preventDefault();
+            var table = $('#netflows').DataTable();
+            table.ajax.reload();
+        });
     });
 </script>
