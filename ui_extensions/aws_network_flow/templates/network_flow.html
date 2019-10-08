@@ -5,7 +5,9 @@
            class="table table-striped"
            data-table
            data-table-sort="1,desc"
-           data-table-no-auto-init>
+           data-table-no-auto-init
+           data-table-source="/aws_net_flows/{{ handler.id }}/"
+    >
         <thead>
             <tr>
             <th>Log Stream</th>
@@ -25,16 +27,11 @@
             </tr>
         </thead>
         <tbody>
-            {% for event in events %}
-                <tr>
-                {% for eventitem in event %}
-                    <td>{{ eventitem }}</td>
-                {% endfor %}
-                </tr>
-            {% endfor %}
+            {# will be populated by dataTable based on AJAX responses #}
         </tbody>
     </table>
 </div>
+
 
 <script>
     $(document).ready(function(){
