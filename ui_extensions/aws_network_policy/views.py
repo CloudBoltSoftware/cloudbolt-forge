@@ -27,7 +27,7 @@ def resourcehandler_tab(request, obj_id):
     with open(settings.PROSERV_DIR + '/findings.json', "r") as f:
         findings = json.load(f)
     context = {
-        'findings': findings
+        'findings_by_type': findings
     }
     return render(request, 'aws_network_policy/templates/resourcehandler_tab.html', context=context)
 

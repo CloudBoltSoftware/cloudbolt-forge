@@ -1,19 +1,16 @@
 import json
-
 import django
-
 import settings
+import boto3 as boto3
+
+from resourcehandlers.aws.models import AWSHandler
 
 if __name__ == '__main__':
     django.setup()
 
-import boto3 as boto3
-
 from infrastructure.models import Server, CustomField
-
-ACCESS_KEY_ID = "AKIAID5LHCP3V7I4CMHA"
-SECRET_ACCESS_KEY = "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"
-REGION = "us-west-1"
+from resourcehandlers.models import ResourceHandler
+from common.methods import set_progress
 
 
 def fetch_findings(sh_client):
@@ -58,18 +55,50 @@ def update_instances(instances):
         s.set_value_for_custom_field(cf.name, json.dumps(instances[i], indent=True))
 
 
+def group_by_types(account):
+    grouped_findings = dict()
+    for f in account:
+        finding_type = f['Types'][0]
+        if finding_type not in grouped_findings:
+            grouped_findings[finding_type] = []
+        grouped_findings[finding_type].append(f)
+        grouped_findings[finding_type] = sorted(grouped_findings[finding_type], key=lambda v: v['Title'])
+
+    return grouped_findings
+
+
 def main():
-    client = boto3.client('securityhub',
-                          aws_access_key_id=ACCESS_KEY_ID,
-                          aws_secret_access_key=SECRET_ACCESS_KEY,
-                          region_name=REGION)
-    print('Fetching findings')
-    account, instances = fetch_findings(client)
-    print('Updating CloudBolt instances')
-    update_instances(instances)
-    with open(settings.PROSERV_DIR + '/findings.json', 'w') as f:
-        json.dump(account, f, indent=True)
 
 
 if __name__ == '__main__':
     main()
+
+
+def run(job, *args, **kwargs):
+    client = boto3.client('securityhub',
+                          aws_access_key_id=ACCESS_KEY_ID,
+                          aws_secret_access_key=SECRET_ACCESS_KEY,
+                          region_name=REGION)
+
+    for rh in AWSHandler.objects.all():
+    set_progress('Fetching findings')
+    account, instances = fetch_findings(client)
+    set_progress('Updating CloudBolt instances')
+    update_instances(instances)
+    account = group_by_types(account)
+
+    with open(settings.PROSERV_DIR + '/findings.json', 'w') as f:
+        json.dump(account, f, indent=True)
+
+
+    set_progress("This will show up in the job details page in the CB UI, and in the job log")
+    server = kwargs.get('server')
+    if server:
+        set_progress("This plug-in is running for server {}".format(server))
+
+    set_progress("Dictionary of keyword args passed to this plug-in: {}".format(kwargs.items()))
+
+    if True:
+        return "SUCCESS", "Sample output message", ""
+    else:
+        return "FAILURE", "Sample output message", "Sample error message, this is shown in red"
