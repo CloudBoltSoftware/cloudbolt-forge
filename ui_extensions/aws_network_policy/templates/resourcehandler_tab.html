@@ -1,0 +1,10 @@
+<h3>Security Hub Findings</h3>
+
+{% for finding in findings %}
+    <div>
+        {{ finding.Types.0 }}<br>
+        {{ finding.Title }}<br>
+        {{ finding.Description }}
+    </div>
+    &nbsp;<br>
+{% endfor %}
