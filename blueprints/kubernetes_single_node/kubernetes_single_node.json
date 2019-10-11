@@ -1,5 +1,6 @@
 {
     "any-group-can-deploy": true,
+    "auto-historical-resources": false,
     "build-items": [
         {
             "all-environments-enabled": true,
@@ -11,10 +12,12 @@
             "execute-in-parallel": false,
             "hostname-template": "kubernetes-sn-0X",
             "name": "Create server",
+            "restrict-applications": false,
             "show-on-order-form": true,
             "type": "provserver"
         },
         {
+            "action-name": "Install Kubernetes",
             "continue-on-failure": false,
             "deploy-seq": 2,
             "description": null,
@@ -25,6 +28,7 @@
             "type": "script"
         },
         {
+            "action-name": "Create Kubernetes Record",
             "continue-on-failure": false,
             "deploy-seq": 3,
             "description": null,
@@ -36,6 +40,7 @@
         }
     ],
     "description": "Creates a single-node Kubernetes cluster. Currently limited to CentOS 7.",
+    "favorited": false,
     "icon": "kubernetes.png",
     "is-orderable": true,
     "management-actions": [],
@@ -48,8 +53,10 @@
         "name": "service",
         "plural-label": null
     },
+    "sequence": 0,
     "teardown-items": [
         {
+            "action-name": "Delete Kubernetes Master",
             "continue-on-failure": false,
             "deploy-seq": 4,
             "description": null,
