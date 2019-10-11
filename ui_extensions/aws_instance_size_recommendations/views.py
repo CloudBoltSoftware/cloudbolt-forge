@@ -38,6 +38,7 @@ def get_recommendation_dict(raw_dict):
         'ResourceDetails').get(
         'EC2ResourceDetails')
     curr_instance_type = ec2_details.get('InstanceType')
+    curr_instance_region = ec2_details.get('Region')
     resource_utilization = current_instance.get(
         'ResourceUtilization').get(
         'EC2ResourceUtilization'
@@ -85,6 +86,7 @@ def get_recommendation_dict(raw_dict):
         'current_instance': {
             'id': current_instance.get('ResourceId'),
             'instance_type': curr_instance_type,
+            'region': curr_instance_region,
             'monthly_cost': current_instance.get('MonthlyCost'),
             'currency': current_instance.get('CurrencyCode'),
             'utilization_percent': {

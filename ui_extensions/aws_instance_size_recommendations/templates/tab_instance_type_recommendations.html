@@ -24,6 +24,7 @@
     <thead>
         <tr>
             <th> Instance </th>
+            <th> Region </th>
             <th> Current Instance Type </th>
             <th> Current Monthly Cost </th>
             <th> Current Utilization </th>
@@ -36,6 +37,7 @@
     {% for instance_id, d in recommendations.items %}
         <tr>
             <td>{{ instance_id }}</td>
+            <td>{{ d.current_instance.region }}</td>
             <td>{{ d.current_instance.instance_type }}</td>
             <td>{{ d.current_instance.monthly_cost|floatformat:2 }} {{ d.current_instance.currency }}</td>
             <td>
