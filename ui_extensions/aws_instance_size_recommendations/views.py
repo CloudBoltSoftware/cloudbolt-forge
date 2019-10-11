@@ -50,7 +50,7 @@ def get_recommendation_dict(raw_dict):
         savings = details.get('EstimatedMonthlySavings')
         currency = details.get('CurrencyCode')
         target_utilization = None
-        action_msg = f"Terminate instance"
+        action_msg = mark_safe(f"Terminate instance")
     else:
         # rec_type = 'Modify'
         target_instances = raw_dict.get('ModifyRecommendationDetail').get('TargetInstances')  # type: list
