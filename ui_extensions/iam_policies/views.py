@@ -13,7 +13,6 @@ from resourcehandlers.models import ResourceHandler
 from utilities.views import dialog_view, redirect_to_referrer
 from .forms import AWSIAMPolicyForm
 
-
 @tab_extension(model=ResourceHandler, title='IAM Policies')
 def awshandler_iam_policies_tab(request, obj_id):
     handler = AWSHandler.objects.get(id=obj_id)
@@ -39,6 +38,21 @@ def awshandler_iam_policies_tab(request, obj_id):
     return render(request, 'iam_policies/templates/policy_list.html', context)
 
 
+@dialog_view(template_name='iam_policies/templates/policy_detail.html')
+def aws_iam_policy_detail(request, handler_id, policy_arn, policy_name):
+    handler = AWSHandler.objects.get(id=handler_id)
+    policy_details = handler.get_iam_policy_details(policy_arn)
+    policy_document = policy_details['PolicyVersion']['Document']   
+    print('policy details: {}'.format(policy_details)) 
+    return {
+        "title": "IAM Policy Details",
+        "handler": handler,
+        "policy_arn": policy_arn,
+        "policy_document": policy_document,
+        "policy_name": policy_name,
+    }
+   
+
 def discover_aws_iam_policies(request, handler_id):
     handler = AWSHandler.objects.get(id=handler_id)
     handler.get_iam_policies()
@@ -47,6 +61,7 @@ def discover_aws_iam_policies(request, handler_id):
 
 @dialog_view
 def add_aws_iam_policy(request, handler_id):
+    
     handler = AWSHandler.objects.get(id=handler_id)
 
     if request.method == 'POST':
@@ -82,3 +97,4 @@ def get_iam_policies_from_cache(handler_id):
         cached_policy_list = None
 
     return cached_policy_list
+

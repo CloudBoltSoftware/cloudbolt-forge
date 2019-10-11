@@ -1,0 +1,17 @@
+{% extends 'dialogs/dialog.html' %}
+{% load helper_tags %}
+
+{% block form_content %}
+<div class="panel panel-default">
+    <div class="panel-heading">{{ policy_name }}</div>
+    <div class="panel-body">
+       <dl>
+          <dt>Arn</dt>
+          <dd>{{ policy_arn }}</dd>
+          <dt>Policy Document</dt>
+          <dd>{{ policy_document|to_json }}</dd>
+       </dl>
+    </div>
+</div>
+{% endblock %}
+
