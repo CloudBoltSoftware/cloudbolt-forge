@@ -21,7 +21,7 @@ EPOCH = datetime.datetime.utcfromtimestamp(0)
 
 # Setting this to True will cause this extension to not call into AWS to get data. Useful for working on UI
 # changes that do not need real data from AWS to test.
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 
 class NetworkFlowTabDelegate(TabExtensionDelegate):
@@ -144,6 +144,7 @@ def aws_net_flows_json(request, handler_id):
     return {
         # Unaltered from client-side value, but cast to int to avoid XSS http://datatables.net/usage/server-side
         "sEcho": int(request.GET.get('sEcho', 1)),
+        # TODO change these next two to enable pagination- somehow figure out the total # of records
         "iTotalRecords": len(events),
         "iTotalDisplayRecords": limit,
         'aaData': events,
