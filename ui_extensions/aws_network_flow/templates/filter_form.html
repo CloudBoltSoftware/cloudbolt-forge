@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load helper_tags %}
 
 <div class="panel-body">
     <form method="get">
@@ -16,6 +17,10 @@
             <li class="filter-field inline-field">
                 {{ filters_form.filterPattern.label_tag }}
                 {{ filters_form.filterPattern }}
+            </li>
+            <li class="filter-field inline-field">
+                {% trans 'Log Streams' %} {% infotip 'If none are selected, flows from all streams will be shown' %}
+                {{ filters_form.logStreamNames }}
             </li>
         </ul>
         <div class="btn-toolbar text-center">

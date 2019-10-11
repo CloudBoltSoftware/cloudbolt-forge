@@ -1,5 +1,6 @@
 from django import forms
 from common.forms import C2Form, ProfileModelMultipleChoiceField, C2HorizontalFormHelper
+from common.widgets import SelectizeMultiple
 from django.utils.translation import ugettext as _
 
 
@@ -33,7 +34,18 @@ class AWSNetFlowFilterForm(C2Form):
                                       }),
         label=_("Filter Pattern"),
         required=False)
+    logStreamNames = forms.MultiValueField(
+        widget=SelectizeMultiple(
+            choices=[],
+            attrs={}
+        ),
+        required=True
+    )
 
     def __init__(self, *args, **kwargs):
+        stream_options = kwargs.pop("stream_options")
         super().__init__(*args, **kwargs)
         self.helper = C2HorizontalFormHelper(label_cols=3, field_cols=9)
+        stream_options = [(stream_option, stream_option) for stream_option in stream_options]
+        self.fields["logStreamNames"].widget.choices = stream_options
+

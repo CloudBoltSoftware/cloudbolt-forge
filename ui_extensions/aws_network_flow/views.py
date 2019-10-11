@@ -14,10 +14,14 @@ from utilities.templatetags import helper_tags
 
 from .forms import AWSNetFlowFilterForm
 
-from settings import AWS_NET_FLOW_LOG_GROUP_NAME, AWS_NET_FLOW_LOG_STREAM_NAMES
+from settings import AWS_NET_FLOW_LOG_GROUP_NAME
 
 PROTOCOL_TABLE = {num: name[8:] for name, num in vars(socket).items() if name.startswith("IPPROTO")}
 EPOCH = datetime.datetime.utcfromtimestamp(0)
+
+# Setting this to True will cause this extension to not call into AWS to get data. Useful for working on UI
+# changes that do not need real data from AWS to test.
+DEBUG_MODE = True
 
 
 class NetworkFlowTabDelegate(TabExtensionDelegate):
@@ -70,9 +74,10 @@ def _load_filters_from_get_params(request):
     """
     # json for all of the filters selected on the form.
     filters_selected = json.loads(request.GET.get('filters_selected', '{}'))
-    print(f"filters_selected: {filters_selected}")
     filters = {}
 
+    # Whatever is passed by the client in filters_selected, just return that to be passed that along as arguments to
+    # filter_log_events()
     for field_name in filters_selected:
         if field_name == 'new_filters':
             continue
@@ -81,10 +86,13 @@ def _load_filters_from_get_params(request):
         if val and val[0]:
             if field_name.endswith("Time"):
                 filters[field_name] = _parse_date_to_ms_since_epoch(filters_selected[field_name][0])
+            elif field_name == 'logStreamNames':
+                # Leave the multi-value filter as a list
+                filters[field_name] = filters_selected[field_name]
             else:
+                # Flatten single-item lists to scalar values
                 filters[field_name] = filters_selected[field_name][0]
     return filters
-
 
 
 @json_view
@@ -94,17 +102,33 @@ def aws_net_flows_json(request, handler_id):
     filters = _load_filters_from_get_params(request)
 
     client = _get_boto_logs_client(handler)
-    response = client.filter_log_events(
-        logGroupName=AWS_NET_FLOW_LOG_GROUP_NAME,
-        logStreamNames=AWS_NET_FLOW_LOG_STREAM_NAMES,
-        limit=limit,
-        interleaved=True,
-        **filters
-    )
+    if DEBUG_MODE:
+        response = {
+            'events': [
+                {'logStreamName': 'eni-059991d290dd409db-accept', 'timestamp': 1570041981000,
+                 'message': '2 548575475449 eni-059991d290dd509db 10.110.0.88 45.77.78.241 60373 123 17 1 76 1570041981 1570042039 ACCEPT OK',
+                 'ingestionTime': 1570042481642, 'eventId': 'FAKE'}],
+            'searchedLogStreams': [{'logStreamName': 'eni-028774ec409393468-accept', 'searchedCompletely': False}],
+            'nextToken': 'FAKE',
+            'ResponseMetadata': {'RequestId': 'FAKE', 'HTTPStatusCode': 200,
+                                 'HTTPHeaders': {
+                                     'x-amzn-requestid': 'FAKE', 'content-type': 'application/x-amz-json-1.1',
+                                     'content-length': '2134', 'date': 'Fri, 11 Oct 2019 15:43:18 GMT'},
+                                 'RetryAttempts': 0}
+        }
+    else:
+        response = client.filter_log_events(
+            logGroupName=AWS_NET_FLOW_LOG_GROUP_NAME,
+            limit=limit,
+            interleaved=True,
+            **filters
+        )
+
     events = []
     for event in response['events']:
         # The fields in each event are:
-        # version account_id interface_id srcaddr dstaddr srcport dstport protocol packets bytes start end action log_status
+        # version account_id interface_id srcaddr dstaddr srcport dstport protocol packets bytes start end
+        # action log_status
         msg_parts = event['message'].split(" ")[2:]  # skip the version & account ID, they're not useful
         event_time = datetime.datetime.fromtimestamp(event['timestamp']/1000)
         row = [helper_tags.when(event_time)]
@@ -126,18 +150,30 @@ def aws_net_flows_json(request, handler_id):
     }
 
 
+def _get_log_stream_names(handler):
+    if DEBUG_MODE:
+        return ['eni-028774ec45639346a-accept', 'eni-058991d130ad509db-accept']
+    else:
+        client = _get_boto_logs_client(handler)
+        response = client.describe_log_streams(logGroupName=AWS_NET_FLOW_LOG_GROUP_NAME)['logStreams']
+        return [log_stream['logStreamName'] for log_stream in response]
+
+
 def filter_form(request, handler_id):
     """
     Return the HTML for the AWS net flow filter form.
 
     This is called via AJAX when a user clicks on the "Show Filters" button for the first time.
     """
+    handler = AWSHandler.objects.get(id=handler_id)
+    stream_options = _get_log_stream_names(handler)
+
     if request.method == 'POST':
-        filters_form = AWSNetFlowFilterForm(request.POST)
+        filters_form = AWSNetFlowFilterForm(request.POST, stream_options=stream_options)
         if filters_form.is_valid():
             return
     else:
-        filters_form = AWSNetFlowFilterForm(dict())
+        filters_form = AWSNetFlowFilterForm(dict(), stream_options=stream_options)
 
     context = {'filters_form': filters_form}
 
