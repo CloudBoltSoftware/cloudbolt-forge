@@ -1,6 +1,73 @@
-<h1>Security Hub Findings</h1>
+<div class="btn-toolbar">
+    <a href="#" id="reload" class="btn btn-default">
+        <i class="fas fa-sync-alt"></i> Reload findings
+    </a>
+</div>
 
-{% for finding in findings %}
-    <div><strong>{{ finding.Title }}</strong></div>
-    <div style="margin-bottom: 10px">{{ finding.Description }}</div>
-{% endfor %}
+<div class="panel panel-default">
+    <table id="findings" width="100%" class="table table-striped">
+        <thead>
+        <tr>
+            <th></th>
+            <th>Title</th>
+            <th>Severity</th>
+        </tr>
+        </thead>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        /* row details view */
+        function format(d) {
+            return '<table border="0" style="margin-left:12px">' +
+                '<tr><th>Description</th><th>Remediation</th></tr>' +
+                '<tr><td width="50%">' + d[1] + '</td>' +
+                '<td width="50%" valign="top">' + d[2] + '</td></tr>' +
+                '</table>';
+        }
+
+        var table = $('#findings').DataTable({
+            "ajax": "/aws_network_policy/server/{{ server_id }}/",
+            "columns": [
+                {
+                    "className": 'disclose',
+                    "orderable": false,
+                    "data": null,
+                    "defaultContent": '<span class="fas fa-caret-square-right"></span>'
+                },
+                {
+                    "data": 0,
+                    orderable: true
+                },
+                {
+                    "data": null,
+                    "orderable": true,
+                    "defaultContent" : '0.0',
+                    orderable: true
+                }
+            ]
+        });
+
+        $('#reload').on('click', function(e) {
+            e.preventDefault();
+            table.ajax.reload();
+        });
+
+        $('#findings tbody').on('click', 'td.disclose', function () {
+            var tr = $(this).closest('tr');
+            var row = table.row(tr);
+
+            if (row.child.isShown()) {
+                $(this).html('<span class="fas fa-caret-square-right"></span>')
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                $(this).html('<span class="fas fa-caret-square-down"></span>')
+                row.child(format(row.data())).show();
+                tr.addClass('shown');
+            }
+        });
+
+    });
+</script>

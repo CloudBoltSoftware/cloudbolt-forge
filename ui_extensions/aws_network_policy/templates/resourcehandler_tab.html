@@ -1,9 +1,48 @@
-<h1>Security Hub Findings</h1>
+{#<h1>Security Hub Findings</h1>#}
+{##}
+{#{%  for finding_type, findings in findings_by_type.items %}#}
+{#    <h3>{{ finding_type }}</h3>#}
+{#    {% for finding in findings %}#}
+{#        <div><strong>{{ finding.Title }}</strong></div>#}
+{#        <div style="margin-bottom: 10px">{{ finding.Description }}</div>#}
+{#    {% endfor %}#}
+{#{%  endfor %}#}
+{##}
+{##}
 
-{%  for finding_type, findings in findings_by_type.items %}
-    <h3>{{ finding_type }}</h3>
-    {% for finding in findings %}
-        <div><strong>{{ finding.Title }}</strong></div>
-        <div style="margin-bottom: 10px">{{ finding.Description }}</div>
-    {% endfor %}
-{%  endfor %}
+<div class="btn-toolbar">
+    <a href="#" id="reload" class="btn btn-default">
+      <i class="fas fa-sync-alt"></i> Reload findings
+    </a>
+</div>
+
+<div class="panel panel-default">
+    <table
+        id="findings"
+        width="100%"
+        class="table table-striped"
+        data-table
+{#        data-table-no-auto-init#}
+        data-table-source="/aws_network_policy/rh/{{ rh_id }}/">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody>
+            {# data is coming… #}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function() {
+        c2.dataTables.init('#findings');
+        $('#reload').on('click', function() {
+            e.preventDefault();
+            var table = $('#findings').DataTable();
+            table.ajax.reload();
+        })
+    });
+</script>

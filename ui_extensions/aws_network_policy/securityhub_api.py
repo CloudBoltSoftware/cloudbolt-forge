@@ -3,13 +3,11 @@ import django
 import settings
 import boto3 as boto3
 
-from resourcehandlers.aws.models import AWSHandler
-
 if __name__ == '__main__':
     django.setup()
 
+from resourcehandlers.aws.models import AWSHandler
 from infrastructure.models import Server, CustomField
-from resourcehandlers.models import ResourceHandler
 from common.methods import set_progress
 
 
@@ -67,21 +65,11 @@ def group_by_types(account):
     return grouped_findings
 
 
-def main():
-
-
-if __name__ == '__main__':
-    main()
-
-
 def run(job, *args, **kwargs):
-    client = boto3.client('securityhub',
-                          aws_access_key_id=ACCESS_KEY_ID,
-                          aws_secret_access_key=SECRET_ACCESS_KEY,
-                          region_name=REGION)
+    client = boto3.client('securityhub', region_name='us-west-1')
 
     for rh in AWSHandler.objects.all():
-    set_progress('Fetching findings')
+        set_progress('Fetching findings')
     account, instances = fetch_findings(client)
     set_progress('Updating CloudBolt instances')
     update_instances(instances)
@@ -90,15 +78,19 @@ def run(job, *args, **kwargs):
     with open(settings.PROSERV_DIR + '/findings.json', 'w') as f:
         json.dump(account, f, indent=True)
 
+    # set_progress("This will show up in the job details page in the CB UI, and in the job log")
+    # server = kwargs.get('server')
+    # if server:
+    #     set_progress("This plug-in is running for server {}".format(server))
+    #
+    # set_progress("Dictionary of keyword args passed to this plug-in: {}".format(kwargs.items()))
+    #
+    # if True:
+    #     return "SUCCESS", "Sample output message", ""
+    # else:
+    #     return "FAILURE", "Sample output message", "Sample error message, this is shown in red"
+    return "", "", ""
 
-    set_progress("This will show up in the job details page in the CB UI, and in the job log")
-    server = kwargs.get('server')
-    if server:
-        set_progress("This plug-in is running for server {}".format(server))
 
-    set_progress("Dictionary of keyword args passed to this plug-in: {}".format(kwargs.items()))
-
-    if True:
-        return "SUCCESS", "Sample output message", ""
-    else:
-        return "FAILURE", "Sample output message", "Sample error message, this is shown in red"
+if __name__ == '__main__':
+    run(None)

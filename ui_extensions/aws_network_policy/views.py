@@ -7,6 +7,7 @@ from extensions.views import tab_extension, TabExtensionDelegate
 from infrastructure.models import Server
 from resourcehandlers.aws.models import AWSHandler
 from resourcehandlers.models import ResourceHandler
+from utilities.decorators import json_view
 
 
 class AWSSecurityHubResourceHandlerTabDelegate(TabExtensionDelegate):
@@ -23,19 +24,69 @@ class AWSSecurityHubServerTabDelegate(TabExtensionDelegate):
 
 @tab_extension(model=ResourceHandler, title='Security Hub', delegate=AWSSecurityHubResourceHandlerTabDelegate)
 def resourcehandler_tab(request, obj_id):
-    rh = ResourceHandler.objects.get(id=obj_id)
-    with open(settings.PROSERV_DIR + '/findings.json', "r") as f:
-        findings = json.load(f)
     context = {
-        'findings_by_type': findings
+        'rh_id': obj_id
     }
+    return render(request, 'aws_network_policy/templates/resourcehandler_tab.html', context=context)
+    # rh = ResourceHandler.objects.get(id=obj_id)
+    # findings = []
+    #
+    # try:
+    #     with open(settings.PROSERV_DIR + '/findings.json', "r") as f:
+    #         findings = json.load(f)
+    # except FileNotFoundError as ex:
+    #     # No findings found, display ZERO-STATE
+    #     pass
+    #
+    # context = {
+    #     'findings_by_type': findings
+    # }
     return render(request, 'aws_network_policy/templates/resourcehandler_tab.html', context=context)
 
 
 @tab_extension(model=Server, title='Security Hub', delegate=AWSSecurityHubServerTabDelegate)
 def server_tab(request, obj_id):
-    server = Server.objects.get(id=obj_id)
     context = {
-        'findings': json.loads(server.aws_securityhub_findings)
+        'server_id': obj_id
     }
     return render(request, 'aws_network_policy/templates/server_tab.html', context=context)
+
+
+@json_view
+def aws_network_policy_server_json(request, server_id):
+    server = Server.objects.get(id=server_id)
+    response = json.loads(server.aws_securityhub_findings)
+    findings = []
+
+    for finding in response:
+        row = [finding['Title'], finding['Description'], finding['Remediation']['Recommendation']['Text']]
+        findings.append(row)
+
+    return {
+        # unaltered from client-side value, but cast to int to avoid XSS
+        # http://datatables.net/usage/server-side
+        "sEcho": int(request.GET.get('sEcho', 1)),
+        "iTotalRecords": 10,
+        "iTotalDisplayRecords": 10,
+        'aaData': findings,
+    }
+
+@json_view
+def aws_network_policy_rh_json(request, rh_id):
+    server = Server.objects.get(id=rh_id)
+    # response = json.loads(server.aws_securityhub_findings)
+    response = []
+    findings = []
+
+    for finding in response:
+        row = [finding['Title'], finding['Description'], finding['Remediation']['Recommendation']['Text']]
+        findings.append(row)
+
+    return {
+        # unaltered from client-side value, but cast to int to avoid XSS
+        # http://datatables.net/usage/server-side
+        "sEcho": int(request.GET.get('sEcho', 1)),
+        "iTotalRecords": 10,
+        "iTotalDisplayRecords": 10,
+        'aaData': findings,
+    }
