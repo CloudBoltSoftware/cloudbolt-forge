@@ -1,5 +1,6 @@
 import json
 import os
+from pprint import pformat
 
 from django.contrib import messages
 from django.http import HttpResponseRedirect
@@ -8,15 +9,16 @@ from django.urls import reverse
 
 from extensions.views import tab_extension, TabExtensionDelegate
 from jobs.models import RecurringJob
-from resourcehandlers.aws.models import IAM_POLICY_CACHE_LOCATION_PATH, AWSHandler
+from resourcehandlers.aws.models import AWSHandler
 from resourcehandlers.models import ResourceHandler
 from utilities.views import dialog_view, redirect_to_referrer
+
 from .forms import AWSIAMPolicyForm
+from .iam_policy_utilities import IAM_POLICY_CACHE_LOCATION_PATH, get_iam_policies, get_iam_policy_details
 
 @tab_extension(model=ResourceHandler, title='IAM Policies')
 def awshandler_iam_policies_tab(request, obj_id):
     handler = AWSHandler.objects.get(id=obj_id)
-    print("handler is here")
     job = RecurringJob.objects.filter(name="AWS IAM Policy Caching").first()
     if not job:
         print('Creating the Recurring Job')
@@ -27,7 +29,7 @@ def awshandler_iam_policies_tab(request, obj_id):
     policies = get_iam_policies_from_cache(handler.id)
     if not policies:
         print('Unable to load policies from cache')
-        policies = handler.get_iam_policies()
+        policies = get_iam_policies(handler)
 
     context = {
         "handler": handler,
@@ -41,8 +43,8 @@ def awshandler_iam_policies_tab(request, obj_id):
 @dialog_view(template_name='iam_policies/templates/policy_detail.html')
 def aws_iam_policy_detail(request, handler_id, policy_arn, policy_name):
     handler = AWSHandler.objects.get(id=handler_id)
-    policy_details = handler.get_iam_policy_details(policy_arn)
-    policy_document = policy_details['PolicyVersion']['Document']   
+    policy_details = get_iam_policy_details(handler, policy_arn)
+    policy_document = pformat(policy_details['PolicyVersion']['Document'])   
     print('policy details: {}'.format(policy_details)) 
     return {
         "title": "IAM Policy Details",
@@ -55,7 +57,7 @@ def aws_iam_policy_detail(request, handler_id, policy_arn, policy_name):
 
 def discover_aws_iam_policies(request, handler_id):
     handler = AWSHandler.objects.get(id=handler_id)
-    handler.get_iam_policies()
+    get_iam_policies(handler)
     return redirect_to_referrer(request, default_url=reverse('resourcehandler_detail', args=[handler_id]))
 
 

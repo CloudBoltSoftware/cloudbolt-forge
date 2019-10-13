@@ -1,5 +1,4 @@
 {% extends 'dialogs/dialog.html' %}
-{% load helper_tags %}
 
 {% block form_content %}
 <div class="panel panel-default">
@@ -9,7 +8,7 @@
           <dt>Arn</dt>
           <dd>{{ policy_arn }}</dd>
           <dt>Policy Document</dt>
-          <dd>{{ policy_document|to_json }}</dd>
+          <dd><pre>{{ policy_document }}</pre></dd>
        </dl>
     </div>
 </div>

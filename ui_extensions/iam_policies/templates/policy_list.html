@@ -30,7 +30,7 @@
     <tbody>
         {% for policy in policies %}
             <tr>
-                <td><a data-dialog-width="700" class="open-dialog" href="{% url 'aws_iam_policy_detail' handler.id policy.arn policy.name %}">{{ policy.name }}</a></td>
+                <td><a data-dialog-width="1200" class="open-dialog" href="{% url 'aws_iam_policy_detail' handler.id policy.arn policy.name %}">{{ policy.name }}</a></td>
                 <td>{{ policy.arn }}</td>
                 <td>{{ policy.path }}</td>
             </tr>

@@ -3,7 +3,9 @@ import os
 
 from cbhooks.hookmodules.content_library.cache_content import write_list_to_file
 from common.methods import set_progress
-from resourcehandlers.aws.models import AWSHandler, IAM_POLICY_CACHE_LOCATION_PATH
+from resourcehandlers.aws.models import AWSHandler
+
+from .iam_policy_utilities import IAM_POLICY_CACHE_LOCATION_PATH
 
 
 def run(job, *args, **kwargs):
@@ -30,3 +32,4 @@ def run(job, *args, **kwargs):
         path = os.path.join(IAM_POLICY_CACHE_LOCATION_PATH, 'handler-{}-policies.json'.format(handler.id))
         write_list_to_file(exportable_policies, path)
         set_progress("Wrote IAM Policies for {} to filesystem.".format(handler.name))
+
