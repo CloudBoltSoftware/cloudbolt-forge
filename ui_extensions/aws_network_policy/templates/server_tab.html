@@ -12,6 +12,7 @@
             <th>Title</th>
             <th>Severity</th>
         </tr>
+        {# Detail rows are generated dynamically via JS and DataTable API. #}
         </thead>
     </table>
 </div>
@@ -27,6 +28,10 @@
                 '</table>';
         }
 
+        function render_value(v) {
+            return 'XXX';
+        }
+
         var table = $('#findings').DataTable({
             "ajax": "/aws_network_policy/server/{{ server_id }}/",
             "columns": [
@@ -34,16 +39,16 @@
                     "className": 'disclose',
                     "orderable": false,
                     "data": null,
-                    "defaultContent": '<span class="fas fa-caret-square-right"></span>'
+                    "defaultContent": '<i class="fas fa-caret-square-right"></i>'
                 },
                 {
                     "data": 0,
                     orderable: true
                 },
                 {
-                    "data": null,
+                    "data": render_value('x'),
                     "orderable": true,
-                    "defaultContent": '0.0',
+                    "defaultContent": 0,
                     orderable: true
                 }
             ]

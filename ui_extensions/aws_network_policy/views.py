@@ -28,20 +28,6 @@ def resourcehandler_tab(request, obj_id):
         'rh_id': obj_id
     }
     return render(request, 'aws_network_policy/templates/resourcehandler_tab.html', context=context)
-    # rh = ResourceHandler.objects.get(id=obj_id)
-    # findings = []
-    #
-    # try:
-    #     with open(settings.PROSERV_DIR + '/findings.json', "r") as f:
-    #         findings = json.load(f)
-    # except FileNotFoundError as ex:
-    #     # No findings found, display ZERO-STATE
-    #     pass
-    #
-    # context = {
-    #     'findings_by_type': findings
-    # }
-    return render(request, 'aws_network_policy/templates/resourcehandler_tab.html', context=context)
 
 
 @tab_extension(model=Server, title='Security Hub', delegate=AWSSecurityHubServerTabDelegate)
@@ -59,7 +45,13 @@ def aws_network_policy_server_json(request, server_id):
     findings = []
 
     for finding in response:
-        row = [finding['Title'], finding['Description'], finding['Remediation']['Recommendation']['Text']]
+        row = [
+            finding['Title'],
+            finding['Description'],
+            finding['Remediation']['Recommendation']['Text'],
+            finding['Severity']['Product'],
+            finding['Severity']['Normalized'],
+        ]
         findings.append(row)
 
     return {
@@ -70,6 +62,7 @@ def aws_network_policy_server_json(request, server_id):
         "iTotalDisplayRecords": 10,
         'aaData': findings,
     }
+
 
 @json_view
 def aws_network_policy_rh_json(request, rh_id):
