@@ -33,7 +33,7 @@
            width="100%"
            class="table table-striped"
            data-table
-           data-table-sort="1,desc"
+           data-table-sort="disabled"
            data-table-no-auto-init
            data-table-source="/aws_net_flows/{{ handler.id }}/"
     >
@@ -74,7 +74,6 @@
         $table.data('table-fnServerParams', function (aoData) {
             c2.dataTables.addListFilters(aoData);
         });
-        c2.dataTables.init('#netflows');
+        c2.dataTables.init('#netflows', {"searching": false});
     });
-
 </script>
