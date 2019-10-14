@@ -18,12 +18,12 @@
 
 <script>
     $(document).ready(function () {
-        /* row details view */
-        function format(d) {
+        /* detailed view for rows */
+        function format(details) {
             return '<table border="0" style="margin-left:12px">' +
                 '<tr><th>Description</th><th>Remediation</th></tr>' +
-                '<tr><td width="50%">' + d[1] + '</td>' +
-                '<td width="50%" valign="top">' + d[2] + '</td></tr>' +
+                '<tr><td width="50%">' + details[1] + '</td>' +
+                '<td width="50%" valign="top">' + details[2] + '</td></tr>' +
                 '</table>';
         }
 
@@ -43,13 +43,13 @@
                 {
                     "data": null,
                     "orderable": true,
-                    "defaultContent" : '0.0',
+                    "defaultContent": '0.0',
                     orderable: true
                 }
             ]
         });
 
-        $('#reload').on('click', function(e) {
+        $('#reload').on('click', function (e) {
             e.preventDefault();
             table.ajax.reload();
         });
