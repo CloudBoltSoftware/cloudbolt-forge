@@ -66,29 +66,23 @@ def group_by_types(account):
 
 
 def run(job, *args, **kwargs):
-    client = boto3.client('securityhub', region_name='us-west-1')
-
+    rh: AWSHandler
     for rh in AWSHandler.objects.all():
-        set_progress('Fetching findings')
-    account, instances = fetch_findings(client)
-    set_progress('Updating CloudBolt instances')
-    update_instances(instances)
-    account = group_by_types(account)
+        regions = set([env.aws_region for env in rh.environment_set.all()])
+        for region in regions:
+            set_progress(f'Fetching findings for {rh.name} ({region}).')
+            client = rh.get_boto3_client(service_name='securityhub', region_name=region)
+            # Fetch account-level and instance-level findings for the current region. Note: account-level findings
+            # span all regions.
+            account, instances = fetch_findings(client)
+            set_progress(f'Updating CloudBolt instances in {region}.')
+            update_instances(instances)
+            account = group_by_types(account)
+            set_progress(f'Updating AWS Account findings for {rh.name}')
+            # Next line repeats for each region but is relatively low overhead/impact.
+            with open(settings.PROSERV_DIR + f'/findings-{rh.id}.json', 'w') as f:
+                json.dump(account, f, indent=True)
 
-    with open(settings.PROSERV_DIR + '/findings.json', 'w') as f:
-        json.dump(account, f, indent=True)
-
-    # set_progress("This will show up in the job details page in the CB UI, and in the job log")
-    # server = kwargs.get('server')
-    # if server:
-    #     set_progress("This plug-in is running for server {}".format(server))
-    #
-    # set_progress("Dictionary of keyword args passed to this plug-in: {}".format(kwargs.items()))
-    #
-    # if True:
-    #     return "SUCCESS", "Sample output message", ""
-    # else:
-    #     return "FAILURE", "Sample output message", "Sample error message, this is shown in red"
     return "", "", ""
 
 
