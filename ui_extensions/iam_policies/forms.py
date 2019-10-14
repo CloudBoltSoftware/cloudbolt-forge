@@ -18,7 +18,6 @@ class AWSIAMPolicyForm(C2Form):
         help_text=('Paste the policy document you would like to add in JSON format.')
     )
 
-
     def __init__(self, *args, **kwargs):
         self.handler = kwargs.pop('handler')
         super(AWSIAMPolicyForm, self).__init__(*args, **kwargs)
@@ -26,16 +25,16 @@ class AWSIAMPolicyForm(C2Form):
     def save(self):
         policy_name = self.cleaned_data.get('name')
         policy_document = self.cleaned_data.get('policy_document')
-        
+
         handler = self.handler
         wrapper = handler.get_api_wrapper()
         iam_client = wrapper.get_boto3_client('iam', handler.serviceaccount, handler.servicepasswd, None)
-        
+
         response = iam_client.create_policy(
             PolicyName=policy_name,
             PolicyDocument=policy_document,
         )
-    
+
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             msg = _("Added IAM Policy '{policy}' to '{handler}'")
 

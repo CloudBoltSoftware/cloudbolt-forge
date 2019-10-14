@@ -1,3 +1,10 @@
+"""
+Recurring job to fetch and store the IAM Policies for all configured AWS
+Resource Handlers. We write the list of policies to the filesystem as
+we don't have db modeling to support AWS Policies at the time of development.
+
+Done as part of the 9.0.1 Gartner release.
+"""
 import json
 import os
 
@@ -31,5 +38,4 @@ def run(job, *args, **kwargs):
         os.makedirs(IAM_POLICY_CACHE_LOCATION_PATH, exist_ok=True)
         path = os.path.join(IAM_POLICY_CACHE_LOCATION_PATH, 'handler-{}-policies.json'.format(handler.id))
         write_list_to_file(exportable_policies, path)
-        set_progress("Wrote IAM Policies for {} to filesystem.".format(handler.name))
-
+        set_progress("Collected {} IAM Policies for {}.".format(len(exportable_policies), handler.name))

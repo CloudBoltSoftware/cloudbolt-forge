@@ -54,13 +54,13 @@ def get_iam_policies(handler):
     os.makedirs(IAM_POLICY_CACHE_LOCATION_PATH, exist_ok=True)
     path = os.path.join(IAM_POLICY_CACHE_LOCATION_PATH, 'handler-{}-policies.json'.format(handler.id))
     write_list_to_file(iam_policies, path)
-    
+
     return iam_policies
 
 
 def determine_most_recent_iam_policy(version_ids):
     """
-    These version ids are provided by AWS and are in the format 'v6', 'v4', 'v1'.
+    These version ids are provided by AWS and are in the format ['v6', 'v4', 'v1'].
     """
     if len(version_ids) == 1:
         return version_ids[0]
@@ -83,4 +83,3 @@ def get_iam_policy_details(handler, policy_arn):
 
     policy_details = iam_client.get_policy_version(PolicyArn=policy_arn, VersionId=most_recent_version)
     return policy_details
-
