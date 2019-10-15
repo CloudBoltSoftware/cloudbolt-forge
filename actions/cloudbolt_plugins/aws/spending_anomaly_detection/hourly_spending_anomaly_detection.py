@@ -10,14 +10,17 @@ Version:
     Requires >= v9.0.1
 """
 
+import datetime
 import json
-from typing import List
+from typing import List, Tuple
 
 from alerts.methods import alert
 from resourcehandlers.aws.models import AWSHandler
 
 AWS_COST_THRESHOLD = 100
 ALERT_CHANNEL_NAMES: List[str] = []
+
+CostData = Tuple[datetime.datetime, str, float]
 
 
 class AWSCostAlert:
@@ -31,7 +34,7 @@ class AWSCostAlert:
         """
         aws_instances = AWSHandler.objects.all()
         for aws in aws_instances:
-            last_hours_data = aws.get_last_hour_billing_data()
+            last_hours_data = aws.get_yesterday_hourly_billing_data()
             self.__check_threshold(last_hours_data)
 
         _ = self.__alert_over_threshold()
@@ -41,12 +44,12 @@ class AWSCostAlert:
         Parse server information for instances that exceed the threshold.
 
         Args:
-            data_list (List[Tuple[str, float]]): [(server_id, cost)]
+            data_list (List[CostData]): [(datetime, server_id, cost)]
         """
         _exceed_threshold_list = []
-        for server_id, cost in data_list:
+        for time, server_id, cost in data_list:
             if cost >= AWS_COST_THRESHOLD:
-                _exceed_threshold_list.append((server_id, cost))
+                _exceed_threshold_list.append((time, server_id, cost))
         self.over_threshold.extend(_exceed_threshold_list)
         return
 
@@ -57,7 +60,8 @@ class AWSCostAlert:
         Returns:
             None
         """
-        instance_dict = dict(self.over_threshold)
+        keys = ["Timestamp", "Resource", "Cost"]
+        instance_dict = [dict(zip(keys, i)) for i in self.over_threshold]
         instance_json = json.dumps(instance_dict, indent=4)
         message = (
             f"The following servers exceeded the AWS cost threshold of {AWS_COST_THRESHOLD}:"
