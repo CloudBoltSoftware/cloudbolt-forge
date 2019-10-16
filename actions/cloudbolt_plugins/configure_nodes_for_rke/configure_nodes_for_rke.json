@@ -1,0 +1,10 @@
+{
+    "description": "",
+    "max-retries": 0,
+    "name": "configure-nodes-for-rke",
+    "resource-technologies": [],
+    "script-filename": "cb_plugin_1570640510857138_mjMOkye.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}

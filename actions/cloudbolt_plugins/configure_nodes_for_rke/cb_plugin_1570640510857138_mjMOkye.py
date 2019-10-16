@@ -1,0 +1,214 @@
+"""
+This plugin prepares the given servers for RKE and creates an RKE config file
+"""
+import os
+import time
+
+import yaml
+
+from common.methods import set_progress
+from infrastructure.models import Server
+
+
+def create_ssh_keypair(size=2048):
+    """
+    Make a new ssh keypair of a given size
+    :param: size (optional, defaults to 2048). How many bits large should the key be?
+    :return: UTF-8 strings representing the public key and private key in that order
+    """
+    from cryptography.hazmat.primitives import serialization as crypto_serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    from cryptography.hazmat.backends import default_backend as crypto_default_backend
+
+    key = rsa.generate_private_key(
+        backend=crypto_default_backend(),
+        public_exponent=65537,
+        key_size=size,
+    )
+    private_key = key.private_bytes(
+        crypto_serialization.Encoding.PEM,
+        crypto_serialization.PrivateFormat.PKCS8,
+        crypto_serialization.NoEncryption())
+    public_key = key.public_key().public_bytes(
+        crypto_serialization.Encoding.OpenSSH,
+        crypto_serialization.PublicFormat.OpenSSH
+    )
+    return public_key.decode('utf-8'), private_key.decode('utf-8')
+
+
+def generate_rke_yaml(ips, user, ssh_private_key):
+    """
+    Make the YAML file that RKE is going to use to create the kubernetes cluster
+    :param ips: What IP addresses are we working with? Array of strings
+    :param user: What user should we create?
+    :param ssh_private_key: Private key text (utf-8) to include in yaml
+    :return: string with the formatted yaml in it
+    """
+    nodes = []
+    for ip in ips:
+        nodes.append(
+            {
+                'address': ip,
+                'user': user,
+                'ssh_key': ssh_private_key,
+                'role': [],
+            },
+        )
+    for i, role in enumerate(['controlplane', 'etcd']):
+        node_idx = i % len(nodes)
+        nodes[node_idx]['role'].append(role)
+
+    for node in nodes:
+        if len(node['role']) == 0:
+            node['role'].append('worker')
+
+    worker_count = 0
+    for node in nodes:
+        if 'worker' in node['role']:
+            worker_count += 1
+
+    if worker_count == 0:
+        for node in nodes:
+            if 'controlplane' not in node['role']:
+                node['role'].append('worker')
+                worker_count += 1
+    if worker_count == 0:
+        nodes[0]['role'].append('worker')
+
+    etcd_count = 0
+    for node in nodes:
+        if 'etcd' in node['role']:
+            etcd_count += 1
+    if etcd_count < 3:
+        for node in nodes:
+            if 'etcd' not in node['role'] and 'controlplane' not in node['role']:
+                node['role'].append('etcd')
+                etcd_count += 1
+                if etcd_count >= 3:
+                    break
+
+    services = {
+        'etcd': {'image': 'quay.io/coreos/etcd:latest'},
+        'kube-api': {'image': 'rancher/k8s:v1.11.6-rancher2'},
+        'kube-controller': {'image': 'rancher/k8s:v1.11.6-rancher2'},
+        'scheduler': {'image': 'rancher/k8s:v1.11.6-rancher2'},
+        'kubelet': {'image': 'rancher/k8s:v1.11.6-rancher2'},
+        'kubeproxy': {'image': 'rancher/k8s:v1.11.6-rancher2'},
+    }
+    addons = [
+        {
+            "apiVersion": "v1",
+            "kind": "ServiceAccount",
+            "metadata": {
+                "name": "cloudbolt-admin",
+                "namespace": "kube-system"
+            }
+        },
+        {
+            "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "ClusterRoleBinding",
+            "metadata": {
+                "name": "cloudbolt-admin"
+            },
+            "roleRef": {
+                "apiGroup": "rbac.authorization.k8s.io",
+                "kind": "ClusterRole",
+                "name": "cluster-admin"
+            },
+            "subjects": [
+                {
+                    "kind": "ServiceAccount",
+                    "name": "cloudbolt-admin",
+                    "namespace": "kube-system"
+                }
+            ]
+        },
+    ]
+
+    document = {
+        'nodes': nodes,
+        'services': services,
+        'addons': '---\n' + yaml.dump_all(addons),
+    }
+
+    return yaml.dump(document)
+
+
+def find_all_server_ips(blueprint_context):
+    """
+    Given the blueprint context, find the IP addresses for each server
+    :param blueprint_context:
+    :return: list of ip addresses represented as strings
+    """
+    ips = []
+    for server_obj in find_all_servers(blueprint_context):
+        if hasattr(server_obj, 'ip') and server_obj.ip is not None and server_obj.ip != '':
+            ips.append(server_obj.ip)
+    return ips
+
+
+def find_all_servers(blueprint_context):
+    """
+    Given the blueprint context, find all servers
+    :param blueprint_context:
+    :return: iterable (yield) over Server objects
+    """
+    for key, value in blueprint_context.items():
+        if isinstance(value, dict) and 'servers' in value:
+            server_query_set = value.get('servers')
+            for server_obj in server_query_set:
+                yield server_obj
+
+
+def prepare_server_hosts(user, blueprint_context, ssh_public_key):
+    docker_script = 'yum -y install docker || exit 1;\n' + \
+                    'systemctl enable docker || exit 1;\n' + \
+                    'useradd {};\n'.format(user) + \
+                    'groupadd docker\n' + \
+                    'usermod -aG docker {} || exit 1\n'.format(user) + \
+                    'mkdir -p /home/{}/.ssh || exit 1;\n'.format(user) + \
+                    'echo \'{}\' >> /home/{}/.ssh/authorized_keys || exit 1;\n'.format(ssh_public_key, user) + \
+                    'chown -R {} /home/{}/.ssh || exit 1;\n'.format(user, user) + \
+                    'chmod 755 /home/{}/.ssh || exit 1;\n'.format(user) + \
+                    'chmod 644 /home/{}/.ssh/authorized_keys || exit 1;\n'.format(user) + \
+                    'echo \'net.ipv6.conf.all.forwarding=1\' >> /etc/sysctl.conf || exit 1\n' + \
+                    'sysctl -p /etc/sysctl.conf || exit 1'
+    for tcp_port_num in [443, 10250, 2379, 2380, 6443]:
+        docker_script += '\nfirewall-offline-cmd --add-port={}/tcp || exit 1;'.format(tcp_port_num)
+    for udp_port_num in [8285, 8472]:
+        docker_script += '\nfirewall-offline-cmd --add-port={}/udp || exit 1;'.format(udp_port_num)
+    docker_script += '\nsystemctl restart firewalld;\n'
+    print("docker script:\n{}")
+    for server in find_all_servers(blueprint_context=blueprint_context):
+        set_progress("starting script execution on server {}".format(server.ip))
+        server.execute_script(script_contents=docker_script, timeout=700)
+        server.reboot()
+    time.sleep(10)
+    for server in find_all_servers(blueprint_context=blueprint_context):
+        server.wait_for_os_readiness()
+
+
+def run(_job, *_args, **kwargs):
+    """
+    main entry point for the plugin
+    """
+    user = 'cbrke'
+    blueprint_context = kwargs.get('blueprint_context', {})
+    ssh_public_key, ssh_private_key = create_ssh_keypair()
+    prepare_server_hosts(user, blueprint_context, ssh_public_key)
+
+    os.makedirs('/var/opt/cloudbolt/rke', exist_ok=True)
+    with open("/var/opt/cloudbolt/rke/rke_private_key.pem", 'w') as fl:
+        fl.write(ssh_private_key)
+    with open("/var/opt/cloudbolt/rke/rke_public_key.pem", 'w') as fl:
+        fl.write(ssh_public_key)
+
+    ips = find_all_server_ips(kwargs.get('blueprint_context', {}))
+    rke_yaml_text = generate_rke_yaml(ips, user, ssh_private_key)
+    with open("/var/opt/cloudbolt/rke/cluster.yml", 'w') as fl:
+        fl.write(rke_yaml_text)
+
+    set_progress("Your ssh public and private keys have been generated. Please find them in /var/opt/coudbolt/rke")
+    set_progress("Your RKE cluster.yml file has been generated. Please find it in /var/opt/cloudbolt/rke/cluster.yml")
+
+    return "SUCCESS", "./rke up --config=/var/opt/cloudbolt/rke/cluster.yml", ""
