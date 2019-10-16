@@ -11,6 +11,7 @@ from extensions.views import tab_extension, TabExtensionDelegate
 from jobs.models import RecurringJob
 from resourcehandlers.aws.models import AWSHandler
 from resourcehandlers.models import ResourceHandler
+from utilities.permissions import cbadmin_required
 from utilities.views import dialog_view, redirect_to_referrer
 
 from .forms import AWSIAMPolicyForm
@@ -35,13 +36,14 @@ def awshandler_iam_policies_tab(request, obj_id):
     context = {
         "handler": handler,
         "policies": policies,
-        "column_headings": ['Name', 'Arn', 'Path'],
+        "column_headings": ['Name', 'Arn', 'Path', 'Actions'],
     }
 
     return render(request, 'iam_policies/templates/policy_list.html', context)
 
 
 @dialog_view(template_name='iam_policies/templates/policy_detail.html')
+@cbadmin_required
 def aws_iam_policy_detail(request, handler_id, policy_arn, policy_name):
     """
     We make an API call to fetch the policy details each time this detail view
@@ -49,7 +51,7 @@ def aws_iam_policy_detail(request, handler_id, policy_arn, policy_name):
     """
     handler = AWSHandler.objects.get(id=handler_id)
     policy_details = get_iam_policy_details(handler, policy_arn)
-    policy_document = pformat(policy_details['PolicyVersion']['Document'])   
+    policy_document = pformat(policy_details['PolicyVersion']['Document'])
 
     return {
         "title": "IAM Policy Details",
@@ -60,6 +62,7 @@ def aws_iam_policy_detail(request, handler_id, policy_arn, policy_name):
     }
 
 
+@cbadmin_required
 def discover_aws_iam_policies(request, handler_id):
     handler = AWSHandler.objects.get(id=handler_id)
     get_iam_policies(handler)
@@ -67,15 +70,19 @@ def discover_aws_iam_policies(request, handler_id):
 
 
 @dialog_view
+@cbadmin_required
 def add_aws_iam_policy(request, handler_id):
+
     handler = AWSHandler.objects.get(id=handler_id)
 
     if request.method == 'POST':
-        form = AWSIAMPolicyForm(request.POST, handler=handler)
+        form = AWSIAMPolicyForm(request.POST, request.FILES, handler=handler)
         if form.is_valid():
             success, msg = form.save()
             if success:
                 messages.success(request, msg)
+                # force a refresh of policies from the handler
+                get_iam_policies(handler)
             else:
                 messages.warning(request, msg)
             return HttpResponseRedirect(reverse('resourcehandler_detail', args=[handler_id]))
@@ -90,6 +97,35 @@ def add_aws_iam_policy(request, handler_id):
         'action_url': '/{}/aws_iam_policy/add/'.format(handler_id),
         'submit': 'Add'
     }
+
+
+@dialog_view
+@cbadmin_required
+def confirm_delete_aws_iam_policy(request, handler_id, policy_arn):
+    """
+    Confirmation dialog for deleting an AWS IAM Policy.
+    """
+    handler = AWSHandler.objects.get(id=handler_id)
+
+    return {
+        'title': 'Confirm delete of IAM Policy',
+        'content': 'This cannot be undone. Are you sure you want to delete '
+                   'the policy with ARN "{policy_arn}"?'.format(policy_arn=policy_arn),
+        'action_url': reverse('delete_aws_iam_policy', args=[handler_id, policy_arn]),
+        'use_ajax': False,
+        'submit': 'Delete',
+    }
+
+
+@cbadmin_required
+def delete_aws_iam_policy(request, handler_id, policy_arn):
+    handler = AWSHandler.objects.get(id=handler_id)
+    wrapper = handler.get_api_wrapper()
+    iam_client = wrapper.get_boto3_client('iam', handler.serviceaccount, handler.servicepasswd, None)
+    iam_client.delete_policy(PolicyArn=policy_arn)
+    messages.success(request, "Successfully deleted policy {}".format(policy_arn))
+    get_iam_policies(handler)
+    return HttpResponseRedirect(reverse('resourcehandler_detail', args=[handler_id]))
 
 
 def get_iam_policies_from_cache(handler_id):
