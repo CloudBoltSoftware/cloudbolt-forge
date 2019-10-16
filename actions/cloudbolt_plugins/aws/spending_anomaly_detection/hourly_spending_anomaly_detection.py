@@ -16,9 +16,12 @@ from typing import List, Tuple
 
 from alerts.methods import alert
 from resourcehandlers.aws.models import AWSHandler
+from utilities.logger import ThreadLogger
 
 AWS_COST_THRESHOLD = 100
 ALERT_CHANNEL_NAMES: List[str] = []
+
+logger = ThreadLogger(__name__)
 
 CostData = Tuple[datetime.datetime, str, float]
 
@@ -37,7 +40,8 @@ class AWSCostAlert:
             last_hours_data = aws.get_yesterday_hourly_billing_data()
             self.__check_threshold(last_hours_data)
 
-        _ = self.__alert_over_threshold()
+        if self.over_threshold:
+            _ = self.__alert_over_threshold()
 
     def __check_threshold(self, data_list):
         """
@@ -49,7 +53,7 @@ class AWSCostAlert:
         _exceed_threshold_list = []
         for time, server_id, cost in data_list:
             if cost >= AWS_COST_THRESHOLD:
-                _exceed_threshold_list.append((time, server_id, cost))
+                _exceed_threshold_list.append((str(time), server_id, cost))
         self.over_threshold.extend(_exceed_threshold_list)
         return
 
@@ -67,6 +71,8 @@ class AWSCostAlert:
             f"The following servers exceeded the AWS cost threshold of {AWS_COST_THRESHOLD}:"
             f"{instance_json}"
         )
+        logger.info(message)
+
         for channel_name in ALERT_CHANNEL_NAMES:
             alert(channel_name, message)
 
