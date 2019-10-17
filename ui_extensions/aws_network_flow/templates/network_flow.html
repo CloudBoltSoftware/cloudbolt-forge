@@ -1,0 +1,79 @@
+{% load i18n %}
+{% load helper_tags %}
+
+<div class="pull-left">
+    <div class="btn-toolbar">
+        <span class="collapsed" data-toggle="collapse" data-target="#filters-panel">
+            <a class="btn btn-default" id="filters-panel-toggle" tabindex="0">
+                <span class="collapsed-indicator no-tooltip-affordance"></span>
+                <span class="icon-filter"></span>
+                <span class="filters-panel-toggle-btn-text">{% trans "Show Filters" %}</span>
+                <span id="filtersInUse"></span>
+            </a>
+        </span>
+        <!-- TODO: get this export to CSV button working -->
+        <a href="#" id="export-to-csv" class="btn btn-default"
+          data-toggle="tooltip"
+          title="{% trans "Export this flow list to CSV" %}">
+          <i class="fas fa-file-alt"></i>
+        </a>
+    </div>
+</div>
+
+<div class="clearfix"></div>
+
+<div id="filters-panel" class="panel panel-default collapse">
+    <div class="panel-body" style="height: 190px;">
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <table
+           id="netflows"
+           width="100%"
+           class="table table-striped"
+           data-table
+           data-table-sort="disabled"
+           data-table-no-auto-init
+           data-table-source="/aws_net_flows/{{ handler.id }}/"
+    >
+        <thead>
+            <tr>
+            <th>Timestamp</th>
+            <th>Interface</th>
+            <th>Source</th>
+            <th>Destination</th>
+            <th>Src Port</th>
+            <th>Dst Port</th>
+            <th>Protocol</th>
+            <th>Packets</th>
+            <th>Bytes</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Action</th>
+            <th>Log Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {# will be populated by dataTable based on AJAX responses #}
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+    $(document).ready(function(){
+        c2.datepicker.initDatePicker();
+        c2.dataTables.initListFilters('table#netflows', '/aws_net_flows/{{ handler.id }}/filter_form/');
+        var $table = $('#netflows');
+
+        // Specify the callback for additional params added before each AJAX request.
+        // Save the function object in DOM data; it will be called by the
+        // code in c2.dataTables. The function should exist in the scope of
+        // the template calling this templatetag and take one arg: aoData.
+        $table.data('table-fnServerParams', function (aoData) {
+            c2.dataTables.addListFilters(aoData);
+        });
+        c2.dataTables.init('#netflows', {"searching": false});
+    });
+</script>
