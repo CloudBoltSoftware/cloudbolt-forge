@@ -88,11 +88,6 @@ def run(job, *args, **kwargs):
                 update_instances(inspector_findings)
             # account = group_by_types(account_findings)
 
-            set_progress(f'Updating AWS Account findings for {rh.name}')
-            # Next line repeats for each region but is relatively low overhead/impact.
-            # with open(settings.PROSERV_DIR + f'/findings-{rh.id}.json', 'w') as f:
-            #     json.dump(account, f, indent=True)
-
     return "", "", ""
 
 
