@@ -12,9 +12,7 @@ AWS Console.
 
 
 ## CloudBolt Setup
-Inspector findings are fetched as part of a Recurring Job that scans all regions in all AWS Resource Handlers for findings. Since this Job can be scheduled, it can be modified to run at any interval. It's recommended that it be run no less than every five minutes. By default, CloudBolt updates findings at the top of every hour.
-
-
+Inspector findings are fetched as part of a scheduled Recurring Job that scans all regions in all AWS Resource Handlers for findings. Since this Job can be scheduled, it can be modified to run at any interval. It's recommended that it be run no less than every five minutes. By default, CloudBolt updates findings at the top of every hour.
 
 
 
