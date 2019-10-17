@@ -13,6 +13,11 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 
 def fetch_arns_for_findings(inspector_client):
+    """
+    Fetch all ARNs for findings discovered in the latest run of all enabled Assessment Templates.
+    :param inspector_client:
+    :return:
+    """
     # at: Assessment template
     # arn: Amazon resource name
     findings = set()
@@ -35,6 +40,11 @@ def fetch_arns_for_findings(inspector_client):
 
 
 def get_instance_id(finding):
+    """
+    Given a finding, go find and return the corresponding AWS Instance ID
+    :param finding:
+    :return:
+    """
     for kv in finding['attributes']:
         if kv['key'] == 'INSTANCE_ID':
             return kv['value']
@@ -42,8 +52,16 @@ def get_instance_id(finding):
 
 
 def update_instances(findings):
+    """
+    For each finding build-up a dict keyed by instance ID with an array value of all applicable
+    findings. Then create or update the aws_inspector_findings custom field for each
+    corresponding CloudBolt server record.
+    :param findings:
+    :return:
+    """
     instances = {}
 
+    # Group findings by instance
     for finding in findings['findings']:
         instance_id = get_instance_id(finding)
         if instance_id not in instances:
@@ -51,6 +69,7 @@ def update_instances(findings):
         else:
             instances[instance_id].append(finding)
 
+    # For each istance, find its CloudBolt Server record and update aws_inspector_findings
     for instance in instances.keys():
         try:
             s = Server.objects.get(resource_handler_svr_id=instance)
@@ -64,6 +83,12 @@ def update_instances(findings):
 
 
 def describe_findings(inspector_client, all_finding_arns):
+    """
+    Given a list of findind ARNs, return the details for each finding.
+    :param inspector_client:
+    :param all_finding_arns:
+    :return:
+    """
     arns = list(all_finding_arns)
     if len(arns) == 0:
         return None
@@ -75,6 +100,7 @@ def run(job, *args, **kwargs):
     rh: AWSHandler
     for rh in AWSHandler.objects.all():
         regions = set([env.aws_region for env in rh.environment_set.all()])
+        # For each region currently used by the current AWSHandler
         for region in regions:
             inspector = rh.get_boto3_client(service_name='inspector', region_name=region)
 
@@ -86,7 +112,6 @@ def run(job, *args, **kwargs):
             set_progress(f'Updating CloudBolt instances in {region}.')
             if inspector_findings:
                 update_instances(inspector_findings)
-            # account = group_by_types(account_findings)
 
     return "", "", ""
 
