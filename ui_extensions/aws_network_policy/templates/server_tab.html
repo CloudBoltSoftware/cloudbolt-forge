@@ -1,3 +1,7 @@
+{% load i18n %}
+{% load helper_tags %}
+
+
 <div class="btn-toolbar">
     <a href="#" id="reload" class="btn btn-default">
         <i class="fas fa-sync-alt"></i> Reload findings
@@ -8,9 +12,9 @@
     <table id="findings" width="100%" class="table table-striped">
         <thead>
         <tr>
-            <th></th>
+            <th width="25"></th>
             <th>Title</th>
-            <th>Severity</th>
+            <th width="25%">Severity</th>
         </tr>
         {# Detail rows are generated dynamically via JS and DataTable API. #}
         </thead>
@@ -18,61 +22,76 @@
 </div>
 
 <script>
-    $(document).ready(function () {
-        /* detailed view for rows */
-        function format(details) {
-            return '<table border="0" style="margin-left:12px">' +
-                '<tr><th>Description</th><th>Remediation</th></tr>' +
-                '<tr><td width="50%">' + details[1] + '</td>' +
-                '<td width="50%" valign="top">' + details[2] + '</td></tr>' +
-                '</table>';
-        }
+  $(document).ready(function () {
+    /* detailed view for rows */
+    function format(details) {
+      return '<table border="0" style="margin-left:50px">' +
+        '<tr><th>Description</th><th>Recommendation</th></tr>' +
+        '<tr><td width="50%">' + details[1] + '</td>' +
+        '<td width="50%" valign="top">' + details[2] + '</td></tr>' +
+        '</table>';
+    }
 
-        function render_value(v) {
-            return 'XXX';
-        }
-
-        var table = $('#findings').DataTable({
-            "ajax": "/aws_network_policy/server/{{ server_id }}/",
-            "columns": [
-                {
-                    "className": 'disclose',
-                    "orderable": false,
-                    "data": null,
-                    "defaultContent": '<i class="fas fa-caret-square-right"></i>'
-                },
-                {
-                    "data": 0,
-                    orderable: true
-                },
-                {
-                    "data": render_value('x'),
-                    "orderable": true,
-                    "defaultContent": 0,
-                    orderable: true
-                }
-            ]
-        });
-
-        $('#reload').on('click', function (e) {
-            e.preventDefault();
-            table.ajax.reload();
-        });
-
-        $('#findings tbody').on('click', 'td.disclose', function () {
-            var tr = $(this).closest('tr');
-            var row = table.row(tr);
-
-            if (row.child.isShown()) {
-                $(this).html('<span class="fas fa-caret-square-right"></span>')
-                row.child.hide();
-                tr.removeClass('shown');
-            } else {
-                $(this).html('<span class="fas fa-caret-square-down"></span>')
-                row.child(format(row.data())).show();
-                tr.addClass('shown');
+    var table = $('#findings').DataTable({
+      "columnDefs": [
+        {
+          "order": [[2, 'asc']],
+          "render": function (data, type, row) {
+            switch (data.toUpperCase()) {
+              case 'HIGH':
+                return "<span style='color:red; font-weight:bold'>" + data + "</style>";
+              case 'MEDIUM':
+                return "<span style='color:#8a6d3b'>" + data + "</style>";
+              case "LOW":
+                return "<span style='color:#3c763d'>" + data + "</style>";
+              case "INFORMATIONAL":
+                return "<span style='color:#31708f'>" + data + "</style>";
             }
-        });
-
+            return data;
+          },
+          "targets": 2
+        }
+      ],
+      "ajax": "/aws_network_policy/server/{{ server_id }}/",
+      "columns": [
+        {
+          "data": null,
+          "className": 'disclose',
+          "orderable": false,
+          "defaultContent": '<i class="fas fa-caret-square-right"></i>'
+        },
+        {
+          "data": 0,
+          "orderable": true,
+          "defaultContent": ''
+        },
+        {
+          "data": 3,
+          "orderable": true,
+          "defaultContent": 0
+        }
+      ]
     });
+
+    $('#reload').on('click', function (e) {
+      e.preventDefault();
+      table.ajax.reload();
+    });
+
+    $('#findings tbody').on('click', 'td.disclose', function () {
+      var tr = $(this).closest('tr');
+      var row = table.row(tr);
+
+      if (row.child.isShown()) {
+        $(this).html('<span class="fas fa-caret-square-right"></span>')
+        row.child.hide();
+        tr.removeClass('shown');
+      } else {
+        $(this).html('<span class="fas fa-caret-square-down"></span>')
+        row.child(format(row.data())).show();
+        tr.addClass('shown');
+      }
+    });
+
+  });
 </script>
