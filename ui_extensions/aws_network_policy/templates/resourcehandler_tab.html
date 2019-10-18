@@ -1,9 +1,0 @@
-<h1>Security Hub Findings</h1>
-
-{%  for finding_type, findings in findings_by_type.items %}
-    <h3>{{ finding_type }}</h3>
-    {% for finding in findings %}
-        <div><strong>{{ finding.Title }}</strong></div>
-        <div style="margin-bottom: 10px">{{ finding.Description }}</div>
-    {% endfor %}
-{%  endfor %}

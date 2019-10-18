@@ -1,0 +1,84 @@
+
+<div id="summary">
+    {% if error %}
+        <i>There was an issue with retrieving recommendations: {{ error }}</i>
+    {% elif total_recommendations == 0 %}
+        <p>
+            There are no recommendations to show. This may be because you do not have the proper
+        settings enabled in the AWS Management Console.
+            You may need to enable rightsizing recommendations from the AWS Cost Explorer console.
+            See the docs from AWS on <a href="https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/ce-rightsizing.html">steps to enable rightsizing recommendations</a>
+            After you enable rightsizing recommendations, it can take up to 24 hours for it to generate.
+        </p>
+    {% else %}
+        <h3>
+            You could save an estimated {{ summary.total_savings|floatformat:2 }} {{ summary.currency }}
+            by modifying or terminating {{ summary.total_recommendations }} instances.
+        </h3>
+    {% endif %}
+    <hr>
+</div>
+
+
+<table id="rec-table" data-table>
+    <thead>
+        <tr>
+            <th> Instance </th>
+            <th> Region </th>
+            <th> Current Instance Type </th>
+            <th> Current Monthly Cost </th>
+            <th> Current Utilization </th>
+            <th> Recommendation Type </th>
+            <th> Recommended Action </th>
+            <th> Expected Utilization </th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for instance_id, d in recommendations.items %}
+        <tr>
+            <td>{{ instance_id }}</td>
+            <td>{{ d.current_instance.region }}</td>
+            <td>{{ d.current_instance.instance_type }}</td>
+            <td>{{ d.current_instance.monthly_cost|floatformat:2 }} {{ d.current_instance.currency }}</td>
+            <td>
+                {% for metric, util in d.current_instance.utilization_percent.items %}
+                    <span>
+                        {{ metric }}:&nbsp
+                        {% if util %}
+                            {{ util|floatformat:2 }}%
+                        {% else %}
+                            --
+                        {% endif %}
+                    <br>
+                    </span>
+                {% endfor %}
+            </td>
+            <td>{{ d.recommendations.type }}</td>
+            <td>
+                {{ d.recommendations.action }}
+            </td>
+            <td>
+                {% if d.recommendations.type == 'Terminate' %}
+                    <i>n/a</i>
+                {% else %}
+                    {% for metric, util in d.recommendations.utilization_percent.items %}
+                        <span>
+                            {{ metric }}:&nbsp
+                            {% if util %}
+                                {{ util|floatformat:2 }}%
+                            {% else %}
+                                --
+                            {% endif %}
+                        <br>
+                        </span>
+                    {% endfor %}
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    c2.dataTables.init('#rec-table')
+</script>
