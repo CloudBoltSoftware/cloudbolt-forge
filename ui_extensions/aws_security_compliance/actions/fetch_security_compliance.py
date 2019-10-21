@@ -2,7 +2,12 @@
 AWS Security Compliance Action
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[description]
+Fetch Compliance information from AWS Security Hub for each region associated
+with an AWS Resource Handler.
+
+Note:
+    Configure this action to run as a Recurring Job to regularly fetch AWS
+    Security Compliance information.
 
 Requires:
     CloudBolt v9.0
@@ -20,13 +25,14 @@ from resourcehandlers.aws.models import AWSHandler
 
 def _fetch_findings_for_rh(rh):
     """
-    [summary]
+    Return list of Security Hub compliance findings for a given AWS Resource
+    Handler.
 
     Args:
-        rh (AWSHandler): [description]
+        rh (AWSHandler): AWS Resource Handler.
 
     Returns:
-        list: [description]
+        List[dict]: List of compliance information dictionaries.
     """
     rh_findings: list = []
     regions = set([env.aws_region for env in rh.environment_set.all()])
@@ -42,14 +48,14 @@ def _fetch_findings_for_rh(rh):
 
 def _parse_findings(findings, region):
     """
-    [summary]
+    Returns relevant information from AWS Security Hub API response.
 
     Args:
-        findings (list): [description]
-        region (str): [description]
+        findings (list): AWS Security Hub response.
+        region (str): AWS region.
 
     Returns:
-        list: [description]
+        List[dict]: List of compliance information dictionaries.
     """
     new_findings = []
 
@@ -70,11 +76,12 @@ def _parse_findings(findings, region):
 
 def _cache_findings_for_rh(rh, findings):
     """
-    [summary]
+    Saves Security Hub compliance findings for a given AWS Resource Handler for
+    later access.
 
     Args:
-        rh (AWSHandler): [description]
-        findings (list): [description]
+        rh (AWSHandler): AWS Resource Handler.
+        findings (List[dict]): List of compliance information dictionaries.
     """
     json_findings = json.dumps(findings, indent=True, cls=DjangoJSONEncoder)
 
@@ -98,7 +105,7 @@ def _cache_findings_for_rh(rh, findings):
 def run(*args, **kwargs):
     set_progress(
         f"Downloading AWS Security Compliance data for {AWSHandler.objects.count()} "
-        f"AWS Resource Handlers."
+        f"AWS Resource Handler(s)."
     )
     for rh in AWSHandler.objects.all():
         findings = _fetch_findings_for_rh(rh)

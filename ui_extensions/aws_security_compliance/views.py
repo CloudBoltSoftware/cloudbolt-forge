@@ -32,6 +32,9 @@ def aws_handler_tab(request, obj_id):
 
 @json_view
 def aws_security_compliance_json(request, rh_id):
+    """
+    Returns AWS Security Hub findings as JSON for a given AWS Resource Handler.
+    """
     rh = AWSHandler.objects.get(id=rh_id)
     cf_queryset = CustomField.objects.filter(name=f"aws_security_compliance__{rh.id}")
 
