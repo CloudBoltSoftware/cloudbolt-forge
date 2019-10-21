@@ -12,13 +12,13 @@ import json
 
 from django.core.serializers.json import DjangoJSONEncoder
 
-# from common.methods import set_progress
+from common.methods import set_progress
 from infrastructure.models import CustomField
 from orders.models import CustomFieldValue
 from resourcehandlers.aws.models import AWSHandler
 
 
-def _fetch_findings_for_rh(rh: AWSHandler) -> dict:
+def _fetch_findings_for_rh(rh):
     """
     [summary]
 
@@ -26,26 +26,27 @@ def _fetch_findings_for_rh(rh: AWSHandler) -> dict:
         rh (AWSHandler): [description]
 
     Returns:
-        dict: [description]
+        list: [description]
     """
-    rh_findings: dict = {"Regions": {}}
+    rh_findings: list = []
     regions = set([env.aws_region for env in rh.environment_set.all()])
 
     for region in regions:
         client = rh.get_boto3_client(service_name="securityhub", region_name=region)
         findings = client.get_findings()["Findings"]
-        parsed_findings = _parse_findings(findings)
-        rh_findings["Regions"][region] = parsed_findings
+        parsed_findings = _parse_findings(findings, region)
+        rh_findings += parsed_findings
 
     return rh_findings
 
 
-def _parse_findings(findings: list) -> list:
+def _parse_findings(findings, region):
     """
     [summary]
 
     Args:
         findings (list): [description]
+        region (str): [description]
 
     Returns:
         list: [description]
@@ -55,6 +56,7 @@ def _parse_findings(findings: list) -> list:
     for finding in findings:
         new_findings.append(
             {
+                "Region": region,
                 "Title": finding["Title"],
                 "Description": finding["Description"],
                 "Severity": finding["Severity"],
@@ -66,18 +68,18 @@ def _parse_findings(findings: list) -> list:
     return new_findings
 
 
-def _cache_findings_for_rh(rh: AWSHandler, findings: dict) -> None:
+def _cache_findings_for_rh(rh, findings):
     """
     [summary]
 
     Args:
         rh (AWSHandler): [description]
-        findings (dict): [description]
+        findings (list): [description]
     """
     json_findings = json.dumps(findings, indent=True, cls=DjangoJSONEncoder)
 
     cf, _ = CustomField.objects.get_or_create(
-        name=f"aws_security_compliance__{rh.name}", label="AWS Security Compliance"
+        name=f"aws_security_compliance__{rh.id}", label="AWS Security Compliance"
     )
     cf.type = "TXT"
     cf.description = "Do Not Delete: Created by 'AWS Security Compliance' Action."
@@ -94,6 +96,10 @@ def _cache_findings_for_rh(rh: AWSHandler, findings: dict) -> None:
 
 
 def run(*args, **kwargs):
+    set_progress(
+        f"Downloading AWS Security Compliance data for {AWSHandler.objects.count()} "
+        f"AWS Resource Handlers."
+    )
     for rh in AWSHandler.objects.all():
         findings = _fetch_findings_for_rh(rh)
         _cache_findings_for_rh(rh, findings)
