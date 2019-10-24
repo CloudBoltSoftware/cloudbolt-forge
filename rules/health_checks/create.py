@@ -14,7 +14,7 @@ alerting_action_dict = {
         'shared': False,
         'enabled': True,
         'hook_point': None,
-        'module': 'health_alerts.py',
+        'module': 'https://raw.githubusercontent.com/CloudBoltSoftware/cloudbolt-forge/rules/health_checks/health_alerts.py',
 }
 
 rule = {
@@ -25,7 +25,7 @@ rule = {
             'name': 'Perform Resource Health Checks',
             'description': 'Resource Health Check support',
             'shared': False,
-            'module': 'resource_health_checks.py',
+            'module': 'https://raw.githubusercontent.com/CloudBoltSoftware/cloudbolt-forge/rules/health_checks/resource_health_checks.py',
         },
         'action': alerting_action_dict
 }
