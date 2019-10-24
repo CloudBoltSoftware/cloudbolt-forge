@@ -1,5 +1,5 @@
 from c2_wrapper import create_custom_field, create_rule, create_hook
-
+from common.methods import set_progress
 
 health_check_cf = {
         'name': 'health_check_config',
@@ -32,7 +32,12 @@ rule = {
 
 
 def run(job, *args, **kwargs):
+    set_progress("Creating health_check_config Custom Field...")
     create_custom_field(**health_check_cf)
+
+    set_progress("Creating Resource Health Checks Rule...")
     create_rule(**rule)
+
+    set_progress("Done creating objects for resource health checks.")
 
     return "", "", ""
