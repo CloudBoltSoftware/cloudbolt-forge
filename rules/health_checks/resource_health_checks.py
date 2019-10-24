@@ -5,27 +5,32 @@ This will require some configuration, including..
 * Add the 'health_check_config' parameter to any CloudBolt resource
  with Cloud resources you would like to perform health checks on
 * Add values for the url to send a request to and the timeout seconds (optional, the default is 5 seconds).
-I.e., a valid value for the health check cofig would be the following:
+I.e., a valid value for the health check config would be the following:
 ```
 {
-    'tiers': [
+    "health_checks": [
         {
-        'name': 'Server01',
-        'url': '0.0.0.0',
-        'timeout_seconds': 3,
-        'accepted_statuses': [200, 201, 418]
+        "name": "Teapot",
+        "url": "0.0.0.0",
+        "timeout_seconds": 3,
+        "accepted_statuses": [418]
         }
     ]
 }
+
+Read more instructions for setting up this rule in health_checks/README.md
 ```
 *
 
 """
 import datetime
-
-from resources.models import Resource
-import requests
 import json
+import requests
+import sys
+
+from common.methods import set_progress
+from jobs.models import Job
+from resources.models import Resource
 from utilities.logger import ThreadLogger
 
 
@@ -41,7 +46,6 @@ def get_config_value(resource):
         raise
 
     # Check for required parameters here.
-    health_checks = []
     try:
         health_checks = config['health_checks']
         name = health_checks[0]['name']
@@ -63,50 +67,58 @@ def check(job, logger, **kwargs):
     resources = Resource.objects.filter(
         attributes__field__name="health_check_config",
         lifecycle='ACTIVE'
-    )
+    ).distinct()
+    set_progress(
+        f"Will run health checks for {resources.count()} resource(s): "
+        f"{[resource.name for resource in resources]}")
 
     check_results = []
 
     for resource in resources:
+        logger.info(f"Will run health checks for resource '{resource.name}'.")
         config_dict = get_config_value(resource)
-        failure_threshold = config_dict.get('failure_threshold')
+        failure_threshold = config_dict.get('failure_threshold', 1)
         failures = 0
 
         # Run all the health checks configured for this resource.
         for health_check in config_dict.get('health_checks', {}):
             name = health_check.get('name')
+            job.set_progress(f"Beginning health check '{name}'.")
             url = health_check.get('url')
             accepted_statuses = health_check.get('accepted_status_codes')
             timeout_seconds = health_check.get('timeout_seconds', 5)
 
-            retries = 0
             try:
                 status_code = requests.get(url, timeout=timeout_seconds).status_code
 
                 if accepted_statuses and status_code not in accepted_statuses:
-                    # Bad. TODO: Report this as unavailable
-                    # alert
-                    job.set_progress(f"HTTP Request returned {status_code}, which is not in the "
-                                     f"accepted statuses: {accepted_statuses}.")
+                    # Failure.
+                    msg = (
+                        f"HTTP Request returned {status_code}, "
+                        f"which is not in the accepted statuses: {accepted_statuses}"
+                        f"for health check '{name}'."
+                    )
+                    logger.debug(msg)
                     failures += 1
                 else:
-                    # Good. We got a status. No alerting needed.
-                    continue
+                    # Pass - We got a valid status. No alerting needed.
+                    logger.info(f"Health check '{name}' completed with success.")
 
             except Exception as e:
                 # Bad, could be ConnectionError, which will count as a failure.
+                logger.debug(e)
                 failures += 1
-                job.set_progress(e)
 
-            data_dict = {
-                'time': datetime.datetime.now(),
-                'resource_id': resource.id,
-                'resource_name': resource.name,
-                'failing_checks': failures,
-                'failure_threshold': failure_threshold,
-            }
+        # Summarize this resource's health check results.
+        data_dict = {
+            'time': datetime.datetime.now(),
+            'resource_id': resource.id,
+            'resource_name': resource.name,
+            'failing_checks': failures,
+            'failure_threshold': failure_threshold,
+        }
 
-            check_results.append(data_dict)
+        check_results.append(data_dict)
 
     context = {
         "health_check_results": check_results,
@@ -117,4 +129,4 @@ def check(job, logger, **kwargs):
 
 
 if __name__ == "__main__":
-    print(check(None, None))
+    print(check(job=Job.objects.get(id=sys.argv[1]), logger=logger))
