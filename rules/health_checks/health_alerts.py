@@ -1,19 +1,23 @@
 """
-Checks the last hour of AWS Billing Data from S3 buckets, and sends an alert if
-any servers have exceeded the specified threshold.
+Uses the results of the Resource Health Checks condition to alert users
+if any resources have health check failures exceeding their threshold for failures.
+See health_checks/README.md for more setup instructions for the rule this plugin runs in.
+
 Note: This Action assumes that you have one or more configured Alert Channels
     that can be used for notifying the appropraite users. These channels must
     be listed in ALERT_CHANNEL_NAMES below.
-Version:
+
+CloudBolt Version:
     Requires >= v9.0.1
 """
 
-import datetime
 import json
-from typing import List, Tuple
+import sys
+from typing import List
 
 from alerts.methods import alert
-from resourcehandlers.aws.models import AWSHandler
+from common.methods import set_progress
+from jobs.models import Job
 from utilities.logger import ThreadLogger
 
 ALERT_CHANNEL_NAMES: List[str] = []
@@ -22,8 +26,8 @@ logger = ThreadLogger(__name__)
 
 
 class ResourceHealthAlert:
-    def __init__(self, params):
-        self.health_stats = params['health_check_results']
+    def __init__(self, context):
+        self.health_stats = context['health_check_results']
         self.over_threshold = []
 
     def __call__(self):
@@ -45,13 +49,13 @@ class ResourceHealthAlert:
         """
 
         time = result_dict.get('time')
-        failing_checks = result_dict.get('failing_checks')
-        failure_threshold = result_dict.get('failure_threshold')
+        failing_checks = result_dict.get('failing_checks', 0)
+        failure_threshold = result_dict.get('failure_threshold', 1)
         resource_name = result_dict.get('resource_name')
         resource_id = result_dict.get('resource_id')
 
         if failing_checks >= failure_threshold:
-            self.over_threshold.extend((str(time), resource_name, resource_id, failing_checks))
+            self.over_threshold.append((str(time), resource_name, resource_id, failing_checks))
 
         return
 
@@ -66,7 +70,7 @@ class ResourceHealthAlert:
             f"The following resources exceeded their health check failure threshold:"
             f"{instance_json}"
         )
-        logger.info(message)
+        set_progress(message)
 
         for channel_name in ALERT_CHANNEL_NAMES:
             alert(channel_name, message)
@@ -76,8 +80,13 @@ class ResourceHealthAlert:
 
 def run(job, logger):
     params = job.job_parameters.cast().arguments
+    context = params.get('context')
 
-    health_alert = ResourceHealthAlert(params)
+    health_alert = ResourceHealthAlert(context)
     health_alert()
 
     return "SUCCESS", "", ""
+
+
+if __name__ == "__main__":
+    print(run(job=Job.objects.get(id=sys.argv[1]), logger=logger))
