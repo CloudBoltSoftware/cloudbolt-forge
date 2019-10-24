@@ -19,13 +19,13 @@ and may include some additional optional parameters.
 Here is an example of a valid `health_check_config` parameter value: 
  ```
  {
-     'failure_threshold': 2,                       # Optional. The default is 1.
-     'health_checks': [
+     "failure_threshold": 2,                       # Optional. The default is 1.
+     "health_checks": [
          {
-             'name': 'Check01',                    # Required. For reporting purposes. 
-             'url': 'https://google.com',          # Required. This is where we will send an HTTP GET request to.
-             'accepted_status_codes': [200, 201],  # Optional, will accept *any* if not specified.
-             'timeout_seconds': 5,                 # Optional, default is 3
+             "name": "Teapot",                    # Required. For reporting purposes. 
+             "url": "https://google.com",          # Required. This is where we will send an HTTP GET request to.
+             "accepted_status_codes": [418],  # Optional, will accept *any* if not specified.
+             "timeout_seconds": 5,                 # Optional, default is 3
          }
      ],
  }
