@@ -24,6 +24,10 @@ def setup_aws_iam_policies():
         'name': 'AWS IAM Policy Caching',
         'type': 'recurring_action',
         'hook_name': 'AWS IAM Policy Caching',
+        'description': ('Fetches and stores the IAM Policies for all configured AWS Resource Handlers. These '
+                        'policy lists are stored in /var/opt/cloudbolt/iam_policies/.'),
+        'schedule': '0 23 * * *',
+        'enabled': True,
     }
     create_recurring_job(get_iam_policies_recurring_job)
 
