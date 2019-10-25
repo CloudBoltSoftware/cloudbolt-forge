@@ -1,6 +1,7 @@
 import json
 import pathlib
 
+from django.conf import settings
 from django.shortcuts import render
 
 from extensions.views import admin_extension, tab_extension, TabExtensionDelegate
