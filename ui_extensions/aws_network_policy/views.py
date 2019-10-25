@@ -1,4 +1,5 @@
 import json
+import pathlib
 
 from django.shortcuts import render
 
@@ -47,7 +48,7 @@ def aws_network_policy_server_json(request, server_id):
     }
 
 
-@admin_extension(title='AWS Netwowrk Policy Settings', description='Enable/Disable and Schedule the Caching of Inspector Findings')
+@admin_extension(title='AWS Network Policy Settings', description='Enable/Disable and Schedule the Caching of Inspector Findings')
 @cbadmin_required
 def aws_network_policy_config(request):
     """
@@ -56,7 +57,7 @@ def aws_network_policy_config(request):
     profile = request.get_user_profile()
     recurring_job = create_recurring_job_if_necessary()
 
- 
+
     completed_spawned_jobs = recurring_job.spawned_jobs.filter(
         status__in=Job.COMPLETED_STATUSES
     ).order_by("-start_date")
@@ -105,7 +106,9 @@ def create_recurring_job_if_necessary():
         'name': 'AWS Network Policy Caching',
         'description': 'Create local cached files for aws specific inspector findings',
         'hook_point': None,
-        'module': 'xui/aws_network_policy/actions/fetch_update_findings.py',
+        'module':  pathlib.Path(
+            settings.PROSERV_DIR, 'xui/aws_network_policy/actions/fetch_update_findings.py'
+        ),
     }
 
     from initialize.create_objects import create_recurring_job, create_hooks
