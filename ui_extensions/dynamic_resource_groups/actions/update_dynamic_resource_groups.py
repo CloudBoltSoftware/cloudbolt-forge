@@ -10,8 +10,10 @@ import json
 from accounts.models import Group
 from infrastructure.models import CustomField, Namespace, Server
 from jobs.models import Job
-from orders.models import CustomFieldValue
 from utilities.events import add_server_event
+from utilities.logger import ThreadLogger
+
+logger = ThreadLogger(__name__)
 
 
 def __test():
@@ -32,10 +34,6 @@ def __test():
 
     return job, server, cf, group
 
-
-# TODO: [v] XUI will get_or_create two Namespaces
-# TODO: This plug-in needs to fail elegantly if the Namespaces don't exist.
-# TODO: Use CF(Namespace).name, CF.cfv.value as key:value pairs for lookup.
 
 ###############################################################################
 ###############################################################################
@@ -175,14 +173,18 @@ def _get_group_values(group):
     Return list of relevant CFV values associated with the group.
     """
     cfvs = (
-        group.custom_field_options.filter(field__namespace__name="Dynamic Group Rules")
-        .order_by("field__name")
+        group.custom_field_options.filter(field__name="tags_to_include")
         .distinct()
     )
 
     values = dict()
     for cfv in cfvs:
-        values.update(json.loads(cfv.value))
+        try:
+            values.update(json.loads(cfv.value))
+        except Exception:
+            logger.info(
+                f"Option {cfv} is invalid JSON and was not added to Dynamic Group Rules."
+            )
     return _dict_to_tuples(values)
 
 
