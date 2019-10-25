@@ -72,8 +72,8 @@ class ResourceHealthAlert:
         )
         set_progress(message)
 
-        for channel_name in ALERT_CHANNEL_NAMES:
-            alert(channel_name, message)
+        for _channel_name in ALERT_CHANNEL_NAMES:
+            alert("health_check", message)
 
         return None
 

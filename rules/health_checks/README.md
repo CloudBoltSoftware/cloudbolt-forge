@@ -10,6 +10,8 @@ checks fail, to configured Alert Channels.
 
 * Configure one or more [alert channels](http://docs.cloudbolt.io/multi-channel-alerts.html). 
 This is required in order for the alerting to work in the action. 
+  * Use alert category, "health_check" in your comma-delimited list of alert categories for any
+  and all alert channels you wish to use for health checks
 * List the alert channels you would like to use and add them to `health_alerts.py`
 under the list `ALERT_CHANNELS`. 
 * Add the `health_check_config` parameter to one or more resources. 
