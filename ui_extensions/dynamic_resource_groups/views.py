@@ -27,7 +27,7 @@ class EditDynamicGroupRuleView(View):
         form = self.form_class(request.POST, group=group, field=field)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse("group_detail", args=[group_id]))
+            return HttpResponseRedirect(request.META['HTTP_REFERER'])
         else:
             return self.common_context(request, group, field, form)
 
@@ -106,9 +106,6 @@ def _get_dynamic_rules(group):
     Return list of (CF, display value) tuples for all Dynamic Rule CFs
     associated with this Group. List is sorted by CF name.
     """
-    # group_cfvs = group.custom_field_options.filter(
-    #     field__namespace__name="Dynamic Group Rules"
-    # ).order_by('field__name').distinct()
     group_cfs = (
         group.custom_fields.filter(namespace__name="Dynamic Group Rules")
         .order_by("name")
