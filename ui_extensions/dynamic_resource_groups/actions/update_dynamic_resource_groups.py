@@ -5,6 +5,8 @@ Update Dynamic Resource Groups (DRG)
 [description]
 """
 
+import json
+
 from accounts.models import Group
 from infrastructure.models import CustomField, Namespace, Server
 from jobs.models import Job
@@ -17,23 +19,23 @@ def __test():
     for copy/pasting into shell_plus
     """
     group, _ = Group.objects.get_or_create(name="Sync Group")
-    namespace, _ = Namespace.objects.get_or_create(name="Dynamic Resource Group")
-    cf, _ = CustomField.objects.get_or_create(
-        name="tags_to_include",
-        label="Tags to Include (DRG)",
-        namespace=namespace,
-        type="STR",
-    )
-    cfv, _ = CustomFieldValue.objects.get_or_create(field=cf, value="production")
-    cf.customfieldvalue_set.add(cfv)
-    group.custom_fields.add(cf)
+    namespace, _ = Namespace.objects.get_or_create(name="Dynamic Group Rules")
+    cf, _ = CustomField.objects.get_or_create(name="tags_to_include")
+    # cfv, _ = CustomFieldValue.objects.get_or_create(field=cf, value="{'abc':'def'}")
+    # cf.customfieldvalue_set.add(cfv)
+    # group.custom_fields.add(cf)
+    # group.save()
 
     job = Job.objects.get(id=64)
     server = Server.objects.get(hostname="gab-01")
-    cf = group.custom_fields.filter(namespace__name="Dynamic Resource Group")
+    cf = group.custom_fields.filter(namespace__name="Dynamic Group Rules").first()
 
     return job, server, cf, group
 
+
+# TODO: [v] XUI will get_or_create two Namespaces
+# TODO: This plug-in needs to fail elegantly if the Namespaces don't exist.
+# TODO: Use CF(Namespace).name, CF.cfv.value as key:value pairs for lookup.
 
 ###############################################################################
 ###############################################################################
@@ -59,9 +61,11 @@ def _get_servers_from_job(job):
         QuerySet[Server]
     """
     jp = job.job_parameters.cast()
-    return Server.objects.filter(
-        resource_handler__in=jp.resource_handlers.all()
-    ).exclude(status="HISTORICAL")
+    return (
+        Server.objects.filter(resource_handler__in=jp.resource_handlers.all())
+        .exclude(status="HISTORICAL")
+        .distinct()
+    )
 
 
 def _filter_groups():
@@ -112,6 +116,7 @@ def _remove_server_from_group(server, job):
             assigned_group_id = event.event_message.split(". Group ID: ")[-1]
             last_assigned_group = Group.objects.get(id=assigned_group_id)
 
+            # Only remove Group assignment if it occured prior to this action.
             if server.group == last_assigned_group and event.job != job:
                 server.group = Group.objects.get(name="Unassigned")
                 server.save()
@@ -128,7 +133,7 @@ def _add_server_to_group(server, group, job):
     if server.group.name != "Unassigned":
         return
 
-    server_tags = set(_get_server_details(server).tags.values())
+    server_tags = set(_get_server_details(server))
     group_tags = set(_get_group_values(group))
     common_tags = server_tags & group_tags
 
@@ -161,33 +166,61 @@ def _get_server_details(server):
     rh = server.get_resource_handler()
     if not rh:
         return {}
-    return rh.tech_specific_server_details(server)
+    details = rh.tech_specific_server_details(server)
+    return _dict_to_tuples(dict(details.tags))
 
 
 def _get_group_values(group):
     """
     Return list of relevant CFV values associated with the group.
     """
-    values: list = []
-    cfs = group.custom_fields.filter(
-        namespace__name="Dynamic Resource Group"
-    ).prefetch_related("customfieldvalue_set")
-    for cf in cfs:
-        values += [cfv.value for cfv in cf.customfieldvalue_set.all()]
+    cfvs = (
+        group.custom_field_options.filter(field__namespace__name="Dynamic Group Rules")
+        .order_by("field__name")
+        .distinct()
+    )
 
-    return values
+    values = dict()
+    for cfv in cfvs:
+        values.update(json.loads(cfv.value))
+    return _dict_to_tuples(values)
+
+
+def _dict_to_tuples(dictionary):
+    return [(str(i).lower(), str(j).lower()) for i, j in dictionary.items()]
 
 
 def _apply_policy_to_server(server, group):
     if server.group != group:
         return
 
+    server_updated = False
     policies = _get_dynamic_resource_group_policies(group)
+    for policy in policies:
+        # TODO: Do we need to call server.save() in the same scope as the update?
+        server_updated = _handle_policy(policy, server)
+
+    if server_updated:
+        server.save()
+
     raise NotImplementedError
 
 
 def _get_dynamic_resource_group_policies(group):
     raise NotImplementedError
+
+
+def _handle_policy(policy, server):
+    """
+    Returns True if policy change implemented, otherwise returns False.
+    """
+    raise NotImplementedError
+
+    if policy.name == "power_schedule":
+        server.power_schedule_from_string(policy.value)
+        return True
+
+    return False
 
 
 def run(job, *args, **kargs):
