@@ -1,0 +1,38 @@
+{% load helper_tags %}
+{% load i18n %}
+{% load infrastructure_tags %}
+
+<div id="editable-dynamic-rules">
+    <div id="msg"></div>
+    <table id="rules-table" data-table data-table-no-auto-init>
+        <thead>
+            <tr>
+                <th>{% trans "Parameter" %}</th>
+                <th>{% trans "Value" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for param, display_value in params %}
+            <tr>
+                <td>
+                    <span class="icon-param"></span>
+                    {{ param|rich_display:profile }}
+                </td>
+                <td class="param-value">
+                    {{ display_value }}
+                    <a class="icon-edit open-dialog"
+                        href="{% url 'dynamic_group_edit_rule' group.id param.id %}"></a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+
+<script>
+    $(document).ready(function(){
+        c2.dataTables.init('#rules-table', {"searching": false}); 
+    });
+</script>

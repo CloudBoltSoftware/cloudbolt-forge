@@ -1,50 +1,23 @@
-from django import forms
-
-from accounts.models import Group
-from common.forms import C2Form, get_add_params_formfield
-from infrastructure.models import CustomField
+from common.forms import EditParameterValueForm
+from orders.models import CustomFieldValue
 
 
-class AddDynamicGroupParameterForm(C2Form):
+class EditDynamicGroupRuleForm(EditParameterValueForm):
     """
-    Form for adding Dynamic Resource Group parameters to a given Group.
+    [summary]
     """
 
-    group_id = forms.CharField(initial="-1", widget=forms.widgets.HiddenInput())
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if "initial" in kwargs:
-            group_id = kwargs["initial"]["group_id"]
-        else:
-            group_id = args[0]["group_id"]
-        group = Group.objects.get(id=group_id)
-        namespace = kwargs.get("namespace", None)
-
-        avail_fields = []
-        used_fields = set(group.custom_fields.filter(namespace=namespace))
-        namespaced_fields = CustomField.objects.filter(namespace=namespace)
-        for field in namespaced_fields:
-            if field not in used_fields and field not in avail_fields:
-                avail_fields.append(field)
-
-        self.fields["params"] = get_add_params_formfield(avail_fields)
+    associated_obj_type = "group"
+    run_param_change_job = False
 
     def save(self):
-        group_id = self.cleaned_data["group_id"]
-        group = Group.objects.get(id=group_id)
+        group = self.obj
+        _ = group.custom_field_options.filter(
+            field__namespace__name="Dynamic Group Rules"
+        ).delete()
 
-        selected_params = self.cleaned_data["params"]
-
-        added_params = []
-        for param in selected_params:
-            param_type, param_id = param.split("-")
-            if param_type == "customfield":
-                field = CustomField.objects.get(id=param_id)
-                group.custom_fields.add(field)
-                added_params.append(field)
-            else:
-                raise ValueError("Only CustomField parameters allowed.")
-
-        return added_params
+        value = self.cleaned_data["value"]
+        cfv = CustomFieldValue.objects.create(field=self.field, value=value)
+        group.custom_field_options.add(cfv)
+        group.save()
+        return
