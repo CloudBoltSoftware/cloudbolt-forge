@@ -1,0 +1,45 @@
+{% load helper_tags %}
+{% load i18n %}
+
+<div class="btn-toolbar">
+    <a class="btn btn-default"
+        href="{% url 'discover_aws_iam_policies' handler.id %}">
+        <span class="icon-import"></span>
+        {% trans "Sync existing IAM Policies" %}
+    </a>
+    <a class="btn btn-default open-dialog"
+        href="{% url 'add_aws_iam_policy' handler.id %}">
+        <span class="icon-add"></span>
+        {% trans "Add " %}
+    </a>
+</div>
+
+
+<table id="table-iam-policies"
+    {% if sort_by_column %} data-table-sort="{{ sort_by_column }}" {% endif %}
+    {% if unsortable_column_indices %} data-table-sort-disabled="{{ unsortable_column_indices|to_csv }}" {% endif %}
+    class="table"
+    data-table>
+    <thead>
+        <tr>
+            {% for heading in column_headings %}
+                <th class="a"> {{ heading|safe }} </th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for policy in policies %}
+            <tr>
+                <td><a data-dialog-width="1200" class="open-dialog" href="{% url 'aws_iam_policy_detail' handler.id policy.arn policy.name %}">{{ policy.name }}</a></td>
+                <td>{{ policy.arn }}</td>
+                <td>{{ policy.path }}</td>
+                <td><a class="icon-delete open-dialog" href="{% url 'confirm_delete_aws_iam_policy' handler.id policy.arn %}"></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    c2.dataTables.init($("#table-iam-policies"));
+</script>
+
