@@ -25,6 +25,8 @@ Read more instructions for setting up this rule in health_checks/README.md
 """
 import datetime
 import json
+import time
+
 import requests
 import sys
 
@@ -77,45 +79,57 @@ def check(job, logger, **kwargs):
     for resource in resources:
         logger.info(f"Will run health checks for resource '{resource.name}'.")
         config_dict = get_config_value(resource)
-        failure_threshold = config_dict.get('failure_threshold', 1)
-        failures = 0
+        failing_checks = 0
 
         # Run all the health checks configured for this resource.
         for health_check in config_dict.get('health_checks', {}):
+            max_retries = health_check.get('max_retries', 3)
+            retry_interval_seconds = health_check.get('retry_interval_seconds', 1)
+
             name = health_check.get('name')
             job.set_progress(f"Beginning health check '{name}'.")
             url = health_check.get('url')
             accepted_statuses = health_check.get('accepted_status_codes')
-            timeout_seconds = health_check.get('timeout_seconds', 5)
+            timeout_seconds = health_check.get('timeout_seconds', 3)
 
-            try:
-                status_code = requests.get(url, timeout=timeout_seconds).status_code
+            failures = 0
+            while failures <= max_retries:
+                try:
+                    if failures > 1:
+                        logger.info(f"On retry attempt {failures}.")
+                    status_code = requests.get(url, timeout=timeout_seconds).status_code
 
-                if accepted_statuses and status_code not in accepted_statuses:
-                    # Failure.
-                    msg = (
-                        f"HTTP Request returned {status_code}, "
-                        f"which is not in the accepted statuses: {accepted_statuses}"
-                        f"for health check '{name}'."
-                    )
-                    logger.debug(msg)
+                    if accepted_statuses and status_code not in accepted_statuses:
+                        # Failure.
+                        msg = (
+                            f"HTTP Request returned {status_code}, "
+                            f"which is not in the accepted statuses: {accepted_statuses}"
+                            f"for health check '{name}'."
+                        )
+                        logger.debug(msg)
+                        failures += 1
+                    else:
+                        # Pass - We got a valid status. We can stop now.
+                        logger.info(f"Health check '{name}' completed with success.")
+                        break
+
+                except Exception as e:
+                    # Bad, could be ConnectionError, which will count as a failure.
+                    logger.debug(e)
                     failures += 1
-                else:
-                    # Pass - We got a valid status. No alerting needed.
-                    logger.info(f"Health check '{name}' completed with success.")
 
-            except Exception as e:
-                # Bad, could be ConnectionError, which will count as a failure.
-                logger.debug(e)
-                failures += 1
+                # Wait for the specified retry interval before trying again
+                time.sleep(retry_interval_seconds)
+
+            if failures == max_retries:
+                failing_checks += 1
 
         # Summarize this resource's health check results.
         data_dict = {
             'time': datetime.datetime.now(),
             'resource_id': resource.id,
             'resource_name': resource.name,
-            'failing_checks': failures,
-            'failure_threshold': failure_threshold,
+            'failing_checks': failing_checks,
         }
 
         check_results.append(data_dict)

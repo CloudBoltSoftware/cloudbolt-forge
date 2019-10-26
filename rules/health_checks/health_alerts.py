@@ -50,11 +50,10 @@ class ResourceHealthAlert:
 
         time = result_dict.get('time')
         failing_checks = result_dict.get('failing_checks', 0)
-        failure_threshold = result_dict.get('failure_threshold', 1)
         resource_name = result_dict.get('resource_name')
         resource_id = result_dict.get('resource_id')
 
-        if failing_checks >= failure_threshold:
+        if failing_checks:
             self.over_threshold.append((str(time), resource_name, resource_id, failing_checks))
 
         return

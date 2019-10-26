@@ -20,17 +20,29 @@ The value must be valid JSON, and it must specify a url to send an HTTP request 
 and may include some additional optional parameters. 
 Here is an example of a valid `health_check_config` parameter value: 
  ```
- {
-     "failure_threshold": 2,                       # Optional. The default is 1.
+ {                   
      "health_checks": [
          {
-             "name": "Teapot",                    # Required. For reporting purposes. 
-             "url": "https://google.com",          # Required. This is where we will send an HTTP GET request to.
-             "accepted_status_codes": [418],  # Optional, will accept *any* if not specified.
-             "timeout_seconds": 5,                 # Optional, default is 3
+             "name": "Teapot",                   
+             "url": "https://google.com",        
+             "accepted_status_codes": [418],  
+             "timeout_seconds": 5,               
+             "max_retries": 4,
+             "retry_interval_seconds": 10
          }
      ],
  }
  ```
+
 * The rule will automatically execute anytime the recurring job `Execute All Rules` is run, which is set by a cron schedule. 
 If you would like to have the health checks run more or less often, you may create a recurring job to run this individual rule. 
+
+Here is a more detailed breakdown of the supported parameters:
+
+* health_checks: Required. Must be a list of JSON objects with the following required parameters.
+* name: Required. Specify for referencing health checks in logging and reporting. 
+* url: Required. Needed to send a request to do a health check.
+* accepted_status_codes: Optional. Must be a list of integers for HTTP status codes. The default is to accept any status code. 
+* timeout_seconds: Optional. The default is 3. Must be an integer. This specifies the number of seconds to wait before timing out the request.
+* max_retries: Optional. The default is 3. This specifies the number of retry attempts allowed before reporting the cloud resource as unavailable. 
+* retry_interval_seconds: Optional. The default is 1 second. This specifies how many seconds to wait between retry attempts. 
