@@ -79,7 +79,7 @@ def check(job, logger, **kwargs):
     for resource in resources:
         logger.info(f"Will run health checks for resource '{resource.name}'.")
         config_dict = get_config_value(resource)
-        failing_checks = 0
+        failing_health_checks = 0
 
         # Run all the health checks configured for this resource.
         for health_check in config_dict.get('health_checks', {}):
@@ -92,11 +92,11 @@ def check(job, logger, **kwargs):
             accepted_statuses = health_check.get('accepted_status_codes')
             timeout_seconds = health_check.get('timeout_seconds', 3)
 
-            failures = 0
-            while failures <= max_retries:
+            retry_attempts = 0
+            while retry_attempts <= max_retries:
                 try:
-                    if failures > 1:
-                        logger.info(f"On retry attempt {failures}.")
+                    if retry_attempts > 1:
+                        logger.info(f"On retry attempt {retry_attempts}.")
                     status_code = requests.get(url, timeout=timeout_seconds).status_code
 
                     if accepted_statuses and status_code not in accepted_statuses:
@@ -107,7 +107,7 @@ def check(job, logger, **kwargs):
                             f"for health check '{name}'."
                         )
                         logger.debug(msg)
-                        failures += 1
+                        retry_attempts += 1
                     else:
                         # Pass - We got a valid status. We can stop now.
                         logger.info(f"Health check '{name}' completed with success.")
@@ -116,20 +116,21 @@ def check(job, logger, **kwargs):
                 except Exception as e:
                     # Bad, could be ConnectionError, which will count as a failure.
                     logger.debug(e)
-                    failures += 1
+                    retry_attempts += 1
 
                 # Wait for the specified retry interval before trying again
                 time.sleep(retry_interval_seconds)
 
-            if failures == max_retries:
-                failing_checks += 1
+            if retry_attempts == max_retries:
+                job.set_progress(f"Max retries exceeded for health check '{name}'.")
+                failing_health_checks += 1
 
         # Summarize this resource's health check results.
         data_dict = {
             'time': datetime.datetime.now(),
             'resource_id': resource.id,
             'resource_name': resource.name,
-            'failing_checks': failing_checks,
+            'failing_health_checks': failing_health_checks,
         }
 
         check_results.append(data_dict)
