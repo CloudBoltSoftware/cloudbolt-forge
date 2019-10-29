@@ -11,7 +11,7 @@ from utilities.logger import ThreadLogger
 
 import settings
 
-CBVARDIR = os.path.join(settings.VARDIR, "opt", "cloudbolt")
+RKEDIR = os.path.join(settings.VARDIR, "opt", "cloudbolt", "rke")
 logger = ThreadLogger(__name__)
 
 
@@ -185,9 +185,10 @@ def prepare_server_hosts(user, blueprint_context, ssh_public_key):
     docker_script += '\nsystemctl restart firewalld;\n'
     logger.info(f"docker script:\n{docker_script}")
     for server in find_all_servers(blueprint_context=blueprint_context):
-        set_progress("starting script execution on server {}".format(server.ip))
+        set_progress("Starting script execution on server {}".format(server.ip))
         server.execute_script(script_contents=docker_script, timeout=700)
         server.reboot()
+    set_progress("Waiting for server(s) to begin reboot.")
     time.sleep(10)
     for server in find_all_servers(blueprint_context=blueprint_context):
         server.wait_for_os_readiness()
@@ -202,18 +203,18 @@ def run(_job, *_args, **kwargs):
     ssh_public_key, ssh_private_key = create_ssh_keypair()
     prepare_server_hosts(user, blueprint_context, ssh_public_key)
 
-    os.makedirs('/var/opt/cloudbolt/rke', exist_ok=True)
-    with open(f"{CBVARDIR}rke/rke_private_key.pem", 'w') as fl:
+    os.makedirs(RKEDIR, exist_ok=True)
+    with open(f"{RKEDIR}/rke_private_key.pem", 'w') as fl:
         fl.write(ssh_private_key)
-    with open(f"{CBVARDIR}rke/rke_public_key.pem", 'w') as fl:
+    with open(f"{RKEDIR}/rke_public_key.pem", 'w') as fl:
         fl.write(ssh_public_key)
 
     ips = find_all_server_ips(kwargs.get('blueprint_context', {}))
     rke_yaml_text = generate_rke_yaml(ips, user, ssh_private_key)
-    with open(f"{CBVARDIR}rke/cluster.yml", 'w') as fl:
+    with open(f"{RKEDIR}/cluster.yml", 'w') as fl:
         fl.write(rke_yaml_text)
 
-    set_progress(f"Your ssh public and private keys have been generated. Please find them in {CBVARDIR}rke/")
-    set_progress(f"Your RKE cluster.yml file has been generated. Please find it in {CBVARDIR}rke/cluster.yml")
+    set_progress(f"Your ssh public and private keys have been generated. Please find them in {RKEDIR}")
+    set_progress(f"Your RKE cluster.yml file has been generated. Please find it in {RKEDIR}/cluster.yml")
 
-    return "SUCCESS", "./rke up --config=/var/opt/cloudbolt/rke/cluster.yml", ""
+    return "SUCCESS", f"./rke up --config={RKEDIR}/cluster.yml", ""
