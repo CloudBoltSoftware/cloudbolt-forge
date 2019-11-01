@@ -8,6 +8,7 @@ import yaml
 
 from common.methods import set_progress
 from utilities.logger import ThreadLogger
+from utilities.run_command import run_command
 
 import settings
 
@@ -194,6 +195,12 @@ def prepare_server_hosts(user, blueprint_context, ssh_public_key):
         server.wait_for_os_readiness()
 
 
+def kubernetes_up(cluster_yml_name: str):
+    cmd = f"{RKEDIR}/rke up --config={RKEDIR}/{cluster_yml_name}"
+    output = run_command(cmd)
+    set_progress(f"RKE up finished!. {output}")
+
+
 def run(_job, *_args, **kwargs):
     """
     main entry point for the plugin
@@ -211,10 +218,16 @@ def run(_job, *_args, **kwargs):
 
     ips = find_all_server_ips(kwargs.get('blueprint_context', {}))
     rke_yaml_text = generate_rke_yaml(ips, user, ssh_private_key)
-    with open(f"{RKEDIR}/cluster.yml", 'w') as fl:
+
+    cluster_yml_name = f"{int(time.time())}-cluster.yml"
+
+    with open(f"{RKEDIR}/{cluster_yml_name}", 'w') as fl:
         fl.write(rke_yaml_text)
 
     set_progress(f"Your ssh public and private keys have been generated. Please find them in {RKEDIR}")
-    set_progress(f"Your RKE cluster.yml file has been generated. Please find it in {RKEDIR}/cluster.yml")
+    set_progress(f"Your RKE cluster.yml file has been generated. Please find it in {RKEDIR}/{cluster_yml_name}")
 
-    return "SUCCESS", f"./rke up --config={RKEDIR}/cluster.yml", ""
+    set_progress(f"Running RKE Config")
+    kubernetes_up(cluster_yml_name)
+
+    return "SUCCESS", f"./rke up --config={RKEDIR}/{cluster_yml_name}", ""
