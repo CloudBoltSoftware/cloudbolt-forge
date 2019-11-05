@@ -8,7 +8,7 @@ import yaml
 
 from common.methods import set_progress
 from utilities.logger import ThreadLogger
-from utilities.run_command import run_command
+from utilities import run_command
 
 import settings
 
@@ -31,14 +31,17 @@ def create_ssh_keypair(size=2048):
         public_exponent=65537,
         key_size=size,
     )
+
     private_key = key.private_bytes(
         crypto_serialization.Encoding.PEM,
         crypto_serialization.PrivateFormat.PKCS8,
         crypto_serialization.NoEncryption())
+
     public_key = key.public_key().public_bytes(
         crypto_serialization.Encoding.OpenSSH,
         crypto_serialization.PublicFormat.OpenSSH
     )
+
     return public_key.decode('utf-8'), private_key.decode('utf-8')
 
 
@@ -148,7 +151,7 @@ def find_all_server_ips(blueprint_context):
     """
     ips = []
     for server_obj in find_all_servers(blueprint_context):
-        if hasattr(server_obj, 'ip') and server_obj.ip is not None and server_obj.ip != '':
+        if hasattr(server_obj, 'ip') and server_obj.ip is not None and (server_obj.ip != ''):
             ips.append(server_obj.ip)
     return ips
 
@@ -179,55 +182,69 @@ def prepare_server_hosts(user, blueprint_context, ssh_public_key):
                     'chmod 644 /home/{}/.ssh/authorized_keys || exit 1;\n'.format(user) + \
                     'echo \'net.ipv6.conf.all.forwarding=1\' >> /etc/sysctl.conf || exit 1\n' + \
                     'sysctl -p /etc/sysctl.conf || exit 1'
-    for tcp_port_num in [443, 10250, 2379, 2380, 6443]:
+
+    # See https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/kubernetes-networking.md
+    # for official documentation on kubernetes networking and port useage.
+    for tcp_port_num in [80, 443, 10250, 2379, 2380, 6443]:
         docker_script += '\nfirewall-offline-cmd --add-port={}/tcp || exit 1;'.format(tcp_port_num)
+
     for udp_port_num in [8285, 8472]:
         docker_script += '\nfirewall-offline-cmd --add-port={}/udp || exit 1;'.format(udp_port_num)
+
     docker_script += '\nsystemctl restart firewalld;\n'
     logger.info(f"docker script:\n{docker_script}")
+
     for server in find_all_servers(blueprint_context=blueprint_context):
         set_progress("Starting script execution on server {}".format(server.ip))
         server.execute_script(script_contents=docker_script, timeout=700)
         server.reboot()
+
     set_progress("Waiting for server(s) to begin reboot.")
     time.sleep(10)
+
     for server in find_all_servers(blueprint_context=blueprint_context):
         server.wait_for_os_readiness()
 
 
-def kubernetes_up(cluster_yml_name: str):
-    cmd = f"{RKEDIR}/rke up --config={RKEDIR}/{cluster_yml_name}"
-    output = run_command(cmd)
-    set_progress(f"RKE up finished!. {output}")
+def kubernetes_up(cluster_path):
 
+    cmd = f"{RKEDIR}/rke up --config={cluster_path}/cluster.yml"
+    run_command.execute_command(cmd, timeout=900, stream_title="Running rke up")
+    #run_command.run_command(cmd)
 
-def run(_job, *_args, **kwargs):
+def run(job, *_args, **kwargs):
     """
     main entry point for the plugin
     """
+
     user = 'cbrke'
     blueprint_context = kwargs.get('blueprint_context', {})
     ssh_public_key, ssh_private_key = create_ssh_keypair()
     prepare_server_hosts(user, blueprint_context, ssh_public_key)
 
+    cluster_path = os.path.join(settings.VARDIR, "opt", "cloudbolt", "rke", f"resource-{job.parent_job.resource_set.first().id}")
+
     os.makedirs(RKEDIR, exist_ok=True)
-    with open(f"{RKEDIR}/rke_private_key.pem", 'w') as fl:
+    os.makedirs(cluster_path)
+
+    with open(f"{cluster_path}/rke_private_key.pem", 'w') as fl:
         fl.write(ssh_private_key)
-    with open(f"{RKEDIR}/rke_public_key.pem", 'w') as fl:
+    with open(f"{cluster_path}/rke_public_key.pem", 'w') as fl:
         fl.write(ssh_public_key)
 
     ips = find_all_server_ips(kwargs.get('blueprint_context', {}))
     rke_yaml_text = generate_rke_yaml(ips, user, ssh_private_key)
 
-    cluster_yml_name = f"{int(time.time())}-cluster.yml"
+    cluster_yml_name = "cluster.yml"
 
-    with open(f"{RKEDIR}/{cluster_yml_name}", 'w') as fl:
+    with open(f"{cluster_path}/{cluster_yml_name}", 'w') as fl:
         fl.write(rke_yaml_text)
 
-    set_progress(f"Your ssh public and private keys have been generated. Please find them in {RKEDIR}")
-    set_progress(f"Your RKE cluster.yml file has been generated. Please find it in {RKEDIR}/{cluster_yml_name}")
+    set_progress(f"Your ssh public and private keys have been generated. Please find them in {cluster_path}")
+
+    set_progress(f"Your RKE cluster.yml file has been generated. Please find it in {cluster_path}/{cluster_yml_name}")
 
     set_progress(f"Running RKE Config")
-    kubernetes_up(cluster_yml_name)
+    kubernetes_up(cluster_path)
 
-    return "SUCCESS", f"./rke up --config={RKEDIR}/{cluster_yml_name}", ""
+    return "SUCCESS", f"./rke up --config={cluster_path}/cluster.yml", ""
