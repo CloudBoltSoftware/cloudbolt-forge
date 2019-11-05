@@ -207,10 +207,9 @@ def prepare_server_hosts(user, blueprint_context, ssh_public_key):
 
 
 def kubernetes_up(cluster_path):
-
     cmd = f"{RKEDIR}/rke up --config={cluster_path}/cluster.yml"
     run_command.execute_command(cmd, timeout=900, stream_title="Running rke up")
-    #run_command.run_command(cmd)
+    # optional: use run_command.run_command(cmd) instead of run_command.execute_command()
 
 def run(job, *_args, **kwargs):
     """
