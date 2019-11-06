@@ -12,7 +12,8 @@ from utilities import run_command
 
 import settings
 
-RKEDIR = os.path.join(settings.VARDIR, "opt", "cloudbolt", "rke")
+# set this if `rke` is not in your PATH
+PATH_TO_RKE_EXECUTABLE = None
 logger = ThreadLogger(__name__)
 
 
@@ -207,9 +208,14 @@ def prepare_server_hosts(user, blueprint_context, ssh_public_key):
 
 
 def kubernetes_up(cluster_path):
-    cmd = f"{RKEDIR}/rke up --config={cluster_path}/cluster.yml"
+    if PATH_TO_RKE_EXECUTABLE:
+        cmd = f"{PATH_TO_RKE_EXECUTABLE}/rke up --config={cluster_path}/cluster.yml"
+    else:
+        cmd = f"rke up --config={cluster_path}/cluster.yml"
+
     run_command.execute_command(cmd, timeout=900, stream_title="Running rke up")
     # optional: use run_command.run_command(cmd) instead of run_command.execute_command()
+
 
 def run(job, *_args, **kwargs):
     """
@@ -223,7 +229,6 @@ def run(job, *_args, **kwargs):
 
     cluster_path = os.path.join(settings.VARDIR, "opt", "cloudbolt", "rke", f"resource-{job.parent_job.resource_set.first().id}")
 
-    os.makedirs(RKEDIR, exist_ok=True)
     os.makedirs(cluster_path)
 
     with open(f"{cluster_path}/rke_private_key.pem", 'w') as fl:
