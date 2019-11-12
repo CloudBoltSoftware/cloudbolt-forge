@@ -9,7 +9,7 @@ Each server is assigned one or more roles from: Kube API server, Kube worker, an
 
 Create a Blueprint with this plugin as the step _after_ one or more servers have been provisioned.
 
-After the blueprint order completes you can grab the Kubernetes cluster information and create a CloudBolt Container Orchestrator.
+After the Blueprint order completes, you can grab the Kubernetes cluster information and create a CloudBolt Container Orchestrator.
 
 ## Pre-requisites
 
@@ -51,8 +51,8 @@ If you are running in the cloud, add the above ports to a security group allowin
 
 ### Node size
 
-Note that Kubernetes clusters, especially those with only a few nodes, have a lot of overhead in CPU and memory.
-So using smaller node sizes may be slow and error/timeout-prone.
+Note that Kubernetes clusters, especially those with only a few nodes, have a lot of overhead in CPU and memory, 
+so using smaller node sizes may be slow and error/timeout-prone.
 
 We suggest using at least "medium" size nodes with this Plugin to avoid that overhead performance cost.
 
@@ -61,7 +61,7 @@ We suggest using at least "medium" size nodes with this Plugin to avoid that ove
 This plugin will provision one Kubernetes cluster per Catalog Item order.
 
 Each cluster is unique to the Resource and the clusters have files on disk which can be inspected for troubleshooting purposes.
-For example a Resource with ID 101 can be found on the CloudBolt host at `/var/opt/cloudbolt/rke/resource-101`.
+For example, a Resource with ID 101 can be found on the CloudBolt host at `/var/opt/cloudbolt/rke/resource-101`.
 This directory contains the authentication keys, `cluster.yml`, and `rkestate` for the Kubernetes cluster associated with that CloudBolt Resource ID.
 
 ## Setting up a CloudBolt Container Orchestrator
