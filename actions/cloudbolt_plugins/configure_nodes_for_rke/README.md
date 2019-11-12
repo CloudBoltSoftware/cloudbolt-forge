@@ -69,11 +69,25 @@ This directory contains the authentication keys, `cluster.yml`, and `rkestate` f
 This action does not create a Kubernetes Container Orchestrator on the CloudBolt server.
 To do this, run the following commands on the CloudBolt server:
 
-1. Login to the CloudBolt server (in HA setups, any servers should work).
+1. SSH into your CloudBolt server (in HA setups, any servers should work).
+
 2. `cd /path/to/rke/new-resource-id` (e.g., `/var/opt/cloudbolt/rke/resource-101`)
-3. Run the following commands and copy the long number output for the STEP #:
+
+3. Run the following commands and save the output for later when we create a Container Orchestrator:
+
 ```
-$ export KUBECONFIG=/path/to/rke/new-resource-id/kube_config_cluster.yml
-$ export KUBE_TOKEN=$(kubectl -n kube-system get secrets | grep cloudbolt-admin | awk '{print $1}')
-$ kubectl -n kube-system get secret $KUBE_TOKEN -o jsonpath='{.data.token}' | base64 -d
+[1] $ export KUBECONFIG=/path/to/rke/new-resource-id/kube_config_cluster.yml
+[2] $ export CB_KUBE_TOKEN=$(kubectl -n kube-system get secrets | grep cloudbolt-admin | awk '{print $1}')
+[3] $ kubect get nodes -l node-role.kubernetes.io/controlplane=true
+[4] $ kubectl -n kube-system get secret $CB_KUBE_TOKEN -o jsonpath='{.data.token}' | base64 -d
 ```
+
+4. In CloudBolt, navigate to create a new Container Orchestrator.
+
+5. Set the protocol to `HTTPS`.
+
+6. Set the IP to be any of the IP addresses in the output of step `3`.
+
+7. Set the Port to `6443`.
+
+8. Use the output of step 4 as the Bearer Token Secret.
