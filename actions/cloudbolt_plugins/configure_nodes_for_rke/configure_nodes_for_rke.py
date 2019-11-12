@@ -7,6 +7,7 @@ import time
 import yaml
 
 from common.methods import set_progress
+from utilities.exceptions import CommandExecutionException
 from utilities.logger import ThreadLogger
 from utilities import run_command
 
@@ -171,7 +172,7 @@ def find_all_servers(blueprint_context):
 
 
 def prepare_server_hosts(user, blueprint_context, ssh_public_key):
-    docker_script = 'yum -y install docker || exit 1;\n' + \
+    docker_script = 'yum -y install docker firewalld || exit 1;\n' + \
                     'systemctl enable docker || exit 1;\n' + \
                     'useradd {};\n'.format(user) + \
                     'groupadd docker\n' + \
@@ -197,7 +198,13 @@ def prepare_server_hosts(user, blueprint_context, ssh_public_key):
 
     for server in find_all_servers(blueprint_context=blueprint_context):
         set_progress("Starting script execution on server {}".format(server.ip))
-        server.execute_script(script_contents=docker_script, timeout=700)
+
+        try:
+            server.execute_script(script_contents=docker_script, timeout=700)
+        except CommandExecutionException:
+            set_progress("Failed to run command. Trying again with `sudo`.")
+            server.execute_script(script_contents=docker_script, timeout=700, run_with_sudo=True)
+
         server.reboot()
 
     set_progress("Waiting for server(s) to begin reboot.")
