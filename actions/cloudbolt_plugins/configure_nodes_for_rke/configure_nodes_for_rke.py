@@ -10,6 +10,7 @@ from common.methods import set_progress
 from containerorchestrators.models import ContainerOrchestratorTechnology
 from containerorchestrators.kuberneteshandler.models import Kubernetes
 from infrastructure.models import Environment
+from resource.models import Resource
 from utilities.exceptions import CommandExecutionException
 from utilities.logger import ThreadLogger
 from utilities import run_command
