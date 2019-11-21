@@ -17,7 +17,7 @@ from utilities import run_command
 import settings
 
 # set this if `rke` is not in your PATH
-PATH_TO_RKE_EXECUTABLE = '/var/opt/cloudbolt/kubernetes/bin/rke'
+PATH_TO_RKE_EXECUTABLE = '/var/opt/cloudbolt/kubernetes/bin/kubernetes'
 logger = ThreadLogger(__name__)
 
 
@@ -269,8 +269,8 @@ def create_cb_objects(resource_id):
         "ca_file_contents": ca_cert,
         "container_technology": corch_technology,
     }
-    kube = Kubernetes.objects.create(**kubernetes_data)
-    env = Environment.objects.create(name="Resource-{} Environment".format(resource_id), container_orchestrator=kube)
+    Kubernetes.objects.create(**kubernetes_data)
+    Environment.objects.create(name="Resource-{} Environment".format(resource_id), container_orchestrator=kube)
 
 
 def run(job, *_args, **kwargs):
@@ -311,4 +311,4 @@ def run(job, *_args, **kwargs):
     set_progress(f"Creating CB objects...")
     create_cb_objects(resource_id)
 
-    return "SUCCESS", f"./rke up --config={cluster_path}/cluster.yml", ""
+    return "SUCCESS", f"./kubernetes up --config={cluster_path}/cluster.yml", ""
