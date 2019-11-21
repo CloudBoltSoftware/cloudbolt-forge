@@ -7,6 +7,9 @@ import time
 import yaml
 
 from common.methods import set_progress
+from containerorchestrators.models import ContainerOrchestratorTechnology
+from containerorchestrators.kuberneteshandler.models import Kubernetes
+from infrastructure.models import Environment
 from utilities.exceptions import CommandExecutionException
 from utilities.logger import ThreadLogger
 from utilities import run_command
@@ -14,7 +17,7 @@ from utilities import run_command
 import settings
 
 # set this if `rke` is not in your PATH
-PATH_TO_RKE_EXECUTABLE = None
+PATH_TO_RKE_EXECUTABLE = '/var/opt/cloudbolt/kubernetes/bin/rke'
 logger = ThreadLogger(__name__)
 
 
@@ -216,12 +219,58 @@ def prepare_server_hosts(user, blueprint_context, ssh_public_key):
 
 def kubernetes_up(cluster_path):
     if PATH_TO_RKE_EXECUTABLE:
-        cmd = f"{PATH_TO_RKE_EXECUTABLE}/rke up --config={cluster_path}/cluster.yml"
+        cmd = f"{PATH_TO_RKE_EXECUTABLE} up --config={cluster_path}/cluster.yml"
     else:
         cmd = f"rke up --config={cluster_path}/cluster.yml"
 
     run_command.execute_command(cmd, timeout=900, stream_title="Running rke up")
     # optional: use run_command.run_command(cmd) instead of run_command.execute_command()
+
+
+def create_cb_objects(resource_id):
+    """
+    Create the corresponding ContainerOrchestrator and Environment for the
+    newly deployed cluster.
+
+    We read in the certificates returned by RKE and store them on the
+    ContainerOrchestrator to auth future requests to Kubernetes.
+    """
+    ip = None
+    protocol = None
+    port = None
+    ca_cert = None
+    cert_data = None
+    key_data = None
+
+    kube_config_yml = os.path.join(settings.VARDIR, "opt", "cloudbolt", "kubernetes", f"resource-{resource_id}", "kube_config_cluster.yml")
+    with open(kube_config_yml) as file:
+        documents = yaml.full_load(file)
+        for item, doc in documents.items():
+            if item == "clusters":
+                control_plane = doc[0]["cluster"]
+                server = control_plane["server"]
+                protocol, address = server.split('://')
+                ip, port = address.split(':')
+                ca_cert = control_plane["certificate-authority-data"]
+            elif item == "users":
+                user = doc[0]["user"]
+                cert_data = user["client-certificate-data"]
+                key_data = user["client-key-data"]
+
+    corch_technology = ContainerOrchestratorTechnology.objects.get(name="Kubernetes")
+    kubernetes_data = {
+        "name": "Cluster-{}".format(resource_id),
+        "ip": ip,
+        "protocol": protocol,
+        "port": port,
+        "auth_type": "CERTIFICATE",
+        "cert_file_contents": cert_data,
+        "key_file_contents": key_data,
+        "ca_file_contents": ca_cert,
+        "container_technology": corch_technology,
+    }
+    kube = Kubernetes.objects.create(**kubernetes_data)
+    env = Environment.objects.create(name="Resource-{} Environment".format(resource_id), container_orchestrator=kube)
 
 
 def run(job, *_args, **kwargs):
@@ -234,7 +283,8 @@ def run(job, *_args, **kwargs):
     ssh_public_key, ssh_private_key = create_ssh_keypair()
     prepare_server_hosts(user, blueprint_context, ssh_public_key)
 
-    cluster_path = os.path.join(settings.VARDIR, "opt", "cloudbolt", "rke", f"resource-{job.parent_job.resource_set.first().id}")
+    resource_id = job.parent_job.resource_set.first().id
+    cluster_path = os.path.join(settings.VARDIR, "opt", "cloudbolt", "kubernetes", f"resource-{resource_id}")
 
     os.makedirs(cluster_path)
 
@@ -255,7 +305,10 @@ def run(job, *_args, **kwargs):
 
     set_progress(f"Your RKE cluster.yml file has been generated. Please find it in {cluster_path}/{cluster_yml_name}")
 
-    set_progress(f"Running RKE Config")
+    set_progress(f"Running RKE Config...")
     kubernetes_up(cluster_path)
+
+    set_progress(f"Creating CB objects...")
+    create_cb_objects(resource_id)
 
     return "SUCCESS", f"./rke up --config={cluster_path}/cluster.yml", ""
