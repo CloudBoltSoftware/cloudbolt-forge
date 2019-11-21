@@ -269,8 +269,12 @@ def create_cb_objects(resource_id):
         "ca_file_contents": ca_cert,
         "container_technology": corch_technology,
     }
-    Kubernetes.objects.create(**kubernetes_data)
-    Environment.objects.create(name="Resource-{} Environment".format(resource_id), container_orchestrator=kube)
+    container_orchestrator = Kubernetes.objects.create(**kubernetes_data)
+    Environment.objects.create(name="Resource-{} Environment".format(resource_id), container_orchestrator=container_orchestrator)
+
+    resource = Resource.objects.get(id=resource_id)
+    resource.container_orchestrator_id = container_orchestrator.id
+    resource.save()
 
 
 def run(job, *_args, **kwargs):
