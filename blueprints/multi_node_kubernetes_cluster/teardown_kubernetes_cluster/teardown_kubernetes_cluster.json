@@ -3,7 +3,7 @@
     "max-retries": 0,
     "name": "Teardown Kubernetes cluster",
     "resource-technologies": [],
-    "script-filename": "cb_plugin_1574367182588782_Cso04ik.py",
+    "script-filename": "teardown_kubernetes_cluster.py",
     "shared": "False",
     "target-os-families": [],
     "type": "CloudBolt Plug-in"

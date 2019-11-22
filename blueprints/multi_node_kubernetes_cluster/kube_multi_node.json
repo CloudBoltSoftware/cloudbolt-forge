@@ -22,7 +22,7 @@
             "deploy-seq": 2,
             "description": null,
             "execute-in-parallel": false,
-            "name": "Kub RKE Plugin",
+            "name": "Deploy Kubernetes Cluster",
             "run-on-scale-up": true,
             "show-on-order-form": true,
             "type": "plugin"
