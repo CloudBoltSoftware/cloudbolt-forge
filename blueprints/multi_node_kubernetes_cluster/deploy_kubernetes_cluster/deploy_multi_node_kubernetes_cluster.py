@@ -1,4 +1,6 @@
 """
+MINIMUM CloudBolt version required: v9.2
+
 This Plug-in configures servers for RKE, deploys a Kubernetes cluster with
 `rke up`, and creates the required CloudBolt objects to manage the deployed
 cluster from CloudBolt.

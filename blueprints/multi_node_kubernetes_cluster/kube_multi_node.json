@@ -28,7 +28,7 @@
             "type": "plugin"
         }
     ],
-    "description": "",
+    "description": "MINIMUM CloudBolt version required: v9.2",
     "favorited": false,
     "is-orderable": true,
     "management-actions": [],
