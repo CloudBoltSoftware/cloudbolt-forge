@@ -35,7 +35,7 @@ See https://github.com/rancher/rke/releases for more information on RKE.
 
 ### kubectl
 
-This Blueprint utilizes kubectl to manage existing kubernetes clusters
+This Blueprint utilizes kubectl to manage existing Kubernetes clusters
 
 kubectl will be included with Cloudbolt versions 9.2+
 See https://kubernetes.io/docs/tasks/tools/install-kubectl/ for more information on kubectl.
