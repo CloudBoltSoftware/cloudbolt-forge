@@ -14,7 +14,7 @@ This Blueprint will deploy a Kubernetes cluster to the group of servers provisio
 
 This can sometimes take updwards of 20 minutes, depending on number of servers. The Deploy Kubernetes Cluster plugin included with this Blueprint will configure each server individually.
 
-CloudBolt Kubernetes clusters are closely associated with the [Resource](http://docs.cloudbolt.io/resources.html?highlight=resource) created when the server(s) are provisioned. The Resource ID is used to identify kubernetes cluster configurations specific to that resource.
+CloudBolt Kubernetes clusters are closely associated with the [Resource](http://docs.cloudbolt.io/resources.html?highlight=resource) created when the server(s) are provisioned. The Resource ID is used to identify Kubernetes cluster configurations specific to that resource.
 
 
 ## Teardown
