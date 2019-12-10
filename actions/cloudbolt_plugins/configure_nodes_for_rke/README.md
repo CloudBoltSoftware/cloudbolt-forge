@@ -51,7 +51,7 @@ If you are running in the cloud, add the above ports to a security group allowin
 
 ### Node size
 
-Note that Kubernetes clusters, especially those with only a few nodes, have a lot of overhead in CPU and memory, 
+Note that Kubernetes clusters, especially those with only a few nodes, have a lot of overhead in CPU and memory,
 so using smaller node sizes may be slow and error/timeout-prone.
 
 We suggest using at least "medium" size nodes with this Plugin to avoid that overhead performance cost.
