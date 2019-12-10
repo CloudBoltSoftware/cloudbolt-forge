@@ -29,9 +29,11 @@ When the resource is deleted:
 This Blueprint utilizes RKE to configure and deploy the kubernetes cluster.
 
 RKE will be included with Cloudbolt versions 9.2+
-This plugin assumes an `rke` executable exists in the CloudBolt server `root` user's path;
-e.g., at `/usr/local/bin/rke`.
-See https://github.com/rancher/rke/releases for more information on RKE.
+This Blueprint requires an
+rke executable in the CloudBolt server root user's path, e.g.
+/usr/local/bin/rke.
+
+For more information on RKE, see https://github.com/rancher/rke/releases.
 
 ### kubectl
 
