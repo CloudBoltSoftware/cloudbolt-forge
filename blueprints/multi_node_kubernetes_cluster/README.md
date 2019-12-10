@@ -10,7 +10,7 @@ This deployment builds, configures and deploys a Kubernetes cluster to one or ma
 `
 
 ## Deployment Specifics
-This Blueprint will deploy a Kubernetes cluster to the group of servers provisioned in the Blueprint Order. Note that the master node (api server) is deployed to the first server provisioned.
+This Blueprint will deploy a Kubernetes cluster to the group of servers provisioned in the Blueprint Order. Note that the master node (API server) is deployed to the first server provisioned.
 
 This can sometimes take updwards of 20 minutes, depending on number of servers. The Deploy Kubernetes Cluster plugin included with this Blueprint will configure each server individually.
 
