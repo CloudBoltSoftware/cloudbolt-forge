@@ -6,7 +6,7 @@ This deployment builds, configures and deploys a Kubernetes cluster to one or ma
 
 ### Servers
 - Server(s) must be added as a build item(s) before the Deploy Kubernetes Cluster plugin.
-    - Each server must have a minimum of 1 cpu and a minimum Mem Size of 2.
+    - Each server must have a minimum of 1 CPU and a minimum Mem Size of 2 GB.
 `
 
 ## Deployment Specifics
