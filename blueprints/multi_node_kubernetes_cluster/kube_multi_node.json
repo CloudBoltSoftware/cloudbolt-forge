@@ -58,11 +58,11 @@
         }
     ],
     "resource-type": {
-        "icon": "",
-        "label": "Service",
+        "icon": "fas fa-dharmachakra",
+        "label": "Kubernetes Cluster",
         "lifecycle": "ACTIVE",
         "list-view-columns": [],
-        "name": "service",
+        "name": "kubernetes_cluster",
         "plural-label": null
     },
     "sequence": 0,
