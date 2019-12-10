@@ -19,7 +19,7 @@ CloudBolt Kubernetes clusters are closely associated with the [Resource](http://
 
 ## Teardown
 When the resource is deleted:
-- All kubernetes cluster configurations associated with the resource will be deleted.
+- All Kubernetes cluster configurations associated with the resource will be deleted.
 - The Container Orchestrator created for the Kubernetes cluster will be deleted.
 
 ## Additional Tools
