@@ -22,7 +22,9 @@ from utilities import run_command
 import settings
 
 # set this if `rke` is not in your PATH
-PATH_TO_RKE_EXECUTABLE = '/var/opt/cloudbolt/kubernetes/bin/rke'
+PATH_TO_RKE_EXECUTABLE = os.path.join(
+    settings.VARDIR, 'opt', 'cloudbolt', 'kubernetes', 'bin', 'rke'
+)
 logger = ThreadLogger(__name__)
 
 

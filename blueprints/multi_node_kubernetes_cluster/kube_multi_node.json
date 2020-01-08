@@ -5,7 +5,8 @@
         {
             "all-environments-enabled": false,
             "allowable-os-families": [
-                "CentOS"
+                "CentOS",
+                "Red Hat"
             ],
             "deploy-seq": 1,
             "description": "",
@@ -32,7 +33,7 @@
     "favorited": false,
     "is-orderable": true,
     "management-actions": [],
-    "name": "Kube Multi-Node",
+    "name": "Kubernetes Cluster",
     "parameters": [
         {
             "available-all-servers": false,
@@ -71,7 +72,7 @@
         {
             "action-name": "Teardown Kubernetes cluster",
             "continue-on-failure": false,
-            "deploy-seq": -1,
+            "deploy-seq": 0,
             "description": null,
             "execute-in-parallel": false,
             "name": "Teardown Kubernetes cluster",
