@@ -18,7 +18,6 @@ logger = ThreadLogger(__name__)
 class AWSTabDelegate(TabExtensionDelegate):
 
     def should_display(self):
-        logger.info(f"HELLO!!! /n/n/n/n/n/self.instance = {self.instance}")
         return isinstance(self.instance.cast(), AWSHandler)
 
 
