@@ -12,7 +12,7 @@
             "description": "",
             "execute-in-parallel": false,
             "hostname-template": "",
-            "name": "Centos 7.6 minimal",
+            "name": "Create Server",
             "restrict-applications": false,
             "show-on-order-form": true,
             "type": "provserver"

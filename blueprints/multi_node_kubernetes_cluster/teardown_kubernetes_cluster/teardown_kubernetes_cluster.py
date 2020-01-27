@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from common.methods import set_progress
 from containerorchestrators.kuberneteshandler.models import Kubernetes
 from utilities.run_command import execute_command
-import settings
+from django.conf import settings
 
 
 def run(job, *args, **kwargs):

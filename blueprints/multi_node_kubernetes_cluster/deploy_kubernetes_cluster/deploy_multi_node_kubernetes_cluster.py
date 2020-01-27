@@ -19,7 +19,7 @@ from utilities.exceptions import CommandExecutionException
 from utilities.logger import ThreadLogger
 from utilities import run_command
 
-import settings
+from django.conf import settings
 
 # set this if `rke` is not in your PATH
 PATH_TO_RKE_EXECUTABLE = os.path.join(
