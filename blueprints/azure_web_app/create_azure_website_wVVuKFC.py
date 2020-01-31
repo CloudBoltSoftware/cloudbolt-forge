@@ -6,46 +6,42 @@ Service Plan parameter to be dependant(regenerate options) on Resource Group
 """
 from common.methods import set_progress
 from infrastructure.models import CustomField
-from azure.common.credentials import ServicePrincipalCredentials
-from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.web import WebSiteManagementClient
 from resourcehandlers.azure_arm.models import AzureARMHandler
 from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site
-from resources.models import ResourceType, Resource
 
-def generate_options_for_location(Server=None, **kwargs):
-    location = []
-    azure = AzureARMHandler.objects.first()
-    for loc in azure.get_all_locations():
-        location.append(loc['display_name'])
-    return(location)
 
-def generate_options_for_resource_groups(Server=None, **kwargs):
+def generate_options_for_resource_groups(server=None, **kwargs):
+
     resource_group = []
     azure = AzureARMHandler.objects.first()
     for rg in azure.armresourcegroup_set.all():
         resource_group.append(rg)
-    return(resource_group)
 
-def generate_options_for_service_plans(Server=None, form_prefix=None, form_data=None, **kwargs):
+    return resource_group
+
+
+def generate_options_for_service_plans(server=None, form_prefix=None, form_data=None, **kwargs):
     results = []
+
     azure = AzureARMHandler.objects.first()
     subscription_id = azure.serviceaccount
-    credentials = ServicePrincipalCredentials(
-        client_id=azure.client_id,
-        secret=azure.secret,
-        tenant=azure.tenant_id
-    )
+    credentials = azure.get_api_wrapper().credentials
+
     web_client = WebSiteManagementClient(credentials, subscription_id)
-    service_plan = CustomField.objects.filter(name__startswith='service_plan').first()
+    service_plan = CustomField.objects.filter(name__contains='service_plan').first()
     resource_group = None
+
     if service_plan:
         control = service_plan.get_control_values_from_form_data(form_prefix, form_data)
+
         if control:
             keys = control.keys()
             for k in keys:
                 if 'resource_group' in k:
+                    # Extract from the control data structure, ex: {'resource_group_a123': ['rgName']}
                     resource_group = control[k][0]
+
     if resource_group:
         try:
             for sp in web_client.app_service_plans.list_by_resource_group(resource_group_name=resource_group):
@@ -54,6 +50,7 @@ def generate_options_for_service_plans(Server=None, form_prefix=None, form_data=
             pass
     return results
 
+
 def run(job, **kwargs):
     resource = kwargs.get('resource')
 
@@ -61,11 +58,8 @@ def run(job, **kwargs):
     set_progress("Connecting To Azure Management Service...")
     azure = AzureARMHandler.objects.first()
     subscription_id = azure.serviceaccount
-    credentials = ServicePrincipalCredentials(
-        client_id=azure.client_id,
-        secret=azure.secret,
-        tenant=azure.tenant_id
-    )
+    credentials = azure.get_api_wrapper().credentials
+
     web_client = WebSiteManagementClient(credentials, subscription_id)
     set_progress("Successfully Connected To Azure Management Service!")
 
