@@ -18,9 +18,10 @@ if __name__ == '__main__':
 from common.methods import set_progress
 from infrastructure.models import CustomField
 from jobs.models import Job
-from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.web import WebSiteManagementClient
 from resourcehandlers.azure_arm.models import AzureARMHandler
+from resourcehandlers.azure_arm.azure_wrapper import configure_arm_client
+
 from resources.models import ResourceType, Resource
 from servicecatalog.models import ServiceBlueprint
 from accounts.models import Group
@@ -34,12 +35,9 @@ def run(job, **kwargs):
     set_progress("Connecting To Azure Management Service...")
     azure = AzureARMHandler.objects.first()
 
-    subscription_id = azure.serviceaccount
     wrapper = azure.get_api_wrapper()
-    credentials = wrapper.credentials
-
-    client = ResourceManagementClient(credentials, subscription_id)
-    web_client = WebSiteManagementClient(credentials, subscription_id)
+    resource_client = wrapper.resource_client
+    web_client = configure_arm_client(wrapper, WebSiteManagementClient)
     set_progress("Successfully Connected To Azure Management Service!")
     
     # Generate custom fields
@@ -84,7 +82,7 @@ def run(job, **kwargs):
     # Discover Resource Groups with Web Apps
     set_progress("Getting List of Web Apps by Resource Groups")
     
-    for groups in client.resource_groups.list():
+    for groups in resource_client.resource_groups.list():
         web_apps = web_client.web_apps.list_by_resource_group(resource_group_name=groups.name)
         web_app_ids = []
         for web_app in web_apps:

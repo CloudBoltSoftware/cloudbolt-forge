@@ -9,6 +9,7 @@ from infrastructure.models import CustomField
 from azure.mgmt.web import WebSiteManagementClient
 from resourcehandlers.azure_arm.models import AzureARMHandler
 from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site
+from resourcehandlers.azure_arm.azure_wrapper import configure_arm_client
 
 
 def generate_options_for_resource_groups(server=None, **kwargs):
@@ -25,10 +26,9 @@ def generate_options_for_service_plans(server=None, form_prefix=None, form_data=
     results = []
 
     azure = AzureARMHandler.objects.first()
-    subscription_id = azure.serviceaccount
-    credentials = azure.get_api_wrapper().credentials
+    wrapper = azure.get_api_wrapper()
+    web_client = configure_arm_client(wrapper, WebSiteManagementClient)
 
-    web_client = WebSiteManagementClient(credentials, subscription_id)
     service_plan = CustomField.objects.filter(name__contains='service_plan').first()
     resource_group = None
 
@@ -57,10 +57,9 @@ def run(job, **kwargs):
     # Connect to Azure Management Service
     set_progress("Connecting To Azure Management Service...")
     azure = AzureARMHandler.objects.first()
-    subscription_id = azure.serviceaccount
-    credentials = azure.get_api_wrapper().credentials
 
-    web_client = WebSiteManagementClient(credentials, subscription_id)
+    wrapper = azure.get_api_wrapper()
+    web_client = configure_arm_client(wrapper, WebSiteManagementClient)
     set_progress("Successfully Connected To Azure Management Service!")
 
     # Create Resource Group if Needed
