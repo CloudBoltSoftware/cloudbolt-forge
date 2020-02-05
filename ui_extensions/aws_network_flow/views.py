@@ -2,8 +2,6 @@ import datetime
 import json
 import socket
 
-import boto3
-
 from django.shortcuts import render
 
 from extensions.views import tab_extension, TabExtensionDelegate
@@ -34,11 +32,12 @@ class NetworkFlowTabDelegate(TabExtensionDelegate):
 
 
 def _get_boto_logs_client(handler):
-    return boto3.client(
+    wrapper = handler.get_api_wrapper()
+    return wrapper.get_boto3_client(
         'logs',
-        region_name='us-east-1',  # region must be us-east-1; data from all regions is sent there.
-        aws_access_key_id=handler.serviceaccount,
-        aws_secret_access_key=handler.servicepasswd
+        handler.serviceaccount,
+        handler.servicepasswd,
+        'us-east-1'
     )
 
 
@@ -130,7 +129,7 @@ def aws_net_flows_json(request, handler_id):
         # version account_id interface_id srcaddr dstaddr srcport dstport protocol packets bytes start end
         # action log_status
         msg_parts = event['message'].split(" ")[2:]  # skip the version & account ID, they're not useful
-        event_time = datetime.datetime.fromtimestamp(event['timestamp']/1000)
+        event_time = datetime.datetime.fromtimestamp(event['timestamp'] / 1000)
         row = [helper_tags.when(event_time)]
 
         # Try to convert the protocol # to a name. If not found in the lookup table, fall back to the protocol #

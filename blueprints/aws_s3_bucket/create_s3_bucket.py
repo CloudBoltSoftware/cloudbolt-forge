@@ -27,6 +27,7 @@ def run(job, logger=None, **kwargs):
     region = '{{ s3_region }}'
     new_bucket_name = '{{ s3_bucket_name_input }}'
     rh = AWSHandler.objects.get(id=rh_id)
+    wrapper = rh.get_api_wrapper()
     CustomField.objects.get_or_create(
         name='aws_rh_id', label='AWS RH ID', type='STR',
         description='Used by the AWS S3 Bucket blueprint'
@@ -43,11 +44,11 @@ def run(job, logger=None, **kwargs):
     resource.save()
 
     set_progress('Connecting to Amazon S3')
-    conn = boto3.resource(
-        's3',
-        region_name=region,
-        aws_access_key_id=rh.serviceaccount,
-        aws_secret_access_key=rh.servicepasswd,
+    conn = wrapper.get_boto3_resource(
+        rh.serviceaccount,
+        rh.servicepasswd,
+        region,
+        service_name='s3'
     )
 
     set_progress('Create S3 bucket "{}"'.format(new_bucket_name))

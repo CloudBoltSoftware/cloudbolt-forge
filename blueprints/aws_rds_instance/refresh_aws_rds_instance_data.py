@@ -4,14 +4,14 @@ RDS Instance blueprint. Importing the blueprint from the CloudBolt Content
 Library will automatically import this action.
 """
 import json
-import boto3
 
+from common.methods import set_progress
 from infrastructure.models import Environment
 from orders.models import CustomFieldValue
 
 
 def run(job, logger=None, **kwargs):
-    service = job.resource_set.first()# Replace resource_set to service_set if you are using this script in CB version pre-8.0
+    service = job.resource_set.first()  # Replace resource_set to service_set if you are using this script in CB version pre-8.0
 
     # The Environment ID and RDS Instance data dict were stored as attributes on
     # this service by a build action.
@@ -39,13 +39,15 @@ def connect_to_rds(env):
     """
     Return boto connection to the RDS in the specified environment's region.
     """
-    job.set_progress('Connecting to AWS RDS in region {0}.'.format(env.aws_region))
+    set_progress('Connecting to AWS RDS in region {0}.'.format(env.aws_region))
     rh = env.resource_handler.cast()
-    return boto3.client(
+    wrapper = rh.get_api_wrapper()
+    return wrapper.get_boto3_client(
         'rds',
-        region_name=env.aws_region,
-        aws_access_key_id=rh.serviceaccount,
-        aws_secret_access_key=rh.servicepasswd)
+        rh.serviceaccount,
+        rh.servicepasswd,
+        env.aws_region
+    )
 
 
 def boto_instance_to_dict(boto_instance):
