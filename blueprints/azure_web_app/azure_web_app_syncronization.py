@@ -19,9 +19,10 @@ if __name__ == "__main__":
 from common.methods import set_progress
 from infrastructure.models import CustomField
 from jobs.models import Job
-from azure.mgmt.web import WebSiteManagementClient
 from resourcehandlers.azure_arm.models import AzureARMHandler
-from resourcehandlers.azure_arm.azure_wrapper import configure_arm_client
+from azure.common.credentials import ServicePrincipalCredentials
+from azure.mgmt.resource import ResourceManagementClient
+from azure.mgmt.web import WebSiteManagementClient
 
 from resources.models import ResourceType, Resource
 from servicecatalog.models import ServiceBlueprint
@@ -33,15 +34,46 @@ from utilities.logger import ThreadLogger
 logger = ThreadLogger(__name__)
 
 
+def _get_clients(handler):
+    """
+    Get the clients using newer methods from the CloudBolt main repo if this CB is running
+    a version greater than 9.2. These internal methods implicitly take care of much of the other
+    features in CloudBolt such as proxy and ssl verification.
+    Otherwise, manually instantiate clients without support for those other CloudBolt settings.
+    :param handler:
+    :return:
+    """
+    import settings
+    from common.methods import is_version_newer
+
+    set_progress("Connecting To Azure...")
+
+    cb_version = settings.VERSION_INFO["VERSION"]
+    if is_version_newer(cb_version, "9.2"):
+        from resourcehandlers.azure_arm.azure_wrapper import configure_arm_client
+
+        wrapper = handler.get_api_wrapper()
+        web_client = configure_arm_client(wrapper, WebSiteManagementClient)
+        resource_client = wrapper.resource_client
+    else:
+        # TODO: Remove once versions <= 9.2 are no longer supported.
+        credentials = ServicePrincipalCredentials(
+            client_id=handler.client_id,
+            secret=handler.secret,
+            tenant=handler.tenant_id,
+        )
+        web_client = WebSiteManagementClient(credentials, handler.serviceaccount)
+        resource_client = ResourceManagementClient(credentials, handler.serviceaccount)
+
+    set_progress("Connection to Azure established")
+
+    return web_client, resource_client
+
+
 def run(job, **kwargs):
     # Connect to Azure Management Service
-    set_progress("Connecting To Azure Management Service...")
     azure = AzureARMHandler.objects.first()
-
-    wrapper = azure.get_api_wrapper()
-    resource_client = wrapper.resource_client
-    web_client = configure_arm_client(wrapper, WebSiteManagementClient)
-    set_progress("Successfully Connected To Azure Management Service!")
+    web_client, resource_client = _get_clients(azure)
 
     # Generate custom fields
     CustomField.objects.get_or_create(
