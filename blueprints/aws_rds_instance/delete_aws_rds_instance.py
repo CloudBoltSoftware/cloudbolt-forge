@@ -39,9 +39,10 @@ def connect_to_rds(env):
     set_progress('Connecting to AWS RDS in region {0}.'.format(env.aws_region))
     rh = env.resource_handler.cast()
     wrapper = rh.get_api_wrapper()
-    return wrapper.get_boto3_client(
+    client = wrapper.get_boto3_client(
         'rds',
         rh.serviceaccount,
         rh.servicepasswd,
         env.aws_region
     )
+    return client
