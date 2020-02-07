@@ -2,9 +2,9 @@
 Restart Azure Web App
 """
 from common.methods import set_progress
+from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.web import WebSiteManagementClient
 from resourcehandlers.azure_arm.models import AzureARMHandler
-from azure.common.credentials import ServicePrincipalCredentials
 
 
 def _get_client(handler):
@@ -45,8 +45,11 @@ def run(job, **kwargs):
     resource = kwargs.get('resource')
 
     # Connect to Azure Management Service
-    azure = AzureARMHandler.objects.first()
-    web_client = _get_client(azure)
+    set_progress("Connecting To Azure Management Service...")
+    handler = AzureARMHandler.objects.first()
+
+    web_client = _get_client(handler)
+    set_progress("Successfully Connected To Azure Management Service!")
 
     # Restart Web App
     web_client.web_apps.restart(resource_group_name=resource.resource_group_name, name=resource.name)

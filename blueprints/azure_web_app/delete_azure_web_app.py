@@ -1,10 +1,10 @@
 """
 Deletes Web App from Azure
 """
+from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.web import WebSiteManagementClient
 from common.methods import set_progress
 from resourcehandlers.azure_arm.models import AzureARMHandler
-from azure.common.credentials import ServicePrincipalCredentials
 
 
 def _get_client(handler):
@@ -46,11 +46,14 @@ def run(job, **kwargs):
     resource = job.resource_set.first()
 
     # Connect to Azure Management Service
-    azure = AzureARMHandler.objects.first()
-    web_client = _get_client(azure)
+    set_progress("Connecting To Azure Management Service...")
+    handler = AzureARMHandler.objects.first()
+    web_client = _get_client(handler)
 
     # Use custom field web_app_id to get web app from Azure
     rg = resource.attributes.get(field__name__startswith="resource_group_name")
 
     # Delete the web app
-    web_client.web_apps.delete(resource_group_name=rg.value, name=resource.name)
+    web_client.web_apps.delete(
+        resource_group_name=rg.value, name=resource.name, delete_empty_server_farm=False
+    )

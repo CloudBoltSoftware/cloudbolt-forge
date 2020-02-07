@@ -1,15 +1,48 @@
 """
-Creates website in Azure.
-
-Service Plan parameter to be dependant(regenerate options) on Resource Group
-
+Creates web-app in Azure.
 """
 from common.methods import set_progress
-from infrastructure.models import CustomField
-from azure.mgmt.web import WebSiteManagementClient
-from resourcehandlers.azure_arm.models import AzureARMHandler
-from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site
+from infrastructure.models import CustomField, Environment
+from resourcehandlers.azure_arm.models import ARMResourceGroup
+
 from azure.common.credentials import ServicePrincipalCredentials
+from azure.mgmt.web import WebSiteManagementClient
+from azure.mgmt.web.models import AppServicePlan, SkuDescription, Site
+
+
+def generate_options_for_azure_env(**kwargs):
+    options = []
+
+    for env in Environment.objects.filter(
+        resource_handler__resource_technology__name="Azure"
+    ):
+        options.append((env.id, env.name))
+    return sorted(options, key=lambda tup: tup[1].lower())
+
+
+def generate_options_for_create_service_plan(**kwargs):
+    return [(True, "YES"), (False, "NO")]
+
+
+def generate_options_for_resource_groups(control_value=None, **kwargs):
+    if control_value is None:
+        return []
+    env = Environment.objects.get(id=control_value)
+    groups = env.armresourcegroup_set.all()
+    return [(g.id, g.name) for g in groups]
+
+
+def generate_options_for_service_plans(control_value=None, **kwargs):
+    if control_value is None or control_value is "":
+        return []
+    results = []
+    rg = ARMResourceGroup.objects.get(id=control_value)
+    web_client = _get_client(rg.handler)
+    for sp in web_client.app_service_plans.list_by_resource_group(
+        resource_group_name=rg.name
+    ):
+        results.append(sp.name)
+    return results
 
 
 def _get_client(handler):
@@ -46,80 +79,124 @@ def _get_client(handler):
     return web_client
 
 
-def generate_options_for_resource_groups(server=None, **kwargs):
+def create_custom_fields_as_needed():
+    CustomField.objects.get_or_create(
+        name="azure_web_app_name",
+        type="STR",
+        defaults={
+            "label": "Azure Web App Name",
+            "description": "Used by the Azure blueprints",
+            "show_as_attribute": True,
+        },
+    )
 
-    resource_group = []
-    azure = AzureARMHandler.objects.first()
-    for rg in azure.armresourcegroup_set.all():
-        resource_group.append(rg)
+    CustomField.objects.get_or_create(
+        name="azure_web_app_default_host_name",
+        type="STR",
+        defaults={
+            "label": "Azure Server Name",
+            "description": "Used by the Azure blueprints",
+            "show_as_attribute": True,
+        },
+    )
 
-    return resource_group
+    CustomField.objects.get_or_create(
+        name="azure_location",
+        type="STR",
+        defaults={
+            "label": "Azure Location",
+            "description": "Used by the Azure blueprints",
+            "show_as_attribute": True,
+        },
+    )
 
+    CustomField.objects.get_or_create(
+        name="azure_resource_group_name",
+        type="STR",
+        defaults={
+            "label": "Azure Resource Group",
+            "description": "Used by the Azure blueprints",
+            "show_as_attribute": True,
+        },
+    )
 
-def generate_options_for_service_plans(
-    server=None, form_prefix=None, form_data=None, **kwargs
-):
-    results = []
-
-    azure = AzureARMHandler.objects.first()
-    web_client = _get_client(azure)
-
-    service_plan = CustomField.objects.filter(name__contains="service_plan").first()
-    resource_group = None
-
-    if service_plan:
-        control = service_plan.get_control_values_from_form_data(form_prefix, form_data)
-
-        if control:
-            keys = control.keys()
-            for k in keys:
-                if "resource_group" in k:
-                    # Extract from the control data structure, ex: {'resource_group_a123': ['rgName']}
-                    resource_group = control[k][0]
-
-    if resource_group:
-        try:
-            for sp in web_client.app_service_plans.list_by_resource_group(
-                resource_group_name=resource_group
-            ):
-                results.append(sp.name)
-        except:
-            pass
-    return results
+    CustomField.objects.get_or_create(
+        name="azure_web_app_id",
+        type="STR",
+        defaults={
+            "label": "Azure Web App Id",
+            "description": "Application ID in Azure",
+            "show_as_attribute": True,
+        },
+    )
 
 
 def run(job, **kwargs):
     resource = kwargs.get("resource")
+    create_custom_fields_as_needed()
+
+    env_id = "{{ azure_env }}"
+
+    resource_group_id = "{{ resource_groups }}"
+    service_plan = "{{ service_plans }}"
+    web_app_name = "{{ web_app_name }}"
+    create_service_plan = "{{ create_service_plan }}"
+    service_plan_name = "{{ service_plan_name }}"
+
+    set_progress(
+        f"Environment {env_id} ResourceId {resource_group_id} And KWARGS {kwargs}"
+    )
+
+    # Clean Resource name to Azure acceptable web-app name
+    web_app_name = web_app_name.replace(" ", "-")
+    web_app_name = web_app_name.replace("(", "-")
+    web_app_name = web_app_name.replace(")", "")
+
+    resource_group = ARMResourceGroup.objects.get(id=resource_group_id)
 
     # Connect to Azure Management Service
-    azure = AzureARMHandler.objects.first()
-    web_client = _get_client(azure)
+    set_progress("Connecting To Azure Management Service...")
+    web_client = _get_client(resource_group.handler)
+    set_progress("Successfully Connected To Azure Management Service!")
 
-    # Create Resource Group if Needed
-    resource_group = "{{ resource_groups }}"
+    if create_service_plan == "True":
+        # Create the service plan
+        set_progress(f"Environment {env_id}")
+        my_env = Environment.objects.get(id=env_id)
+        service_plan_async_operation = web_client.app_service_plans.create_or_update(
+            resource_group.name,
+            service_plan_name,
+            AppServicePlan(
+                app_service_plan_name=service_plan_name,
+                location=my_env.name,
+                sku=SkuDescription(name="S1", capacity=1, tier="Standard"),
+            ),
+        )
+        service_plan_async_operation.result()
 
-    # Create App Service Plan if Needed
-    service_plan = "{{ service_plans }}"
-    service_plan_obj = web_client.app_service_plans.get(
-        resource_group_name=resource_group, name=service_plan
-    )
+        service_plan_obj = web_client.app_service_plans.get(
+            resource_group_name=resource_group.name, name=service_plan_name
+        )
+    else:
+        service_plan_obj = web_client.app_service_plans.get(
+            resource_group_name=resource_group.name, name=service_plan
+        )
 
     # Create Web App
     site_async_operation = web_client.web_apps.create_or_update(
-        resource_group,
-        resource.name,
+        resource_group.name,
+        web_app_name,
         Site(location=service_plan_obj.location, server_farm_id=service_plan_obj.id),
     )
     site = site_async_operation.result()
 
     # Store Web App metadata on the resource as parameters for teardown
-    resource.set_value_for_custom_field(cf_name="web_app_id", value=site.id)
-    resource.set_value_for_custom_field(
-        cf_name="resource_group_name", value=resource_group
-    )
-    resource.set_value_for_custom_field(
-        cf_name="web_app_location", value=service_plan_obj.location
-    )
-    resource.set_value_for_custom_field(
-        cf_name="web_app_default_host_name", value=site.default_host_name
-    )
+    resource.azure_web_app_name = web_app_name
+    resource.name = web_app_name
+    resource.azure_web_app_id = site.id
+    resource.azure_web_app_default_host_name = site.default_host_name
+    resource.resource_group_name = resource_group
+    resource.azure_location = site.location
+    resource.save()
+
+    return "SUCCESS", "", ""
