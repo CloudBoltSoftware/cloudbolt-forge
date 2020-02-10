@@ -168,7 +168,7 @@ def run(job, **kwargs):
             service_plan_name,
             AppServicePlan(
                 app_service_plan_name=service_plan_name,
-                location=my_env.name,
+                location=my_env.node_location,
                 sku=SkuDescription(name="S1", capacity=1, tier="Standard"),
             ),
         )
