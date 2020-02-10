@@ -1,0 +1,82 @@
+{
+    "any-group-can-deploy": true,
+    "auto-historical-resources": false,
+    "build-items": [
+        {
+            "all-environments-enabled": false,
+            "allowable-os-families": [
+                "CentOS",
+                "Red Hat"
+            ],
+            "deploy-seq": 1,
+            "description": "",
+            "execute-in-parallel": false,
+            "hostname-template": "",
+            "name": "Create Server",
+            "restrict-applications": false,
+            "show-on-order-form": true,
+            "type": "provserver"
+        },
+        {
+            "action-name": "Deploy Kubernetes Cluster",
+            "continue-on-failure": false,
+            "deploy-seq": 2,
+            "description": null,
+            "execute-in-parallel": false,
+            "name": "Deploy Kubernetes Cluster",
+            "run-on-scale-up": true,
+            "show-on-order-form": true,
+            "type": "plugin"
+        }
+    ],
+    "description": "MINIMUM CloudBolt version required: v9.2",
+    "favorited": false,
+    "is-orderable": true,
+    "management-actions": [],
+    "name": "Kubernetes Cluster",
+    "parameters": [
+        {
+            "available-all-servers": false,
+            "constraints": {
+                "maximum": "3.00",
+                "minimum": "3.00"
+            },
+            "description": "Number of servers to build",
+            "destination": "Build Items",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "label": "Quantity",
+            "name": "quantity",
+            "options": [
+                "3"
+            ],
+            "relevant-osfamilies": [],
+            "required": false,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "INT"
+        }
+    ],
+    "resource-type": {
+        "icon": "fas fa-dharmachakra",
+        "label": "Kubernetes Cluster",
+        "lifecycle": "ACTIVE",
+        "list-view-columns": [],
+        "name": "kubernetes_cluster",
+        "plural-label": null
+    },
+    "sequence": 0,
+    "show-recipient-field-on-order-form": false,
+    "teardown-items": [
+        {
+            "action-name": "Teardown Kubernetes cluster",
+            "continue-on-failure": false,
+            "deploy-seq": 0,
+            "description": null,
+            "execute-in-parallel": false,
+            "name": "Teardown Kubernetes cluster",
+            "type": "teardown_plugin"
+        }
+    ]
+}

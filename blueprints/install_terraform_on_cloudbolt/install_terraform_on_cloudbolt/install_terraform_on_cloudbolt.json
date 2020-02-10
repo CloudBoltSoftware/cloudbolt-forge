@@ -1,0 +1,42 @@
+{
+    "action-inputs": [
+        {
+            "available-all-servers": false,
+            "description": null,
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": false,
+            "label": "Version Name",
+            "name": "version_name",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": null,
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": false,
+            "label": "Zip Url",
+            "name": "zip_url",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        }
+    ],
+    "description": "Installs a custom version of Terraform on the CloudBolt server. Requires a ZIP URL for a 64-bit Linux version of Terraform from https://releases.hashicorp.com/terraform",
+    "max-retries": 0,
+    "name": "Install Terraform on CloudBolt",
+    "resource-technologies": [],
+    "script-filename": "install_terraform_on_cloudbolt.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}

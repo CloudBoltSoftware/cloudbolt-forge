@@ -1,0 +1,10 @@
+{
+    "description": "This Plug-in configures servers for RKE, deploys a Kubernetes cluster with `rke up`, and creates the required CloudBolt objects to manage the deployed cluster from CloudBolt.",
+    "max-retries": 0,
+    "name": "Deploy Kubernetes Cluster",
+    "resource-technologies": [],
+    "script-filename": "deploy_multi_node_kubernetes_cluster.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}

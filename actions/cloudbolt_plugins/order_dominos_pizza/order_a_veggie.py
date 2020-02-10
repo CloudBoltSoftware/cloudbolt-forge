@@ -5,7 +5,8 @@ To set this up, on your CB server:
  * `pip install usaddress`
  * `cd /var/opt/cloudbolt/proserv/`
  * `git clone https://github.com/gamagori/pizzapi.git`
- * possibly replace a tab character at the beginning of the last line of order.py with 8 spaces.
+ * `ln -s pizzapi-repo/pizzapi .`
+ * possibly replace the tab characters on lines 107 and 130 of order.py with 8 spaces.
 
 If you order this blueprint from CloudBolt, and it fails, check your email, it is possible that
 the pizza order completed but there was an error when checking the status of the order.

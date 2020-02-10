@@ -1,0 +1,103 @@
+{% extends "reports/internal/base.html" %}
+{% load helper_tags %}
+{% load i18n %}
+
+{% block report_content %}
+    <div class="btn-toolbar">
+    <div class="btn-group">
+      <a class="btn btn-default res-Servers" href="?res=servers">{% trans "Servers" %}</a>
+      <a class="btn btn-default res-CPUs" href="?res=cpus">{% trans "CPUs" %}</a>
+      <a class="btn btn-default res-Memory" href="?res=memory">{% trans "Memory" %}</a>
+      <a class="btn btn-default res-Disk" href="?res=disk">{% trans "Disk" %}</a>
+      <a class="btn btn-default res-Rate" href="?res=rate">{% trans "Rate" %}</a>
+    </div>
+    </div>
+
+    <div id="chart_div" class="panel panel-default"></div>
+{% endblock %}
+
+{% block onReady %}
+
+var seriesData = {{ series_data|to_json }};
+var seriesName = seriesData[0].name;
+var seriesLabel = seriesData[0].label || seriesName;
+var rSquaredLabel = seriesData[1].label || '';
+$('.btn.res-'+ seriesName).addClass('active');
+
+$('#chart_div').highcharts({
+    title: {
+        text: seriesName + '{% trans " managed by CB. Includes all groups." %}'
+    },
+
+    subtitle: {
+        text: document.ontouchstart === undefined ?
+            '{% trans "Click and drag in the plot area to zoom in" %}' :
+            '{% trans "Pinch the chart to zoom in" %}'
+    },
+
+    chart: {
+        zoomType: 'x'
+    },
+
+    xAxis: {
+        type: 'datetime'
+    },
+
+    yAxis: {
+        startOnTick: false,
+        title: {
+            text: seriesLabel
+        }
+    },
+
+    tooltip: {
+        useHTML: true,
+        formatter: function() {
+            var string = Highcharts.dateFormat('%b %e %Y', this.x)  +'<br/>'
+            if (this.series.name === "Prediction") {
+                string += rSquaredLabel
+            } else {
+                string += seriesLabel 
+            }
+            return string + ": <b>"+ this.y +"</b>";
+        }
+    },
+
+    legend: {
+        align: 'left',
+        verticalAlign: 'top',
+        borderWidth: 0
+    },
+
+    credits: {
+        enabled: false
+    },
+
+    exporting: {
+        buttons: {
+            contextButton: {
+                menuItems: [
+                    {
+                        text: '{% trans "Print" %}',
+                        onclick: function() {
+                            this.print();
+                        }
+                    },
+                    { separator: true },
+                    {
+                        text: '{% trans "Export as PNG Image" %}',
+                        onclick: function() {
+                            c2.charts.exportChartAsPNG(this,
+                                this.options.exporting.filename + '.png');
+                        }
+                    }
+                ]
+            }
+        },
+        filename: 'C2_Global_' + seriesName + '_Allocation_Trend'
+    },
+
+    series: seriesData
+});
+
+{% endblock %}

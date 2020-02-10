@@ -1,13 +1,13 @@
 """
-Sample CloudBolt plug-in for a 'service action' that asks the user for a
+Sample CloudBolt plug-in for a 'resource action' that asks the user for a
 parameter value and adds that parameter value to every server in this deployed
-service.
+resource.
 
 Set the PARAM_NAME constant below to the name of the desired parameter.
 
 To enable:
-    Go to Admin > Service Actions
-    Click "New Service Action" > CloudBolt Plug-in > "Add new cloudbolt plugin"
+    Go to Admin > Resource Actions
+    Click "New Resource Action" > CloudBolt Plug-in > "Add new cloudbolt plugin"
     Fill out the form and upload this Python script.
 
 When uploading this script, CB recognizes the 'param_value' below as an "Action
@@ -27,22 +27,22 @@ PARAM_NAME = 'monitoring_plan'
 
 
 def run(job, **kwargs):
-    # User enters this value in the service action dialog.
+    # User enters this value in the resource action dialog.
     param_value = '{{ param_value }}'
 
     logger = kwargs['logger']  # use this to send text to the job log file
     job_params = job.job_parameters.cast()
-    service = job_params.services.first()
+    resource = job_params.resources.first()
 
-    set_progress('Setting parameter "{}" = "{}" on all severs in service {}'
-                 .format(PARAM_NAME, param_value, service))
+    set_progress('Setting parameter "{}" = "{}" on all servers in resource {}'
+                 .format(PARAM_NAME, param_value, resource))
 
     # Get all servers
-    # servers = service.server_set.all()
+    # servers = resource.server_set.all()
     # --- or ---
     # Get only non-historical servers, in case any were deleted (they remain in
-    # the CB database and associated to this service)
-    servers = service.server_set.exclude(status='HISTORICAL')
+    # the CB database and associated to this resource)
+    servers = resource.server_set.exclude(status='HISTORICAL')
 
     # Set the param on each server
     for server in servers:

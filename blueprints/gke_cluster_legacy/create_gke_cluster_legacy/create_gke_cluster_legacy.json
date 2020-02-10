@@ -1,0 +1,45 @@
+{
+    "action-inputs": [
+        {
+            "available-all-servers": false,
+            "description": null,
+            "hide-if-default-value": false,
+            "label": "Cloudbolt Environment",
+            "name": "cloudbolt_environment",
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": null,
+            "hide-if-default-value": false,
+            "label": "Name",
+            "name": "name",
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "",
+            "hide-if-default-value": false,
+            "label": "Node Count",
+            "name": "node_count",
+            "required": false,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "INT"
+        }
+    ],
+    "description": "",
+    "max-retries": 0,
+    "name": "Create GKE Cluster (Legacy)",
+    "resource-technologies": [],
+    "script-filename": "create_gke_cluster.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}

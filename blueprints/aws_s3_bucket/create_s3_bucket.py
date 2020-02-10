@@ -51,11 +51,16 @@ def run(job, logger=None, **kwargs):
     )
 
     set_progress('Create S3 bucket "{}"'.format(new_bucket_name))
-    conn.create_bucket(
-        Bucket=new_bucket_name,
-        CreateBucketConfiguration={
-            'LocationConstraint': region
-        }
-    )
+    if region == 'us-east-1':
+        conn.create_bucket(
+            Bucket=new_bucket_name,
+        )
+    else:
+        conn.create_bucket(
+            Bucket=new_bucket_name,
+            CreateBucketConfiguration={
+                'LocationConstraint': region
+            }
+        )
 
     return "", "", ""
