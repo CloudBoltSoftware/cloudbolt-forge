@@ -14,4 +14,6 @@ def run(job, *args, **kwargs):
         if os.path.getmtime(file) < time.time() - 5 * 60:
             set_progress("Removing these files {}".format(file))
             os.remove(file)
+
     return "SUCCESS", "", ""
+
