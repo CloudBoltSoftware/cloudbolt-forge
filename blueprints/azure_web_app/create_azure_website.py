@@ -141,9 +141,9 @@ def run(job, **kwargs):
     env_id = "{{ azure_env }}"
 
     resource_group_id = "{{ resource_groups }}"
-    # service_plan = "{# service_plans #}"
+    # service_plan = "# service_plans #"
     web_app_name = "{{ web_app_name }}"
-    # create_service_plan = "{# create_service_plan #}"
+    # create_service_plan = "# create_service_plan #"
     service_plan_name = "{{ service_plan_name }}"
 
     set_progress(
