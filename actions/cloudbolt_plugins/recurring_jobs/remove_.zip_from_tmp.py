@@ -12,6 +12,8 @@ def run(job, *args, **kwargs):
     for file in zip_file_list:
         #Only remove zip files that are at least 5 minutes old.
         if os.path.getmtime(file) < time.time() - 5 * 60:
-	   set_progress("Removing these files {}".format(file))
-           os.remove(file)
+            set_progress("Removing these files {}".format(file))
+            os.remove(file)
+
     return "SUCCESS", "", ""
+
