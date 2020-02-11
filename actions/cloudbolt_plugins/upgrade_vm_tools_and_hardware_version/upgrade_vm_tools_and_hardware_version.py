@@ -2,10 +2,19 @@ import time
 import pyVmomi
 
 from common.methods import set_progress
-from infrastructure.models import Server
-from resourcehandlers.vmware.pyvmomi_wrapper import get_vm_by_uuid, wait_for_tasks
+from infrastructure.models import Server, Environment, CustomField
+from resourcehandlers.vmware.pyvmomi_wrapper import get_vm_by_uuid, wait_for_tasks, get_connection
 from resourcehandlers.vmware.models import VsphereResourceHandler
 from resourcehandlers.vmware.vmware_41 import TechnologyWrapper
+
+
+# Make sure the cf we use exists
+cf, is_new = CustomField.objects.get_or_create(
+    name='vmx_versions', type='TXT',
+    defaults={'label': 'Valid VM Hardware versions',
+              'description': 'List of valid VM Hardware versions to choose from'
+              }
+)
 
 
 def get_vmware_service_instance(rh):
@@ -23,7 +32,7 @@ def get_vmware_service_instance(rh):
 
     assert isinstance(rh_api, TechnologyWrapper)
 
-    return rh_api._get_connection()
+    return get_connection(rh.ip, rh.port, rh.serviceaccount, rh.servicepasswd, ssl_verification=False)
 
 
 def run(job, logger=None, server=None, **kwargs):
@@ -36,8 +45,12 @@ def run(job, logger=None, server=None, **kwargs):
 
         assert isinstance(vm, pyVmomi.vim.VirtualMachine)
 
-        if vm.config.version == "vmx-08":
-            set_progress("Hardware version already updated. Nothing to do.")
+        parameters = job.job_parameters.cast()
+        user_target_version = parameters.target_version or None
+        target_version = determine_target_version(server, user_target_version)
+
+        if vm.config.version == target_version:
+            set_progress("Hardware version already up-to-date. Nothing to do.")
             continue
 
         server.refresh_info()
@@ -66,8 +79,14 @@ def run(job, logger=None, server=None, **kwargs):
         # Snapshot VM
         set_progress("Creating snapshot")
         # server.resource_handler.cast().create_snapshot(server, "version4hw-{}".format(time.time()), "Pre Hardware Upgrade Snapshot")
-
-        task = vm.CreateSnapshot_Task("version4hw-{}".format(time.time()), "Pre Hardware Upgrade Snapshot", False, True)
+        if target_version:
+            target_version_text = target_version
+        else:
+            target_version_text = "latest"
+        task = vm.CreateSnapshot_Task(name="hwupg-{}-to-{}-{}".format(vm.config.version,
+                                                                      target_version_text,
+                                                                      time.time()),
+                                      description="Pre Hardware Upgrade Snapshot", memory=False, quiesce=True)
         wait_for_tasks(si, [task])
 
         failure_msg = ""
@@ -75,7 +94,10 @@ def run(job, logger=None, server=None, **kwargs):
         # Upgrade VM
         try:
             set_progress("Updating HW version")
-            task = vm.UpgradeVM_Task(version="vmx-08")
+            if target_version:
+                task = vm.UpgradeVM_Task(version=target_version)
+            else:
+                task = vm.UpgradeVM_Task()
             wait_for_tasks(si, [task])
         except:
             failure_msg = "Failed to upgrade hardware version"
@@ -93,6 +115,17 @@ def run(job, logger=None, server=None, **kwargs):
         return "", "", ""
 
     return "", "", ""
+
+
+def determine_target_version(server, user_target_version):
+
+    if user_target_version:
+        if user_target_version in server.environment.vmx_versions:
+            return user_target_version
+        else:
+            raise AttributeError
+    # User did not specify, we will not either and default to VMware's latest
+    return None
 
 
 if __name__ == '__main__':
