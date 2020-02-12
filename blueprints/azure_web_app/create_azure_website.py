@@ -1,6 +1,8 @@
 """
 Creates web-app in Azure.
 """
+import random
+
 from common.methods import set_progress
 from infrastructure.models import CustomField, Environment
 from resourcehandlers.azure_arm.models import ARMResourceGroup
@@ -20,32 +22,31 @@ def generate_options_for_azure_env(**kwargs):
     return sorted(options, key=lambda tup: tup[1].lower())
 
 
-# def generate_options_for_create_service_plan(**kwargs):
-#    return [(True, "YES"), (False, "NO")]
-
-
 def generate_options_for_resource_groups(control_value=None, **kwargs):
     if control_value is None:
         return []
     env = Environment.objects.get(id=control_value)
     groups = env.armresourcegroup_set.all()
+
     return [(g.id, g.name) for g in groups]
 
 
-# Service plans that exist in a resource group are too limiting and make the BP hard to consume
-# uncomment this if you really need to choose from existing service plans instead of creating one
-# on the fly as part of deploying a web app
-# def generate_options_for_service_plans(control_value=None, **kwargs):
-#    if control_value is None or control_value is "":
-#        return []
-#    results = []
-#    rg = ARMResourceGroup.objects.get(id=control_value)
-#    web_client = _get_client(rg.handler)
-#    for sp in web_client.app_service_plans.list_by_resource_group(
-#        resource_group_name=rg.name
-#    ):
-#        results.append(sp.name)
-#    return results
+def generate_options_for_service_plan_name(control_value=None, **kwargs):
+    # Provide an empty option to auto-create a new service plan.
+    options = [('', 'Auto-create new Service Plan')]
+
+    if control_value is None or control_value is "":
+        return options
+
+    rg = ARMResourceGroup.objects.get(id=control_value)
+    web_client = _get_client(rg.handler)
+
+    for service_plan in web_client.app_service_plans.list_by_resource_group(
+        resource_group_name=rg.name
+    ):
+        options.append((service_plan.name, service_plan.name))
+
+    return options
 
 
 def _get_client(handler):
@@ -139,11 +140,8 @@ def run(job, **kwargs):
     create_custom_fields_as_needed()
 
     env_id = "{{ azure_env }}"
-
     resource_group_id = "{{ resource_groups }}"
-    # service_plan = "# service_plans #"
     web_app_name = "{{ web_app_name }}"
-    # create_service_plan = "# create_service_plan #"
     service_plan_name = "{{ service_plan_name }}"
 
     set_progress(
@@ -162,28 +160,32 @@ def run(job, **kwargs):
     web_client = _get_client(resource_group.handler)
     set_progress("Successfully Connected To Azure Management Service!")
 
-    # if create_service_plan == "True":
-    # Create the service plan
-    set_progress(f"Environment {env_id}")
-    my_env = Environment.objects.get(id=env_id)
-    service_plan_async_operation = web_client.app_service_plans.create_or_update(
-        resource_group.name,
-        service_plan_name,
-        AppServicePlan(
-            app_service_plan_name=service_plan_name,
-            location=my_env.node_location,
-            sku=SkuDescription(name="S1", capacity=1, tier="Standard"),
-        ),
-    )
-    service_plan_async_operation.result()
+    if service_plan_name:
+        # User selected a pre-existing service plan, so just get it.
+        service_plan_obj = web_client.app_service_plans.get(
+            resource_group_name=resource_group.name, name=service_plan_name
+        )
+    else:
+        # Auto-create a new service plan.
+        # Use the web_app_name and append 5 random digits to have a decent probability of uniqueness.
+        service_plan_name = web_app_name + '-' + str(random.randint(10000, 99999))
 
-    service_plan_obj = web_client.app_service_plans.get(
-        resource_group_name=resource_group.name, name=service_plan_name
-    )
-    # else:
-    #    service_plan_obj = web_client.app_service_plans.get(
-    #        resource_group_name=resource_group.name, name=service_plan
-    #    )
+        set_progress(f"Environment {env_id}")
+        env = Environment.objects.get(id=env_id)
+        service_plan_async_operation = web_client.app_service_plans.create_or_update(
+            resource_group.name,
+            service_plan_name,
+            AppServicePlan(
+                app_service_plan_name=service_plan_name,
+                location=env.node_location,
+                sku=SkuDescription(name="S1", capacity=1, tier="Standard"),
+            ),
+        )
+        service_plan_async_operation.result()
+
+        service_plan_obj = web_client.app_service_plans.get(
+            resource_group_name=resource_group.name, name=service_plan_name
+        )
 
     # Create Web App
     site_async_operation = web_client.web_apps.create_or_update(
