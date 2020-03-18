@@ -10,7 +10,7 @@ Takes 4 inputs:
     * GCP Project: the GCP Project (and CB env) to provision the cluster nodes in
     * GCP Zone: The zone in which the nodes should be placed
     * Cluster name: the name of the new cluster (must be unique)
-    * Node count (optional): the number of nodes to provision (default=1)
+    * Node count: the number of nodes to provision
 """
 from __future__ import unicode_literals
 import hashlib
@@ -23,9 +23,10 @@ from django.urls import reverse
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 
+from common.methods import set_progress
 from containerorchestrators.models import ContainerOrchestratorTechnology
 from containerorchestrators.kuberneteshandler.models import Kubernetes
-from infrastructure.models import CustomField, Environment, Server
+from infrastructure.models import CustomField, Environment, Server, Namespace
 from orders.models import CustomFieldValue
 from portals.models import PortalConfig
 from resourcehandlers.gcp.models import GCPProject, GCPHandler
@@ -47,12 +48,19 @@ class GKEClusterBuilder(object):
         self.cluster_name = cluster_name
         self.handler = environment.resource_handler.cast()
         self.zone = zone
-        self.project = self.environment.gcp_project
-
         gcp_project = GCPProject.objects.get(id=self.environment.gcp_project)
-        service_account_key = json.loads(gcp_project.service_account_key)
+        self.project_name = self.environment.gcp_project
+        
+        try:
+            service_account_key = json.loads(gcp_project.service_account_info)
+        except Exception:
+            service_account_key = json.loads(gcp_project.service_account_key)
+            
         client_email = service_account_key.get('client_email')
         private_key = service_account_key.get('private_key')
+
+        set_progress('Using client_email: {}'.format(client_email))
+        set_progress('Make sure that the associated service account has permission to edit GKE Nodes')
 
         self.credentials = ServiceAccountCredentials.from_json_keyfile_dict({
             'client_email': client_email,
@@ -70,7 +78,7 @@ class GKEClusterBuilder(object):
     def create_cluster(self, node_count):
         cluster_resource = self.container_client.projects().zones().clusters()
         request = cluster_resource.create(
-            projectId=self.project, zone=self.zone, body={
+            projectId=self.project_name, zone=self.zone, body={
                 'cluster': {
                     'name': self.cluster_name,
                     'initial_node_count': node_count,
@@ -87,7 +95,7 @@ class GKEClusterBuilder(object):
     def get_cluster(self):
         cluster_resource = self.container_client.projects().zones().clusters()
         request = cluster_resource.get(
-            projectId=self.project,
+            projectId=self.project_name,
             zone=self.zone,
             clusterId=self.cluster_name,
         )
@@ -111,7 +119,7 @@ class GKEClusterBuilder(object):
             if timeout is not None and (time.time() - start > timeout):
                 break
             request = self.compute_client.instances().list(
-                project=self.project, zone=self.zone,
+                project=self.project_name, zone=self.zone,
                 filter="name:gke-{}-default-pool*".format(self.cluster_name))
             response = request.execute()
             nodes = response.get('items') or []
@@ -160,26 +168,36 @@ def generate_options_for_gcp_zone(group=None, **kwargs):
 
 
 def create_required_parameters():
+    """
+    We create the containerorchestrator namespace, to keep this CF from adding noise to
+    the Parameters list page.
+    """
+    namespace, created = Namespace.objects.get_or_create(name='containerorchestrators')
+    CustomField.objects.get_or_create(
+        name='container_orchestrator_id',
+        defaults=dict(
+            label="Container Orchestrator ID",
+            description=("Used by the Multi-Node Kubernetes Blueprint. Maps the provisioned CloudBolt resource"
+                         "to the Container Orchestrator used to manage the Kubernetes cluster."),
+            type="INT",
+            namespace=namespace,
+        )
+    )
     CustomField.objects.get_or_create(
         name='create_gke_k8s_cluster_project',
         defaults=dict(
             label="GKE Cluster: Project",
             description="Used by the GKE Cluster blueprint",
-            type="INT"
+            type="INT",
+            namespace=namespace,
         ))
     CustomField.objects.get_or_create(
         name='create_gke_k8s_cluster_name',
         defaults=dict(
             label="GKE Cluster: Cluster Name",
             description="Used by the GKE Cluster blueprint",
-            type="STR"
-        ))
-    CustomField.objects.get_or_create(
-        name='create_gke_k8s_cluster_id',
-        defaults=dict(
-            label="GKE Cluster: Cluster ID",
-            description="Used by the GKE Cluster blueprint",
-            type="INT",
+            type="STR",
+            namespace=namespace,
         ))
 
 
@@ -235,9 +253,17 @@ def run(job=None, logger=None, **kwargs):
         serviceaccount=cluster['masterAuth']['username'],
         servicepasswd=cluster['masterAuth']['password'],
         container_technology=tech,
+        environment=environment,
     )
-    resource.create_gke_k8s_cluster_id = kubernetes.id
+    resource.container_orchestrator_id = kubernetes.id
     resource.save()
+    
+    # create a new Environment for the new container orchestrator, and attach it
+    # to the selected GCP Project 
+    env = Environment.objects.create(name="Resource-{} Environment".format(resource.id), container_orchestrator=kubernetes)
+    env.gcp_project = builder.project_name
+    env.save()
+    
     url = 'https://{}{}'.format(
         PortalConfig.get_current_portal().domain,
         reverse('container_orchestrator_detail', args=[kubernetes.id])
@@ -251,7 +277,7 @@ def run(job=None, logger=None, **kwargs):
         uuid = hashlib.sha1(id_unicode.encode('utf-8')).hexdigest()
         # Create a barebones server record. Other details like CPU and Mem Size
         # will be populated the next time the GCE handler is synced.
-        Server.objects.create(
+        server = Server.objects.create(
             hostname=node['name'],
             resource_handler_svr_id=uuid,
             environment=environment,
@@ -259,6 +285,7 @@ def run(job=None, logger=None, **kwargs):
             group=resource.group,
             owner=resource.owner,
         )
+        resource.server_set.add(server)
 
     job.set_progress('Waiting for cluster to report as running...')
     remaining_time = TIMEOUT - (time.time() - start)
