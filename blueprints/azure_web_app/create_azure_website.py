@@ -61,7 +61,7 @@ def _get_client(handler):
     import settings
     from common.methods import is_version_newer
 
-    set_progress("Connecting To Azure...")
+    set_progress("Connecting To Azure Management Service...")
 
     cb_version = settings.VERSION_INFO["VERSION"]
     if is_version_newer(cb_version, "9.2"):
@@ -156,9 +156,7 @@ def run(job, **kwargs):
     resource_group = ARMResourceGroup.objects.get(id=resource_group_id)
 
     # Connect to Azure Management Service
-    set_progress("Connecting To Azure Management Service...")
     web_client = _get_client(resource_group.handler)
-    set_progress("Successfully Connected To Azure Management Service!")
 
     if service_plan_name:
         # User selected a pre-existing service plan, so just get it.
