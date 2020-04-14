@@ -1,0 +1,56 @@
+"""
+Discover Azure storage files
+"""
+from common.methods import set_progress
+from azure.common.credentials import ServicePrincipalCredentials
+from resourcehandlers.azure_arm.models import AzureARMHandler
+import azure.mgmt.storage as storage
+import azure.mgmt.resource.resources as resources
+from azure.storage.file import FileService
+from azure.storage.file.models import File
+from msrestazure.azure_exceptions import CloudError
+
+
+RESOURCE_IDENTIFIER = 'azure_file_identifier'
+
+
+def discover_resources(**kwargs):
+    discovered_azure_sql = []
+    for handler in AzureARMHandler.objects.all():
+        set_progress('Connecting to Azure storage \
+        files for handler: {}'.format(handler))
+        credentials = ServicePrincipalCredentials(
+            client_id=handler.client_id,
+            secret=handler.secret,
+            tenant=handler.tenant_id
+        )
+        azure_client = storage.StorageManagementClient(
+            credentials, handler.serviceaccount)
+        azure_resources_client = resources.ResourceManagementClient(
+            credentials, handler.serviceaccount)
+
+        for resource_group in azure_resources_client.resource_groups.list():
+            try:
+                for st in azure_client.storage_accounts.list_by_resource_group(resource_group.name)._get_next().json()['value']:
+                    res = azure_client.storage_accounts.list_keys(
+                        resource_group.name, st['name'])
+                    keys = res.keys
+                    file_service = FileService(
+                        account_name=st['name'], account_key=keys[1].value)
+                    for share in file_service.list_shares():
+                        for file in file_service.list_directories_and_files(share_name=share.name).items:
+                            if type(file) is File:
+                                discovered_azure_sql.append(
+                                    {
+                                        'name': share.name + '-' + file.name,
+                                        'azure_storage_file_name': file.name,
+                                        'azure_storage_file_share_name': share.name,
+                                        'azure_storage_account_name': st['name'],
+                                        'azure_account_key': keys[0].value,
+                                        'azure_account_key_fallback': keys[1].value
+                                    }
+                                )
+            except:
+                continue
+
+    return discovered_azure_sql
