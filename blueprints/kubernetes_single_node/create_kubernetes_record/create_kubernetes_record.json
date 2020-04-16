@@ -3,9 +3,13 @@
         {
             "available-all-servers": false,
             "description": null,
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
             "hide-if-default-value": false,
             "label": "Name",
             "name": "name",
+            "relevant-osfamilies": [],
             "required": true,
             "show-as-attribute": false,
             "show-on-servers": false,

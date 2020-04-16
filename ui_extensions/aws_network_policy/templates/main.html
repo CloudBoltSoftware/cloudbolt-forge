@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load job_tags %}
+{% load helper_tags %}
+{% load i18n %}
+
+{% block title %}{% trans 'AWS Network Policy' %}{% endblock %}
+{% block topnav %}admin{% endblock %}
+
+{% block content %}
+
+<h1>
+    <i class="fas fa-redo"></i>
+    AWS Network Policy Refreshing Configuration
+</h1>
+
+<div class="btn-toolbar">
+  <a class="btn btn-default open-dialog"
+    href="{% url 'run_recurring_job' recurring_job.id %}">
+    <span class="icon-start-tests open-dialog"></span> Run Now</a>
+  <a class="btn btn-default open-dialog"
+    href="{% url 'edit_recurring_job' recurring_job.id %}">
+    <span class="icon-edit"></span> Edit</a>
+  <a class="btn btn-default open-dialog"
+    href="{% url 'delete_recurring_job' recurring_job.id %}">
+    <span class="icon-delete open-dialog"></span> Delete</a>
+  &nbsp;
+  <span class="no-tooltip-affordance"
+      data-toggle="tooltip"
+      title="Run automatically at the scheduled time">
+      <input type="checkbox" name="enabled"
+          data-post-url="{% url 'toggle_recurring_job' recurring_job.id %}"
+          data-toggle="toggle"
+          data-on="{% trans 'Enabled' %}"
+          data-off="{% trans 'Disabled' %}"
+          data-width="100"
+          {% if recurring_job.enabled %}checked{% endif %}>
+  </span>
+  <span class="no-tooltip-affordance"
+      data-toggle="tooltip"
+      data-html="true"
+      title="{% blocktrans %}Always spawn a new job at the scheduled time?<br> Or skip if this recurring job already has a spawned job running?{% endblocktrans %}">
+      <input type="checkbox" name="allow_parallel_jobs"
+          data-post-url="{% url 'toggle_recurring_job' recurring_job.id %}"
+          data-toggle="toggle"
+          data-on='{% trans "Always run at scheduled time" %}'
+          data-off='{% trans "Only one job at a time" %}'
+          data-width="220"
+          {% if recurring_job.allow_parallel_jobs %}checked{% endif %}>
+  </span>
+</div>
+
+<div id="network-policy_caching-summary-panel">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>{%trans 'Caching Details' %}</h3>
+                </div>
+                <div class="panel-body">
+                    <dl>
+                    <dt>{% trans 'Current status:' %}</dt>
+                    <dd>
+                        {% if last_job %}
+                            <a href="{{ last_job.get_absolute_url }}">
+                            {{ last_job|job_status_icon }} {{ last_status }}</a>
+                        {% endif %}
+                    </dd>
+                    <dt>{%trans 'Last Success:' %}</dt>
+                    <dd>
+                        {% if last_success_job %}
+                        <a href="{{ last_success_job.get_absolute_url }}">{{ last_success_job.start_date|how_long_ago }}</a>
+                        {% else %}
+                        <i>{%trans 'N/A' %}</i>
+                        {% endif %}
+                    </dd>
+                    <dt>{%trans 'Last Failure:' %}</dt>
+                    <dd>
+                        {% if last_failure_job %}
+                        <a href="{{ last_failure_job.get_absolute_url }}">{{ last_failure_job.start_date|how_long_ago }}</a>
+                        {% else %}
+                        <i>/{%trans 'N/A' %}</i>
+                        {% endif %}
+                    </dd>
+                    <dt>{%trans 'Last Duration:' %}</dt>
+                    <dd> {{ last_duration }} </dt>
+
+                        {% if recurring_job.schedule %}
+                        <dt>Schedule:</dt>
+                        <dd>
+                            {{ recurring_job.schedule }}
+                        </dd>
+
+                        <dt>Next Run:</dt>
+                        <dd id="next-run-dd">
+                            {{ recurring_job.get_next_run_html }}
+                        </dd>
+                    {% endif %}
+
+                    {% if recurring_job.description %}
+                        <dt>Description:</dt>
+                        <dd>
+                            <p class="well well-sm"> {{ recurring_job.description }} </p>
+                        </dd>
+                    {% endif %}
+
+                    {% if recurring_job.added %}
+                        <dt>Added:</dt>
+                        <dd>
+                            {{ recurring_job.added }}
+                        </dd>
+                    {% endif %}
+
+                    {%  if recurring_job.hook %}
+                        <dt>Action:</dt>
+                        <dd>
+                            <a href="{{ recurring_job.hook.get_absolute_url }}">{{ recurring_job.hook.name }}</a>
+                        </dd>
+                        {% include 'actions/action_input_defaults.html' with action=recurring_job edit_url='edit_recurring_job' use_dt_dd=True %}
+                    {% endif %}
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>{%  trans  'Lifetime Success/Failure View' %}</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="test-state-graph" style="height:250px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2>Spawned Jobs</h2>
+<table id="recurring-jobs-table"
+    data-table
+    data-table-sort="0,desc"
+    data-table-sort-disabled="3"
+    data-table-source="{% url 'recurring_job_detail_json' recurring_job.id %}">
+    <thead>
+        <tr>
+            <th>Status</th>
+            <th>Name</th>
+            <th>Start Date</th>
+            <th>Duration</th>
+        </tr>
+    </thead>
+    <tbody>
+        {# will be populated by dataTable based on AJAX responses #}
+    </tbody>
+</table>
+
+<script>
+    {# Set up an ajaxComplete handler so we can catch when the job is enabled/disabled via the toggle, and then #}
+    {# update the displayed "Next Run" using the JSON response from the server #}
+    $(document).ajaxComplete(function(event, jqXHR, settings) {
+        var responseJSON = jqXHR.responseJSON;
+        var postURLForToggle = $('input[data-toggle="toggle"][name="enabled"]').data('post-url');
+
+        if (settings.url === postURLForToggle && responseJSON.nextRunHTML) {
+            $('#next-run-dd').html(responseJSON.nextRunHTML);
+        }
+    });
+
+    Highcharts.setOptions({colors: ['#ee5857', '#5aab62']});
+
+    function drawTestStateGraph() {
+        var teststategraph = $('#test-state-graph');
+        // return early if there is nothing to draw to --- otherwise,
+        // highcharts will raise http://www.highcharts.com/errors/13
+        if (teststategraph.length === 0) { return; }
+
+        teststategraph.highcharts({
+            title: {
+                text: ''
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer'
+                }
+            },
+            series: [{
+                type: 'pie',
+                name: '{% trans "Number of spawned jobs" %}',
+                data: [{
+                  name: '{% trans "Failed" %}',
+                  y: {{ failure_count }},
+                  selected: true
+                }, {
+                  name: '{% trans "Successful" %}',
+                  y: {{ total_count }} - {{ failure_count }},
+                }],
+                innerSize: '30%',
+            }],
+            credits: {enabled: false}
+        });
+    };
+    drawTestStateGraph();
+</script>
+
+{% endblock content %}

@@ -1,0 +1,35 @@
+{% load i18n %}
+{% load helper_tags %}
+
+<div class="panel-body">
+    <form method="get">
+        {# First row in the form #}
+        <ul id="filters-container" class="filter-row">
+            <li>
+                <span>{{ filters_form.startTime.label_tag }}</span>
+                <div class="input-group input-daterange daterange-group">
+                    {{ filters_form.startTime }}
+                    <div class="input-group-addon">to</div>
+                    {{ filters_form.endTime }}
+                </div>
+                <i id="daterange-error-message" class="daterange-error"></i>
+            </li>
+            <li class="filter-field inline-field">
+                {{ filters_form.filterPattern.label_tag }}
+                {{ filters_form.filterPattern }}
+            </li>
+            <li class="filter-field inline-field">
+                {% trans 'Log Streams' %} {% infotip 'If none are selected, flows from all streams will be shown' %}
+                {{ filters_form.logStreamNames }}
+            </li>
+        </ul>
+        <div class="btn-toolbar text-center">
+            <input type="button" class="btn btn-default" value="{% trans 'Clear' %}" id="unfilter"/>
+            <input type="submit" class="btn btn-primary" value="{% trans 'Apply' %}"/>
+        </div>
+    </form>
+</div>
+
+<script>
+    c2.datepicker.initDatePicker();
+</script>

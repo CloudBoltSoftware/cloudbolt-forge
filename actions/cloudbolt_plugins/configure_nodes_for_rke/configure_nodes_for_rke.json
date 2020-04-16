@@ -1,0 +1,10 @@
+{
+    "description": "",
+    "max-retries": 0,
+    "name": "configure-nodes-for-rke",
+    "resource-technologies": [],
+    "script-filename": "configure_nodes_for_rke.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}
