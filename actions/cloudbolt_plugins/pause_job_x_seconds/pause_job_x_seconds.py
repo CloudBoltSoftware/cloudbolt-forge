@@ -5,6 +5,12 @@ SECONDS_TO_WAIT = {{SECONDS_TO_WAIT}}
 
 
 def run(job, **kwargs):
+    """
+    This plugin can be used to pause the Job Engine and is useful within blueprints
+    and other places where a pause in execution is required. A parameter specifying
+    how many seconds to pause is passed to this script.
+    """
+
     job.set_progress(
         "Pausing job for {} seconds".format(SECONDS_TO_WAIT),
         tasks_done=0,
@@ -20,4 +26,3 @@ def run(job, **kwargs):
         )
 
     return "", "", ""
-
