@@ -4,17 +4,18 @@ Plug-in for creating a Google SQL database.
 from __future__ import unicode_literals
 
 import json
+import time
 
 from django.db import IntegrityError
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
 
-from infrastructure.models import CustomField, Environment
 from common.methods import set_progress
-import time
-
+from infrastructure.models import CustomField, Environment
 from resourcehandlers.gcp.models import GCPHandler
+from utilities.exceptions import CloudBoltException
+
 
 SQL_VALID_REGIONS = [
     "northamerica-northeast1",
@@ -40,10 +41,10 @@ SQL_VALID_REGIONS = [
     "australia-southeast1",
 ]
 
-ENVIRONMENT = {{env_id}}
-DB_NAME = "{{db_identifier}}"
-DB_VERSION = "{{db_version}}"
-GCP_REGION = "{{gcp_region}}"
+ENVIRONMENT = "{{ env_id }}"
+DB_NAME = "{{ db_identifier }}"
+DB_VERSION = "{{ db_version }}"
+GCP_REGION = "{{ gcp_region }}"
 
 
 def generate_options_for_gcp_region(**kwargs):
@@ -77,6 +78,11 @@ def run(job=None, logger=None, **kwargs):
     """
     """
     db_name = DB_NAME
+    if db_name.isalnum() is False:
+        raise CloudBoltException(
+            f"Only alpha numeric characters (A-Z+0-9, case insensitive) are allowed and the name provided was '{db_name}'."
+        )
+
     instance_name = db_name
 
     environment = Environment.objects.get(id=ENVIRONMENT)
