@@ -42,7 +42,7 @@ def _get_client(handler):
 
 
 def run(job, **kwargs):
-    resource = kwargs.get('resource')
+    resource = kwargs.get("resource")
 
     # Connect to Azure Management Service
     set_progress("Connecting To Azure Management Service...")
@@ -52,4 +52,6 @@ def run(job, **kwargs):
     set_progress("Successfully Connected To Azure Management Service!")
 
     # Restart Web App
-    web_client.web_apps.restart(resource_group_name=resource.resource_group_name, name=resource.name)
+    web_client.web_apps.restart(
+        resource_group_name=resource.resource_group_name, name=resource.name
+    )
