@@ -1,10 +1,10 @@
-from common.methods import set_progress
+import azure.mgmt.resource.resources as resources
 from azure.common.credentials import ServicePrincipalCredentials
-from resourcehandlers.azure_arm.models import AzureARMHandler
 from azure.mgmt.rdbms import postgresql
 from msrestazure.azure_exceptions import CloudError
-import azure.mgmt.resource.resources as resources
 
+from common.methods import set_progress
+from resourcehandlers.azure_arm.models import AzureARMHandler
 
 RESOURCE_IDENTIFIER = "azure_database_name"
 

@@ -1,10 +1,11 @@
 """
 Deletes a Postgres in Azure
 """
-from common.methods import set_progress
 from azure.common.credentials import ServicePrincipalCredentials
-from resourcehandlers.azure_arm.models import AzureARMHandler
 from azure.mgmt.rdbms import postgresql
+
+from common.methods import set_progress
+from resourcehandlers.azure_arm.models import AzureARMHandler
 
 
 def run(job, **kwargs):
