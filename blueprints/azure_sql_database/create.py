@@ -2,11 +2,18 @@
 Creates an SQL database in Azure.
 """
 from typing import List
-from common.methods import set_progress
-from infrastructure.models import CustomField
-from infrastructure.models import Environment
+
+import settings
+
 from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt import sql
+
+from common.methods import is_version_newer, set_progress
+from infrastructure.models import CustomField, Environment
+
+
+cb_version = settings.VERSION_INFO["VERSION"]
+CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.1")
 
 
 def generate_options_for_env_id(server=None, **kwargs):
@@ -17,7 +24,7 @@ def generate_options_for_env_id(server=None, **kwargs):
     return options
 
 
-def generate_options_for_resource_group(control_value=None, **kwargs) -> List:
+def generate_options_for_resource_group(control_value=None, **kwargs):
     """Dynamically generate options for resource group form field based on the user's selection for Environment.
     
     This method requires the user to set the resource_group parameter as dependent on environment.
@@ -25,15 +32,21 @@ def generate_options_for_resource_group(control_value=None, **kwargs) -> List:
     if control_value is None:
         return []
 
-    # Get the environment
     env = Environment.objects.get(id=control_value)
 
-    # Get the Resource Groups as defined on the Environment. The Resource Group is a
-    # CustomField that is only updated on the Env when the user syncs this field on the
-    # Environment specific parameters.
-    resource_groups = env.custom_field_options.filter(field__name="resource_group_arm")
+    if CB_VERSION_93_PLUS:
+        # Get the Resource Groups as defined on the Environment. The Resource Group is a
+        # CustomField that is only updated on the Env when the user syncs this field on the
+        # Environment specific parameters.
+        resource_groups = env.custom_field_options.filter(
+            field__name="resource_group_arm"
+        )
+        return [rg.str_value for rg in resource_groups]
+    else:
+        rh = env.resource_handler.cast()
+        groups = rh.armresourcegroup_set.all()
+        return [g.name for g in groups]
 
-    return [rg.str_value for rg in resource_groups]
 
 
 def create_custom_fields_as_needed():
@@ -91,21 +104,17 @@ def create_custom_fields_as_needed():
 def _get_client(handler):
     """
     Get the client using newer methods from the CloudBolt main repo if this CB is running
-    a version greater than 9.2. These internal methods implicitly take care of much of the other
+    a version greater than 9.2.1. These internal methods implicitly take care of much of the other
     features in CloudBolt such as proxy and ssl verification.
     Otherwise, manually instantiate clients without support for those other CloudBolt settings.
     """
-    import settings
-    from common.methods import is_version_newer
-
-    cb_version = settings.VERSION_INFO["VERSION"]
-    if is_version_newer(cb_version, "9.2"):
+    if CB_VERSION_93_PLUS:
         from resourcehandlers.azure_arm.azure_wrapper import configure_arm_client
 
         wrapper = handler.get_api_wrapper()
         sql_client = configure_arm_client(wrapper, sql.SqlManagementClient)
     else:
-        # TODO: Remove once versions <= 9.2 are no longer supported.
+        # TODO: Remove once versions <= 9.2.1 are no longer supported.
         credentials = ServicePrincipalCredentials(
             client_id=handler.client_id, secret=handler.secret, tenant=handler.tenant_id
         )

@@ -1,8 +1,9 @@
-from common.methods import set_progress
 from azure.common.credentials import ServicePrincipalCredentials
-from resourcehandlers.azure_arm.models import AzureARMHandler
 from azure.mgmt import sql
 from msrestazure.azure_exceptions import CloudError
+
+from common.methods import set_progress
+from resourcehandlers.azure_arm.models import AzureARMHandler
 
 
 RESOURCE_IDENTIFIER = "azure_database"
@@ -11,7 +12,7 @@ RESOURCE_IDENTIFIER = "azure_database"
 def _get_client(handler):
     """
     Get the client using newer methods from the CloudBolt main repo if this CB is running
-    a version greater than 9.2. These internal methods implicitly take care of much of the other
+    a version greater than 9.2.1. These internal methods implicitly take care of much of the other
     features in CloudBolt such as proxy and ssl verification.
     Otherwise, manually instantiate clients without support for those other CloudBolt settings.
     """
@@ -19,13 +20,13 @@ def _get_client(handler):
     from common.methods import is_version_newer
 
     cb_version = settings.VERSION_INFO["VERSION"]
-    if is_version_newer(cb_version, "9.2"):
+    if is_version_newer(cb_version, "9.2.1"):
         from resourcehandlers.azure_arm.azure_wrapper import configure_arm_client
 
         wrapper = handler.get_api_wrapper()
         sql_client = configure_arm_client(wrapper, sql.SqlManagementClient)
     else:
-        # TODO: Remove once versions <= 9.2 are no longer supported.
+        # TODO: Remove once versions <= 9.2.1 are no longer supported.
         credentials = ServicePrincipalCredentials(
             client_id=handler.client_id, secret=handler.secret, tenant=handler.tenant_id
         )
