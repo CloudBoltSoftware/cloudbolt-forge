@@ -5,6 +5,7 @@ import json
 
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
+
 from common.methods import set_progress
 from resourcehandlers.gcp.models import GCPHandler
 

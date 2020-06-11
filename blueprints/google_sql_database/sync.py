@@ -3,11 +3,13 @@ Discover Mysql records with some identifying attributes on GCP
 return a list of dictionaries from the 'discover_resoures' function
 """
 import json
-from common.methods import set_progress
-from resourcehandlers.gcp.models import GCPProject, GCPHandler
-from oauth2client.service_account import ServiceAccountCredentials
+
 from googleapiclient.discovery import build
+from oauth2client.service_account import ServiceAccountCredentials
+
+from common.methods import set_progress
 from servicecatalog.models import ServiceBlueprint
+from resourcehandlers.gcp.models import GCPProject, GCPHandler
 
 
 RESOURCE_IDENTIFIER = ["gcp_sql_instance_name", "gcp_sql_project"]
@@ -67,7 +69,6 @@ def discover_resources(**kwargs):
                                 "gcp_sql_project": project.name,
                             }
                         )
-
         except Exception as e:
             set_progress(
                 "Could not list sql servers for {}, error message is as follows:{}".format(
