@@ -4,10 +4,6 @@ from ucsmsdk.ucshandle import UcsHandle
 
 
 conn, _ = ConnectionInfo.objects.get_or_create(name='Cisco UCS')
-# While using the platform emulator for testing, using namedtuple will prevent you from modifying the existing ConnectionInfo since the IP address keeps on changing.
-# from collections import namedtuple
-# conn = namedtuple('ConnectionInfo', ['ip', 'username', 'password', 'port'])
-# conn = conn('192.168.241.159', 'admin', 'admin', '80')
 
 try:
     handle = UcscHandle(conn.ip, conn.username, conn.password, conn.port)
