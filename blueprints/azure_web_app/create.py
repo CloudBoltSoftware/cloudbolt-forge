@@ -14,7 +14,7 @@ from resourcehandlers.azure_arm.models import AzureARMHandler
 
 
 cb_version = settings.VERSION_INFO["VERSION"]
-CB_VERSION_GREATER_THAN_92 = is_version_newer(cb_version, "9.2")
+CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.1")
 
 
 def generate_options_for_azure_env(**kwargs):
@@ -27,7 +27,7 @@ def generate_options_for_azure_env(**kwargs):
     return sorted(options, key=lambda tup: tup[1].lower())
 
 
-def generate_options_for_resource_groups(control_value=None, **kwargs):
+def generate_options_for_resource_group(control_value=None, **kwargs):
     """Dynamically generate options for resource group form field based on the user's selection for Environment.
     
     This method requires the user to set the resource_group parameter as dependent on environment.
@@ -37,7 +37,7 @@ def generate_options_for_resource_groups(control_value=None, **kwargs):
 
     env = Environment.objects.get(id=control_value)
 
-    if CB_VERSION_GREATER_THAN_92:
+    if CB_VERSION_93_PLUS:
         # Get the Resource Groups as defined on the Environment. The Resource Group is a
         # CustomField that is only updated on the Env when the user syncs this field on the
         # Environment specific parameters.
@@ -58,7 +58,7 @@ def generate_options_for_service_plan_name(control_value=None, **kwargs):
     if control_value is None:
         return options
 
-    if CB_VERSION_GREATER_THAN_92:
+    if CB_VERSION_93_PLUS:
         # Get the Resource Group. There may be multiple Azure RHs and Environments that
         # have Resource Group CustomField.
 
@@ -72,6 +72,9 @@ def generate_options_for_service_plan_name(control_value=None, **kwargs):
                 ):
                     options.append((service_plan.name, service_plan.name))
 
+            # The exceptions cannot be seen as this method generates return values for
+            # a web form dropdown. The return is either a list that contains a value, 
+            # or an empty list. 
             except Exception:
                 pass
 
@@ -80,13 +83,20 @@ def generate_options_for_service_plan_name(control_value=None, **kwargs):
     else:
         from resourcehandlers.azure_arm.models import ARMResourceGroup
 
-        rg = ARMResourceGroup.objects.get(id=control_value)
+        rg = ARMResourceGroup.objects.get(name=control_value)
         web_client = _get_client(rg.handler)
 
-        for service_plan in web_client.app_service_plans.list_by_resource_group(
-            resource_group_name=rg.name
-        ):
-            options.append((service_plan.name, service_plan.name))
+        try:
+            for service_plan in web_client.app_service_plans.list_by_resource_group(
+                resource_group_name=rg.name
+            ):
+                options.append((service_plan.name, service_plan.name))
+
+        # The exceptions cannot be seen as this method generates return values for
+        # a web form dropdown. The return is either a list that contains a value, 
+        # or an empty list. 
+        except Exception:
+            pass
 
         return options
 
@@ -94,7 +104,7 @@ def generate_options_for_service_plan_name(control_value=None, **kwargs):
 def _get_client(handler):
     """
     Get the clients using newer methods from the CloudBolt main repo if this CB is running
-    a version greater than 9.2. These internal methods implicitly take care of much of the other
+    a version greater than 9.2.1. These internal methods implicitly take care of much of the other
     features in CloudBolt such as proxy and ssl verification.
     Otherwise, manually instantiate clients without support for those other CloudBolt settings.
     :param handler:
@@ -103,7 +113,7 @@ def _get_client(handler):
 
     set_progress("Connecting To Azure...")
 
-    if CB_VERSION_GREATER_THAN_92:
+    if CB_VERSION_93_PLUS:
         from resourcehandlers.azure_arm.azure_wrapper import configure_arm_client
 
         wrapper = handler.get_api_wrapper()
@@ -111,7 +121,7 @@ def _get_client(handler):
         set_progress("Connection to Azure established")
         return web_client
     else:
-        # TODO: Remove once versions <= 9.2 are no longer supported.
+        # TODO: Remove once versions <= 9.2.1 are no longer supported.
         credentials = ServicePrincipalCredentials(
             client_id=handler.client_id,
             secret=handler.secret,
@@ -180,7 +190,7 @@ def run(job, **kwargs):
     create_custom_fields_as_needed()
 
     env_id = "{{ azure_env }}"
-    resource_group = "{{ resource_groups }}"
+    resource_group = "{{ resource_group }}"
     web_app_name = "{{ web_app_name }}"
     service_plan_name = "{{ service_plan_name }}"
 
@@ -209,7 +219,8 @@ def run(job, **kwargs):
     else:
         # Auto-create a new service plan.
         # Use the web_app_name and append 5 random digits to have a decent probability of uniqueness.
-        service_plan_name = web_app_name + "-" + str(random.randint(10000, 99999))
+
+        service_plan_name = web_app_name + "-{}".fomat(random.randint(10000, 99999))
 
         set_progress(f"Environment {env_id}")
         env = Environment.objects.get(id=env_id)
