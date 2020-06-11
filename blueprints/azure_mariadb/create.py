@@ -2,12 +2,13 @@
 Creates an MariaDB in Azure.
 """
 from typing import List
-from common.methods import set_progress
-from infrastructure.models import CustomField
-from infrastructure.models import Environment
+
 from azure.common.credentials import ServicePrincipalCredentials
-from msrestazure.azure_exceptions import CloudError
 from azure.mgmt.rdbms import mariadb
+from msrestazure.azure_exceptions import CloudError
+
+from common.methods import set_progress
+from infrastructure.models import CustomField, Environment
 
 
 def generate_options_for_env_id(server=None, **kwargs):
