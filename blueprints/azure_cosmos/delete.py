@@ -1,10 +1,11 @@
 """
 Deletes Cosmos database from Azure
 """
+import azure.mgmt.cosmosdb as cosmosdb
+from azure.common.credentials import ServicePrincipalCredentials
+
 from common.methods import set_progress
 from resourcehandlers.azure_arm.models import AzureARMHandler
-from azure.common.credentials import ServicePrincipalCredentials
-import azure.mgmt.cosmosdb as cosmosdb
 
 
 def _get_client(handler):

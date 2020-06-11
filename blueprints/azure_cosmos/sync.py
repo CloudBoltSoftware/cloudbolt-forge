@@ -1,10 +1,11 @@
 """
 Discover Azure Cosmos DB records
 """
-from common.methods import set_progress
-from azure.common.credentials import ServicePrincipalCredentials
-from resourcehandlers.azure_arm.models import AzureARMHandler
 import azure.mgmt.cosmosdb as cosmosdb
+from azure.common.credentials import ServicePrincipalCredentials
+
+from common.methods import set_progress
+from resourcehandlers.azure_arm.models import AzureARMHandler
 
 
 RESOURCE_IDENTIFIER = "azure_account_name"

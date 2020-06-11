@@ -1,13 +1,20 @@
 """
 Creates an CosmosDB database in Azure.
 """
-from common.methods import set_progress
-from infrastructure.models import CustomField
-from infrastructure.models import Environment
+import settings
+
+import azure.mgmt.cosmosdb as cosmosdb
 from azure.common.credentials import ServicePrincipalCredentials
 from msrestazure.azure_exceptions import CloudError
+
+from common.methods import is_version_newer, set_progress
+from infrastructure.models import CustomField
+from infrastructure.models import Environment
 from utilities.exceptions import CloudBoltException
-import azure.mgmt.cosmosdb as cosmosdb
+
+
+cb_version = settings.VERSION_INFO["VERSION"]
+CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.1")
 
 
 def _get_client(handler):
@@ -17,11 +24,7 @@ def _get_client(handler):
     features in CloudBolt such as proxy and ssl verification.
     Otherwise, manually instantiate clients without support for those other CloudBolt settings.
     """
-    import settings
-    from common.methods import is_version_newer
-
-    cb_version = settings.VERSION_INFO["VERSION"]
-    if is_version_newer(cb_version, "9.2"):
+    if CB_VERSION_93_PLUS:
         from resourcehandlers.azure_arm.azure_wrapper import configure_arm_client
 
         wrapper = handler.get_api_wrapper()
@@ -48,14 +51,27 @@ def generate_options_for_env_id(server=None, **kwargs):
 
 
 def generate_options_for_resource_group(control_value=None, **kwargs):
-    """Dynamically generate options for the reosource_group parameter."""
+    """Dynamically generate options for resource group form field based on the user's selection for Environment.
+    
+    This method requires the user to set the resource_group parameter as dependent on environment.
+    """
     if control_value is None:
         return []
+
     env = Environment.objects.get(id=control_value)
-    resource_groups_on_env = env.custom_field_options.filter(
-        field__name="resource_group_arm"
-    )
-    return [rg.str_value for rg in resource_groups_on_env]
+
+    if CB_VERSION_93_PLUS:
+        # Get the Resource Groups as defined on the Environment. The Resource Group is a
+        # CustomField that is only updated on the Env when the user syncs this field on the
+        # Environment specific parameters.
+        resource_groups = env.custom_field_options.filter(
+            field__name="resource_group_arm"
+        )
+        return [rg.str_value for rg in resource_groups]
+    else:
+        rh = env.resource_handler.cast()
+        groups = rh.armresourcegroup_set.all()
+        return [g.name for g in groups]
 
 
 def create_custom_fields_as_needed():
