@@ -48,7 +48,6 @@ def generate_options_for_resource_group(control_value=None, **kwargs):
         return [g.name for g in groups]
 
 
-
 def create_custom_fields_as_needed():
     CustomField.objects.get_or_create(
         name="azure_rh_id",
