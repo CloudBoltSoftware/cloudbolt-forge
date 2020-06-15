@@ -55,7 +55,7 @@ def generate_options_for_service_plan_name(control_value=None, **kwargs):
     # Provide an empty option to auto-create a new service plan.
     options = [("", "Auto-create new Service Plan")]
 
-    if control_value is None:
+    if control_value is None or control_value == "":
         return options
 
     if CB_VERSION_93_PLUS:
@@ -73,8 +73,8 @@ def generate_options_for_service_plan_name(control_value=None, **kwargs):
                     options.append((service_plan.name, service_plan.name))
 
             # The exceptions cannot be seen as this method generates return values for
-            # a web form dropdown. The return is either a list that contains a value, 
-            # or an empty list. 
+            # a web form dropdown. The return is either a list that contains a value,
+            # or an empty list.
             except Exception:
                 pass
 
@@ -93,8 +93,8 @@ def generate_options_for_service_plan_name(control_value=None, **kwargs):
                 options.append((service_plan.name, service_plan.name))
 
         # The exceptions cannot be seen as this method generates return values for
-        # a web form dropdown. The return is either a list that contains a value, 
-        # or an empty list. 
+        # a web form dropdown. The return is either a list that contains a value,
+        # or an empty list.
         except Exception:
             pass
 
@@ -220,16 +220,16 @@ def run(job, **kwargs):
         # Auto-create a new service plan.
         # Use the web_app_name and append 5 random digits to have a decent probability of uniqueness.
 
-        service_plan_name = web_app_name + "-{}".fomat(random.randint(10000, 99999))
+        service_plan_name = web_app_name + "-{}".format(random.randint(10000, 99999))
 
         set_progress(f"Environment {env_id}")
         env = Environment.objects.get(id=env_id)
         service_plan_async_operation = web_client.app_service_plans.create_or_update(
-            resource_group,
-            service_plan_name,
-            AppServicePlan(
-                app_service_plan_name=service_plan_name,
+            resource_group_name=resource_group,
+            name=service_plan_name,
+            app_service_plan=AppServicePlan(
                 location=env.node_location,
+                app_service_plan_name=service_plan_name,
                 sku=SkuDescription(name="S1", capacity=1, tier="Standard"),
             ),
         )
