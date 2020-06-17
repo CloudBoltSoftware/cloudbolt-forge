@@ -19,7 +19,7 @@ CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.2")
 def _get_client(handler):
     """
     Get the client using newer methods from the CloudBolt main repo if this CB is running
-    a version greater than 9.2. These internal methods implicitly take care of much of the other
+    a version greater than 9.2.2. These internal methods implicitly take care of much of the other
     features in CloudBolt such as proxy and ssl verification.
     Otherwise, manually instantiate clients without support for those other CloudBolt settings.
     """
@@ -31,7 +31,7 @@ def _get_client(handler):
         wrapper = handler.get_api_wrapper()
         mysql_client = configure_arm_client(wrapper, mysql.MySQLManagementClient)
     else:
-        # TODO: Remove once versions <= 9.2 are no longer supported.
+        # TODO: Remove once versions <= 9.2.2 are no longer supported.
         credentials = ServicePrincipalCredentials(
             client_id=handler.client_id, secret=handler.secret, tenant=handler.tenant_id
         )
