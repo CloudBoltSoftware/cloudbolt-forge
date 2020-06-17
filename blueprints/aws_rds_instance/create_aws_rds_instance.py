@@ -3,7 +3,6 @@ Action creates a new RDS instance and stores its data as an attribute on the
 new deployed service.
 """
 import json
-import boto3
 
 from infrastructure.models import CustomField, Environment
 from orders.models import CustomFieldValue
@@ -42,7 +41,7 @@ def run(job, logger=None, **kwargs):
     rds_settings.update(dict(MasterUserPassword=db_password))
     response = client.create_db_instance(**rds_settings)
 
-    service = job.resource_set.first() # Change resource_set to service_set if you are using this script in CB version pre-8.0
+    service = job.resource_set.first()  # Change resource_set to service_set if you are using this script in CB version pre-8.0
     instance = boto_instance_to_dict(response['DBInstance'])
     store_instance_data_on_service(instance, service)
     store_aws_environment_on_service(env, service)
@@ -56,11 +55,13 @@ def connect_to_rds(env):
     Return boto connection to the RDS in the specified environment's region.
     """
     rh = env.resource_handler.cast()
-    return boto3.client(
+    wrapper = rh.get_api_wrapper()
+    return wrapper.get_boto3_client(
         'rds',
-        region_name=env.aws_region,
-        aws_access_key_id=rh.serviceaccount,
-        aws_secret_access_key=rh.servicepasswd)
+        rh.serviceaccount,
+        rh.servicepasswd,
+        env.aws_region
+    )
 
 
 def boto_instance_to_dict(boto_instance):

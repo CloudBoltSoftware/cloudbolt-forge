@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # This CB plugin is used by the 'LAMP CloudFormation' blueprint
-
-import boto3
 from common.methods import set_progress
 
 from resourcehandlers.aws.models import AWSHandler
@@ -19,13 +17,14 @@ def run(job, logger, resources=None):
                                  "resource action")
 
     rh = AWSHandler.objects.first()
+    wrapper = rh.get_api_wrapper()
     # See http://boto3.readthedocs.io/en/latest/guide/configuration.html#method-parameters
-    session = boto3.Session(
-        aws_access_key_id=rh.serviceaccount,
-        aws_secret_access_key=rh.servicepasswd,
-        region_name='us-west-2'
+    client = wrapper.get_boto3_client(
+        'cloudformation',
+        rh.serviceaccount,
+        rh.servicepasswd,
+        'us-west-2'
     )
-    client = session.client('cloudformation')
 
     stack_name = resource.attributes.filter(field__name="aws_stack_name").first()
     if not stack_name:

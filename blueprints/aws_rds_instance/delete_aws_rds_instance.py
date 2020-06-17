@@ -1,11 +1,11 @@
 import json
-import boto3
 
+from common.methods import set_progress
 from infrastructure.models import Environment
 
 
 def run(job, logger=None, **kwargs):
-    service = job.resource_set.first() # Change resource_set to service_set if you are using this script in CB version pre-8.0
+    service = job.resource_set.first()  # Change resource_set to service_set if you are using this script in CB version pre-8.0
 
     # The Environment ID and RDS Instance data dict were stored as attributes on
     # this service by a build action.
@@ -19,7 +19,7 @@ def run(job, logger=None, **kwargs):
     identifier = instance['identifier']
 
     job.set_progress('Deleting RDS instance {0}...'.format(identifier))
-    response = client.delete_db_instance(
+    client.delete_db_instance(
         DBInstanceIdentifier=identifier,
         # AWS strongly recommends taking a final snapshot before deleting a DB.
         # To do so, either set this to False or let the user choose by making it
@@ -36,10 +36,13 @@ def connect_to_rds(env):
     """
     Return boto connection to the RDS in the specified environment's region.
     """
-    job.set_progress('Connecting to AWS RDS in region {0}.'.format(env.aws_region))
+    set_progress('Connecting to AWS RDS in region {0}.'.format(env.aws_region))
     rh = env.resource_handler.cast()
-    return boto3.client(
+    wrapper = rh.get_api_wrapper()
+    client = wrapper.get_boto3_client(
         'rds',
-        region_name=env.aws_region,
-        aws_access_key_id=rh.serviceaccount,
-        aws_secret_access_key=rh.servicepasswd)
+        rh.serviceaccount,
+        rh.servicepasswd,
+        env.aws_region
+    )
+    return client
