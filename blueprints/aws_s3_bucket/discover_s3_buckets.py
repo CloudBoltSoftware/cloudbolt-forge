@@ -4,7 +4,6 @@ Discover and create S3 Bucket records with some basic identifying attributes.
 As all Discovery Plug-ins must do, we define the global `RESOURCE_IDENTIFIER` variable
 and return a list of dictionaries from the `discover_resources` function.
 """
-import boto3
 from botocore.client import ClientError
 from common.methods import set_progress
 from resourcehandlers.aws.models import AWSHandler
@@ -14,13 +13,15 @@ RESOURCE_IDENTIFIER = 's3_bucket_name'
 
 def discover_resources(**kwargs):
 
-    discovered_buckets = []    
+    discovered_buckets = []
     for handler in AWSHandler.objects.all():
+        wrapper = handler.get_api_wrapper()
         set_progress('Connecting to Amazon S3 for handler: {}'.format(handler))
-        conn = boto3.resource(
-            's3',
-            aws_access_key_id=handler.serviceaccount,
-            aws_secret_access_key=handler.servicepasswd,
+        conn = wrapper.get_boto3_resource(
+            handler.serviceaccount,
+            handler.servicepasswd,
+            None,
+            service_name='s3'
         )
 
         try:
@@ -33,5 +34,5 @@ def discover_resources(**kwargs):
         except ClientError as e:
             set_progress('AWS ClientError: {}'.format(e))
             continue
-            
+
     return discovered_buckets
