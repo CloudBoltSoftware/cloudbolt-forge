@@ -9,7 +9,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from common.methods import set_progress
 from servicecatalog.models import ServiceBlueprint
-from resourcehandlers.gcp.models import GCPProject, GCPHandler
+from resourcehandlers.gcp.models import GCPProject
 
 
 RESOURCE_IDENTIFIER = ["gcp_sql_instance_name", "gcp_sql_project"]
