@@ -56,7 +56,6 @@ def discover_resources(**kwargs):
         current_locations = list(handler.current_locations())
 
         mysql_client, resource_client = _get_clients(handler)
-        # resource_groups = resource_client.resource_groups.list()
 
         for server in mysql_client.servers.list()._get_next().json()["value"]:
             if server["location"] not in current_locations:
@@ -65,7 +64,6 @@ def discover_resources(**kwargs):
                 )
                 continue
 
-            # for resource_group in resource_groups:
             try:
                 resource_group_name = (
                     server["id"].split("/resourceGroups/")[1].split("/")[0]
@@ -73,6 +71,8 @@ def discover_resources(**kwargs):
                 for db in mysql_client.databases.list_by_server(
                     resource_group_name, server["name"]
                 ):
+                    # Skip any db's that are db schema specific. We are only interested
+                    # in db's that are added by the user. 
                     if db.name in [
                         "information_schema",
                         "performance_schema",
