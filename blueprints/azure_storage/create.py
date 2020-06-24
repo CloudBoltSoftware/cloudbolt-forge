@@ -13,7 +13,8 @@ from infrastructure.models import Environment
 
 
 cb_version = settings.VERSION_INFO["VERSION"]
-CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.1")
+CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.2")
+
 
 def generate_options_for_env_id(server=None, **kwargs):
     envs = Environment.objects.filter(
@@ -134,7 +135,7 @@ def create_custom_fields_as_needed():
 def _get_client(handler):
     """
     Get the clients using newer methods from the CloudBolt main repo if this CB is running
-    a version greater than 9.2.1. These internal methods implicitly take care of much of the other
+    a version greater than 9.2.2. These internal methods implicitly take care of much of the other
     features in CloudBolt such as proxy and ssl verification.
     Otherwise, manually instantiate clients without support for those other CloudBolt settings.
     """
@@ -142,11 +143,11 @@ def _get_client(handler):
     from common.methods import is_version_newer
 
     cb_version = settings.VERSION_INFO["VERSION"]
-    if is_version_newer(cb_version, "9.2.1"):
+    if is_version_newer(cb_version, "9.2.2"):
         wrapper = handler.get_api_wrapper()
         storage_client = wrapper.storage_client
     else:
-        # TODO: Remove once versions <= 9.2.1 are no longer supported.
+        # TODO: Remove once versions <= 9.2.2 are no longer supported.
         credentials = ServicePrincipalCredentials(
             client_id=handler.client_id, secret=handler.secret, tenant=handler.tenant_id
         )
