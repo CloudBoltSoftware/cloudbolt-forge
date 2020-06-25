@@ -81,7 +81,7 @@ def generate_options_for_storage_account(control_value=None, **kwargs) -> List:
         # a web form dropdown. The return is either a list that contains a value,
         # or an empty list.
         except Exception:
-            pass
+            continue
 
     return storage_accounts
 
