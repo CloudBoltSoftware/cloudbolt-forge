@@ -5,6 +5,7 @@ import json
 
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
+
 from common.methods import set_progress
 from resourcehandlers.gcp.models import GCPHandler
 
@@ -43,10 +44,8 @@ def run(job, logger=None, **kwargs):
         set_progress("Deleting instance %s..." % instance_name)
 
         # It takes awhile for the DB to be deleted
+        client.instances().delete(project=project, instance=instance_name).execute()
 
-        result = (
-            client.instances().delete(project=project, instance=instance_name).execute()
-        )
         #     Verify that instance was deleted:
         inst_data = client.instances().list(project=project).execute()
         if "items" in inst_data:
