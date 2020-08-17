@@ -1,3 +1,15 @@
+"""
+Provides features to support a Tintri storage array.
+
+Servers in environments that have a Tintri store will have a "Tintri" tab on
+their detail view. This tab exposes storage performance metrics as well as some
+actions users can take on the server, such as taking a snapshot.
+
+You must create a ConnectionInfo for every CB environment whose servers want
+this Tintri tab. The ConnectionInfo name should follow the pattern "Tintri
+VMstore for Environment 2", where 2 is the ID of the environment. You can
+determine an environment's ID by inspecting the URL for its detail page.
+"""
 import os
 import datetime
 import json
@@ -9,13 +21,19 @@ from extensions.views import tab_extension, TabExtensionDelegate
 from utilities.models import ConnectionInfo
 from infrastructure.models import Server
 from cbhooks.models import ServerAction
-from tintri.common import TintriServerError
-from tintri.v310 import Tintri, VirtualMachineStat
-from tintri.v310 import VirtualMachineFilterSpec
-from tintri.v310 import SnapshotSpec
-from tintri.v310 import VirtualMachineCloneSpec
-from tintri.v310 import VMwareCloneInfo
+try:
+    from tintri.common import TintriServerError
+    from tintri.v310 import Tintri, VirtualMachineStat
+    from tintri.v310 import VirtualMachineFilterSpec
+    from tintri.v310 import SnapshotSpec
+    from tintri.v310 import VirtualMachineCloneSpec
+    from tintri.v310 import VMwareCloneInfo
+except:
+    # log the fact that this appliance is missing the tintir cli
+    pass
 from dateutil import parser
+from .tintri import Tintri
+
 """
 UI Extension view using Tintri PySDK
 https://github.com/Tintri/tintri-python-sdk
@@ -27,8 +45,7 @@ COLOR3 = '#00A67C'
 
 
 def get_ci(server):
-    ci = ConnectionInfo.objects.filter(name='Tintri VMstore for Environment {}'.format(
-        server.environment.id)).first()
+    ci = ConnectionInfo.objects.filter(name='Tintri').first()
     if not ci:
         return None
     t = {}
@@ -73,13 +90,14 @@ def get_appliance_info(tintri):
         appliance: Dict of apliance details
     '''
     appliance = {}
-    info = tintri.get_appliance_info('default')
+    info = tintri.get_appliance_info()
+    product = None
     if tintri.is_vmstore():
         product = 'Tintri VMstore'
     elif tintri.is_tgc():
         product = 'Tintri Global Center'
     appliance['product'] = product
-    appliance['model'] = info.modelName
+    appliance['model'] = info.get('modelName')
     return appliance
 
 
@@ -94,17 +112,20 @@ def get_vm(tintri, vm_name):
     Returns:
         vm: Tintri Virtual Machine
     '''
-    vm_filter_spec = VirtualMachineFilterSpec()
-    vm_filter_spec.name = vm_name
     logging.info('Requesting VM details from Tintri for VM: "{}"'.format(vm_name))
-    results = tintri.get_vms(filters=vm_filter_spec)
-    if results.filteredTotal == 0:
+    results = tintri.get_vms(name='ESXi-6.0')
+    if results.json().get('filteredTotal') == 0:
         msg = 'No VMs found for get VM request with NAME: "{}"'.format(vm_name)
-        raise TintriServerError(0, cause=msg)
+        raise Exception(msg)
     else:
-        vm = results.next()
-        logging.info('Found Tintri VM with Name: "{}" and UUID: "{}"'.format(vm.vmware.name,
-                                                                             vm.uuid.uuid))
+        vm = {}
+        items = results.json().get('items')[0]
+        vm['name']= items.get("vmware").get("name")
+        vm['uuid'] = items.get("uuid").get("uuid")
+
+        logging.info(f'Found Tintri VM with Name: "{vm.get("name")}"'
+                     f' and UUID: {vm.get("uuid")}')
+
         return vm
 
 
@@ -120,22 +141,17 @@ def get_vm_stats(tintri, vm_uuid, days):
     Returns:
         sorted_stats: [] of sorted stats
     '''
-    vm_stats_filter_spec = VirtualMachineFilterSpec()
     # Specify date range for stats
     # The end date in ISO8601 format - 'YYYY-MM-DDThh:mm:ss.ms-/+zz:zz'
     until = datetime.datetime.now()
     since = until - datetime.timedelta(days=days)
-    vm_stats_filter_spec.until = until.isoformat()[:-3] + '+00:00'
-    vm_stats_filter_spec.since = since.isoformat()[:-3] + '+00:00'
-    vm_stats_filter_spec.uuid = vm_uuid
-    results = tintri.get_vm_historic_stats(vm_uuid,
-                                           filters=vm_stats_filter_spec)
-    if results.filteredTotal == 0:
-        raise TintriServerError(0, cause="No VMs found for vm stats request")
-    else:
-        stats = results.next()
-        sorted_stats = stats.sortedStats
-        return sorted_stats
+    until = until.isoformat()[:-3] + '-00:00'
+    since = since.isoformat()[:-3] + '-00:00'
+
+    results = tintri.get_vm_historic_stats(uuid=vm_uuid,since=since, until=until)
+
+    sorted_stats = results.get('items')[0].get('sortedStats')
+    return sorted_stats
 
 
 def get_chart_plotline(vm_stats, attr, name, color):
@@ -153,8 +169,8 @@ def get_chart_plotline(vm_stats, attr, name, color):
     '''
     data = []
     for stat in vm_stats:
-        a = getattr(stat, attr)
-        date = parser.parse(stat.timeEnd)
+        a = stat.get(attr) 
+        date = parser.parse(stat.get('timeEnd'))
         timestamp = int(time.mktime(date.utctimetuple())) * 1000
         result = [timestamp, a]
         data.append(result)
@@ -168,23 +184,22 @@ def get_chart_plotline(vm_stats, attr, name, color):
 
 
 def get_tintri_actions():
-    '''
+    """
     Get all of the tintri server action ID's in a {}
 
     Args: None
 
     Returns:
         tintri_actions: {} of action ID's
-    '''
+    """
     tintri_actions = []
-    snapshot_action = ServerAction.objects.filter(label='Tintri Snapshot').first()
+    snapshot_action = ServerAction.objects.get(label='Take a Tintri Snapshot')
     if snapshot_action:
         tintri_actions.append(snapshot_action)
-    # clone_action = ServerAction.objects.filter(label='Tintri Clone').first()
-    # if clone_action:
-    #     tintri_actions.append(clone_action)
+    clone_action = ServerAction.objects.get(label='Clone VM using Tintri')
+    if clone_action:
+        tintri_actions.append(clone_action)
     return tintri_actions
-
 
 def vm_snapshot(tintri, vm_uuid, snapshot_name, consistency_type):
     '''
@@ -281,10 +296,9 @@ def vm_restore(tinri, tintri_vm):
 
 class TintriTabDelegate(TabExtensionDelegate):
     def should_display(self):
-        if hasattr(self, 'instance'):
-            if get_ci(server=self.instance):
-                return True
-        return False
+        #if get_ci(server=self.instance):
+        return True
+        #return False
 
 
 def dict_to_vmstat(statdict):
@@ -310,7 +324,7 @@ def server_tab_tintri(request, obj_id=None):
 
     mydir = os.path.dirname(os.path.realpath(__file__))
 
-    if server.tags.filter(name='demo'):
+    if server.tags.filter(name='demdo'):
         with open(os.path.join(mydir, 'demo.json')) as data_file:
             # When using the demo JSON, to get the graphs to appear, the 'time' and 'endTime'
             # values need to be updated to be within the last day. TODO: automate this here
@@ -330,8 +344,7 @@ def server_tab_tintri(request, obj_id=None):
         tintri = get_session(server)
         appliance_info = get_appliance_info(tintri)
         vm = get_vm(tintri, vm_name)
-        maxNormalizedIops = vm.qosConfig.maxNormalizedIops
-        vm_stats = get_vm_stats(tintri, vm.uuid.uuid, days=1)
+        vm_stats = get_vm_stats(tintri, vm.get('uuid'), days=1)
     sorted_stats = vm_stats[-1]
 
     latency = [
@@ -365,16 +378,15 @@ def server_tab_tintri(request, obj_id=None):
                            color=COLOR2),
     ]
     tintri_data = {
-        "disk_used": format(sorted_stats.spaceUsedGiB,
+        "disk_used": format(sorted_stats.get('spaceUsedGiB'),
                             '.1f'),
-        "disk_provisioned": format(sorted_stats.spaceProvisionedGiB,
+        "disk_provisioned": format(sorted_stats.get('spaceProvisionedGiB'),
                                    '.1f'),
-        "disk_changed": format(sorted_stats.spaceUsedChangeGiB,
+        "disk_changed": format(sorted_stats.get('spaceUsedChangeGiB'),
                                '.1f'),
         "chart_latency": latency,
         "chart_iops": iops,
         "chart_throughput": throughput,
-        "max_iops": maxNormalizedIops,
         "max_line_color": "red",
     }
 
