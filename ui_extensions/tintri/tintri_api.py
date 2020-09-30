@@ -1,6 +1,7 @@
 import requests
 import json
 
+from utilities.exceptions import CloudBoltException, NotFoundException
 from utilities.logger import ThreadLogger
 from utilities.models import ConnectionInfo
 
@@ -17,7 +18,8 @@ class Tintri(object):
         ci = ConnectionInfo.objects.filter(name__iexact='Tintri Appliance Endpoint').first()
         self.connection_info = ci
         self.api_version = '310'
-        self.session_id = self.get_session_id(ci)
+        self.session_id = None
+        self.create_custom_fields_as_needed()
 
     def verify_connection(self, proto=None, ip=None, port=None, username=None, password=None):
         if proto and ip and port and username and password:
@@ -42,7 +44,7 @@ class Tintri(object):
 
         return url
 
-    def get_session_id(self, connection_info=None):
+    def get_session_id(self, connection_info=None, save_to_self=False):
 
         if not connection_info:
             connection_info = self.connection_info
@@ -57,17 +59,33 @@ class Tintri(object):
                 "typeId": "com.tintri.api.rest.vcommon.dto.rbac.RestApiCredentials"}
         login_url = '{}/session/login'.format(self.get_base_url(connection_info))
 
-        httpresp = requests.post(login_url, json.dumps(data), headers=headers, verify=False)
+        try:
+            httpresp = requests.post(login_url, json.dumps(data), headers=headers, verify=False)
+        except requests.exceptions.ConnectionError:
+            err = "Unable to connect to Tintri server"
+            logger.exception(err)
+            raise CloudBoltException(err)
 
         if httpresp.status_code is not 200:
             err = 'Failed to authenticate to {} as user {}. HTTP status code: {}'.format(
                 login_url, login_username, httpresp.status_code)
             try:
                 json_error = json.loads(httpresp.text)
-            except Exception as e:
-                raise Exception(err)
-            raise Exception(json_error['code'], json_error['message'], json_error['causeDetails'])
-        return httpresp.cookies['JSESSIONID']
+                logger.error(
+                    f"{err}. code: {json_error['code']}, message: {json_error['message']} "
+                    f"details: {json_error['causeDetails']}"
+                )
+            except Exception:
+                logger.exception(f"Error attempting to convert httpresp to JSON: {httpresp.text}")
+
+            raise CloudBoltException(err)
+
+        session_id = httpresp.cookies['JSESSIONID']
+
+        if save_to_self:
+            self.session_id = session_id
+
+        return session_id
 
     def __get_version(self, connection_info=None):
         if not self.__version:
@@ -101,7 +119,7 @@ class Tintri(object):
     def api_get(self, url, as_json=True):
         headers = {'content-type': 'application/json'}
         if self.session_id:
-            headers['cookie'] = 'JSESSIONID=%s' % self.session_id
+            headers['cookie'] = f"JSESSIONID={self.session_id}"
         else:
             raise Exception("Not Logged in.")
         if url.startswith("http"):
@@ -116,7 +134,7 @@ class Tintri(object):
             httpresp = httpresp.json()
         return httpresp
 
-    def api_post(self, url, payload):
+    def api_post(self, url, payload, as_json=True):
         headers = {'content-type': 'application/json'}
         if url.startswith("http"):
             uri = url
@@ -125,12 +143,14 @@ class Tintri(object):
 
         body = payload
         if self.session_id:
-            headers['cookie'] = 'JSESSIONID=%s' % self.session_id
+            headers['cookie'] = f"JSESSIONID={self.session_id}"
         else:
             raise Exception("Not Logged in.")
 
-        httpResp = requests.post(uri, headers=headers, data=json.dumps(body), verify=False)
-        return httpResp
+        http_resp = requests.post(uri, headers=headers, data=json.dumps(body), verify=False)
+        if as_json:
+            http_resp = http_resp.json()
+        return http_resp
 
 
     def is_vmstore(self):
@@ -153,10 +173,32 @@ class Tintri(object):
 
         return httpResp.json().get('productName') == 'Tintri Global Center'
 
+    def get_snapshots(self, filter_string=None):
+        url = "snapshot"
+        if filter_string:
+            url = f"{url}?{filter_string}"
+        return self.api_get(url)
+
     def get_vms(self, name):
         url = f'vm?name={name}'
         httpResp = self.api_get(url, as_json=False)
         return httpResp
+
+    def get_vm_by_filter(self, filter_string):
+        url = f"vm?{filter_string}"
+        resp = self.api_get(url)
+        total = resp.get("filteredTotal", 0)
+        if total == 0:
+            raise NotFoundException(f"Could Not Found VM matching {filter_string}")
+        elif total > 1:
+            raise CloudBoltException(f"Too many objects returned for '{filter_string}'': {total}")
+        return resp.get("items")[0]
+
+    def get_vm_by_uuid(self, uuid):
+        return self.get_vm_by_filter(f"uuid={uuid}")
+
+    def get_vm_by_name(self, vm_name):
+        return self.get_vm_by_filter(f"name={vm_name}")
 
     def get_vm_historic_stats(self, uuid, since, until):
         url = f'vm/{uuid}/statsHistoric?since={str(since)}'
@@ -210,3 +252,48 @@ class Tintri(object):
         httpResp = requests.post(url, headers=headers, data=json.dumps(body), verify=False)
         import pdb; pdb.set_trace()
         return httpResp.json()
+
+    def clone_from_snapshot(self, server, snapshot_id, new_name=None):
+
+        if not new_name:
+            new_name = f"{server.get_vm_name()}-tintri-clone-00X"
+
+        # TODO: get vcenter name and datastore from current vm settings
+        vcenter_name = "vcenterName"
+        datastore_name = "datastoreName"
+
+        payload = {
+            "typeId": "com.tintri.api.rest.v310.dto.domain.beans.vm.VirtualMachineCloneSpec",
+            "vmId": None,
+            "snapshotId": f"{snapshot_id}",
+            "consistency": "CRASH_CONSISTENT",
+            "count": 1,
+            "remoteCopyInfo": None,
+            "restoreInfo": None,
+            "rhev": None,
+            "vmware": {
+                "typeId": "com.tintri.api.rest.v310.dto.domain.beans.vm.VirtualMachineCloneSpec$VMwareCloneInfo",
+                "cloneVmName": f"{new_name}",
+                "vCenterName": f"{vcenter_name}",
+                "datastoreName": f"{datastore_name}",
+                "folderMorefValue": None,
+                "hostClusterMoref": None,
+                "customizationScript": None
+            }
+        }
+
+    def create_custom_fields_as_needed(self):
+        from c2_wrapper import create_custom_field
+
+        cf_dict = dict(
+            name='tintri_vm_uuid',
+            type='STR',
+            label='Tintri UUID',
+            description='Tintri vm UUID for Server',
+            show_as_attribute=False,
+            namespace="tintri"
+        )
+        create_custom_field(**cf_dict)
+
+    def get_or_create_clone_from_snapshot_server_action(self):
+        return None

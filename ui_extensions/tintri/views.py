@@ -27,8 +27,10 @@ from django.utils.translation import ugettext as _
 from cbhooks.models import ServerAction
 from extensions.views import admin_extension, tab_extension, TabExtensionDelegate
 from infrastructure.models import Server
+from resourcehandlers.vmware.models import VsphereResourceHandler
 from tabs.views import TabGroup
 from utilities.decorators import dialog_view
+from utilities.exceptions import CloudBoltException
 from utilities.logger import ThreadLogger
 from utilities.permissions import cbadmin_required
 from utilities.templatetags import helper_tags
@@ -74,6 +76,7 @@ def get_session(server):
     """
     # instantiate the Tintri server.
     tintri = Tintri()
+    tintri.get_session_id(None, save_to_self=True)
     # Login to VMstore
     conn = tintri.get_connection_info()
     if not conn:
@@ -82,7 +85,7 @@ def get_session(server):
 
 
 def get_appliance_info(tintri):
-    '''
+    """
     Get Tintri Appliance details
 
     Args:
@@ -90,7 +93,7 @@ def get_appliance_info(tintri):
 
     Returns:
         appliance: Dict of apliance details
-    '''
+    """
     appliance = {}
     info = tintri.get_appliance_info()
     product = None
@@ -103,36 +106,38 @@ def get_appliance_info(tintri):
     return appliance
 
 
-def get_vm(tintri, vm_name):
+def get_vm(tintri, server, save_to_server=True):
     """
     Get Tintri Virtual Machine object by VM name
 
     Args:
         tintri  (obj): Tintri object with session_id
-        vm_name (str): Virtual Machine's name
+        server (Server): The CloudBolt Server object
+        save_to_server: bool.  If not in the server save it as tintri_vm_uuid
 
     Returns:
-        vm: Tintri Virtual Machine
+        vm
     # """
     # vm_filter_spec = VirtualMachineFilterSpec()
-    # vm_filter_spec.name = vm_name
+    vm_name = server.get_vm_name()
     logging.info('Requesting VM details from Tintri for VM: "{}"'.format(vm_name))
 
-    results = tintri.get_vms(name=vm_name)
-
-    if results.json().get('filteredTotal') == 0:
-        return None
+    if server.tintri_vm_uuid:
+        tintri_vm = tintri.get_vm_by_uuid(server.tintri_vm_uuid)
     else:
-        vm = {}
-        items = results.json().get('items')[0]
-        vm['name'] = items.get("vmware").get("name")
-        vm['uuid'] = items.get("uuid").get("uuid")
-        vm['maxNormalizedIops'] = items.get("qosConfig").get("maxNormalizedIops")
+        tintri_vm = tintri.get_vm_by_name(vm_name)
 
-        logging.info(f'Found Tintri VM with Name: "{vm.get("name")}"'
-                     f' and UUID: {vm.get("uuid")}')
+    vm = {}
+    vm["name"] = tintri_vm.get("vmware").get("name")
+    vm["uuid"] = tintri_vm.get("uuid").get("uuid")
+    vm['maxNormalizedIops'] = tintri_vm.get("qosConfig").get("maxNormalizedIops")
 
-        return vm
+    logging.info(f"Found Tintri VM with Name: {vm.get('name')} and UUID: {vm.get('uuid')}")
+
+    if save_to_server:
+        server.tintri_vm_uuid = vm.get("uuid", None)
+
+    return vm
 
 
 def get_vm_stats(tintri, vm_uuid, days):
@@ -226,7 +231,7 @@ def vm_snapshot(tintri, vm_uuid, snapshot_name, consistency_type):
     """
 
     result = tintri.create_snapshot(consistency=consistency_type,
-                                    retentionMinutes=240,
+                                    retentionMinutes=-1,
                                     snapshotName=snapshot_name,
                                     sourceVmTintriUUID=vm_uuid)
 
@@ -301,8 +306,12 @@ def vm_restore(tinri, tintri_vm):
 
 
 class TintriTabDelegate(TabExtensionDelegate):
+
     def should_display(self):
-        return True
+        if self.instance.resource_handler:
+            return isinstance(self.instance.resource_handler.cast(), VsphereResourceHandler)
+
+        return False
 
 
 def dict_to_vmstat(statdict):
@@ -313,10 +322,10 @@ def dict_to_vmstat(statdict):
 
 
 @tab_extension(model=Server,
-               title='Tintri',
-               description='Tintri Server Tab',
+               title='Tintri Metrics',
+               description='Tintri Metrics Tab',
                delegate=TintriTabDelegate)
-def server_tab_tintri(request, obj_id=None):
+def server_metrics_tintri(request, obj_id=None):
     """
     Tintri Server Tab Extension
     Requires:
@@ -325,10 +334,14 @@ def server_tab_tintri(request, obj_id=None):
         VCenter cluster with Tintri VMStore
     """
     server = get_object_or_404(Server, pk=obj_id)
-
-    mydir = os.path.dirname(os.path.realpath(__file__))
+    vm_name = server.get_vm_name()
+    appliance_info = {
+        'product': 'Tintri VMstore',
+        'model': 'T5000'
+    }
 
     if server.tags.filter(name='demdo'):
+        mydir = os.path.dirname(os.path.realpath(__file__))
         with open(os.path.join(mydir, 'demo.json')) as data_file:
             # When using the demo JSON, to get the graphs to appear, the 'time' and 'endTime'
             # values need to be updated to be within the last day. TODO: automate this here
@@ -338,20 +351,22 @@ def server_tab_tintri(request, obj_id=None):
                 vm_stats.append(dict_to_vmstat(statdict))
 
         maxNormalizedIops = 1000
-        appliance_info = {
-            'product': 'Tintri VMstore',
-            'model': 'T5000'
-        }
+
     else:
         no_vm_message = None
 
         # get real stats from Tintri
-        vm_name = server.hostname
-        tintri = get_session(server)
-        appliance_info = get_appliance_info(tintri)
-        vm = get_vm(tintri, vm_name)
+        vm = None
+        error = None
+        try:
+            tintri = get_session(server)
+            appliance_info = get_appliance_info(tintri)
+            vm = get_vm(tintri, server, save_to_server=True)
+        except CloudBoltException as e:
+            error = str(e)
+
         if vm:
-            vm_stats = get_vm_stats(tintri, vm.get('uuid'), days=1)
+            vm_stats = get_vm_stats(tintri, server.tintri_vm_uuid, days=1)
             sorted_stats = vm_stats[-1]
 
             latency = [
@@ -386,9 +401,12 @@ def server_tab_tintri(request, obj_id=None):
             ]
             maxNormalizedIops = vm.get('maxNormalizedIops')
         else:
-            maxNormalizedIops = 0
             status = 'warning'
             msg = 'Could not find server \'{}\' in the Tintri Appliance '.format(vm_name)
+            if error:
+                status = "danger"  # make sure the message is red
+                msg = f"Error finding server '{vm_name}': {error}"
+            maxNormalizedIops = 0
             no_vm_message = helper_tags.alert(status, msg)
             sorted_stats = {
                 'spaceUsedGiB': 0, 'spaceProvisionedGiB': 0, 'spaceUsedChangeGiB': 0
@@ -414,12 +432,62 @@ def server_tab_tintri(request, obj_id=None):
     }
 
     return render(
-        request, 'tintri/templates/server_tab.html', dict(
+        request, 'tintri/templates/server_metrics.html', dict(
             appliance_info=appliance_info,
             tintri_data=tintri_data,
             tintri_actions=get_tintri_actions(),
             server=server,
             connection_info=get_ci(server),
+            no_vm_message=no_vm_message
+        )
+    )
+
+@tab_extension(model=Server,
+               title='Tintri Snapshots',
+               description='Tintri Snapshots Tab',
+               delegate=TintriTabDelegate)
+def server_snapshots_tintri(request, obj_id=None):
+    """
+    Tintri Server Tab Extension
+    Requires:
+        Install Tintri PySDK
+        ConnectionInfo object with name 'tintri'
+        VCenter cluster with Tintri VMStore
+    """
+    server = get_object_or_404(Server, pk=obj_id)
+
+    appliance_info = {
+        'product': 'Tintri VMstore',
+        'model': 'T5000'
+    }
+
+    no_vm_message = None
+
+    vm = None
+    error = None
+    try:
+        tintri = get_session(server)
+        appliance_info = get_appliance_info(tintri)
+        vm = get_vm
+    except CloudBoltException as e:
+        error = str(e)
+
+
+    if vm:
+        snapshots = tintri.get_snapshots(f"vmUuid={server.tintri_vm_uuid}")
+    else:
+        status = 'warning'
+        msg = 'Could not find server \'{}\' in the Tintri Appliance '.format(vm_name)
+        if error:
+            status = "danger"  # make sure the message is red
+            msg = f"Error finding server '{vm_name}': {error}"
+        no_vm_message = helper_tags.alert(status, msg)
+
+
+    return render(
+        request, 'tintri/templates/server_snapshots.html', dict(
+            server=server,
+            snapshots=snapshots,
             no_vm_message=no_vm_message
         )
     )
@@ -514,7 +582,9 @@ def admin_page(request):
 
         'tabs': TabGroup(
             template_dir='tintri/templates',
-            context={'endpoint': tintri.get_connection_info()},
+            context={
+                "endpoint": tintri.get_connection_info(),
+                "clone_from_snapshot": tintri.get_or_create_clone_from_snapshot_server_action()},
             request=request,
             tabs=[
                 # First tab uses template 'groups/tabs/tab-main.html'

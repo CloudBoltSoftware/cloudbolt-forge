@@ -19,7 +19,7 @@ class TintriEndpointForm(ConnectionInfoForm):
             self.fields["port"].initial = 443
             self.fields["protocol"].initial = "https"
 
-        # ConnectionInfo has support for ssh key which we don't need for Veeam
+        # ConnectionInfo has support for ssh key which we don't need for Tintri
         del self.fields['ssh_key']
         del self.fields['use_auth_headers']
         del self.fields['headers']
