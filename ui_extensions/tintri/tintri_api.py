@@ -177,7 +177,8 @@ class Tintri(object):
         url = "snapshot"
         if filter_string:
             url = f"{url}?{filter_string}"
-        return self.api_get(url)
+        resp =  self.api_get(url)
+        return resp.get("items")
 
     def get_vms(self, name):
         url = f'vm?name={name}'

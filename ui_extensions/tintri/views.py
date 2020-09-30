@@ -442,6 +442,16 @@ def server_metrics_tintri(request, obj_id=None):
         )
     )
 
+def epoch_ms_to_html(epoch_ms):
+    from django.utils.html import format_html
+    from utilities.templatetags.helper_tags import when
+    if epoch_ms < 0:
+        return format_html("<i>Never</i>")
+    else:
+        from datetime import datetime
+        return when(datetime.fromtimestamp(epoch_ms/1000))
+
+
 @tab_extension(model=Server,
                title='Tintri Snapshots',
                description='Tintri Snapshots Tab',
@@ -462,6 +472,7 @@ def server_snapshots_tintri(request, obj_id=None):
     }
 
     no_vm_message = None
+    can_manage_snapshots = False
 
     vm = None
     error = None
@@ -474,7 +485,13 @@ def server_snapshots_tintri(request, obj_id=None):
 
 
     if vm:
+        profile = request.get_user_profile()
+        can_manage_snapshots = profile.has_permission("server.manage_snapshots", server)
+
         snapshots = tintri.get_snapshots(f"vmUuid={server.tintri_vm_uuid}")
+        for snap in snapshots:
+            snap["created_as_html"] = epoch_ms_to_html(snap["createTime"])
+            snap["expire_as_html"] = epoch_ms_to_html(snap["expirationTime"])
     else:
         status = 'warning'
         msg = 'Could not find server \'{}\' in the Tintri Appliance '.format(vm_name)
@@ -488,6 +505,7 @@ def server_snapshots_tintri(request, obj_id=None):
         request, 'tintri/templates/server_snapshots.html', dict(
             server=server,
             snapshots=snapshots,
+            can_manage_snapshots=can_manage_snapshots,
             no_vm_message=no_vm_message
         )
     )
