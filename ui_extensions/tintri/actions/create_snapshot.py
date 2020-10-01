@@ -33,3 +33,7 @@ def run(job, server, **kwargs):
         "CRASH_CONSISTENT", kwargs.get( 'snapshot_duration'), snapshot_name, server.tintri_vm_uuid
     )
     set_progress(f"Tintri API response: {resp}")
+
+    if isinstance(resp, dict):
+        if "code" in resp and resp["code"].startswith("ERR"):
+            return "FAILURE", "", resp["message"]

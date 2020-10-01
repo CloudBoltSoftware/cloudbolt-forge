@@ -609,5 +609,5 @@ def clone_from_tintri_snapshot(request, server_id, snapshot_uuid):
         'form': form,
         'use_ajax': True,
         'action_url': reverse('clone_from_tintri_snapshot', args=[server_id, snapshot_uuid]),
-        'submit': 'Clone From Snapshot',
+        'submit': 'Clone',
     }
