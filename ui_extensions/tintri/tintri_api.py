@@ -1,5 +1,9 @@
-import requests
 import json
+import os
+import requests
+
+
+from django.conf import settings
 
 from utilities.exceptions import CloudBoltException, NotFoundException
 from utilities.logger import ThreadLogger
@@ -206,8 +210,7 @@ class Tintri(object):
         return self.api_get(url)
 
     def create_snapshot(self, consistency, retentionMinutes, snapshotName, sourceVmTintriUUID):
-        headers = {'content-type': 'application/json'}
-        url = '/flex/snapshot/action=create'
+        url = "snapshot"
         #            ?consistency={consistency}&retentionMinutes={retentionMinutes}&snapshotName={snapshotName}&sourceVmTintriUUID={sourceVmTintriUUID}'
         # sourceVmTintriUUID = self.get_vms(name='ESXi-6.0').json().get('items')[0].get("uuid").get("uuid")
 
@@ -216,12 +219,11 @@ class Tintri(object):
             "retentionMinutes": f"{retentionMinutes}",
             "consistency": f"{consistency}",
             "snapshotName": f"{snapshotName}",
-            "replicaRetentionMinutes": 0,
+            "replicaRetentionMinutes": f"{retentionMinutes}",
             "typeId": "com.tintri.api.rest.v310.dto.domain.beans.snapshot.SnapshotSpec"
         }
 
-        httpResp = self.api_post(url, body)
-        return httpResp.json()
+        return self.api_post(url, body)
 
     def clone_vm(self, cloneVmName, vm_uuid, consistency, count=1, dstore_name='default'):
         headers = {'content-type': 'application/json'}
@@ -259,9 +261,11 @@ class Tintri(object):
         if not new_name:
             new_name = f"{server.get_vm_name()}-tintri-clone-00X"
 
+        tintri_vm = self.get_vm_by_uuid(server.tintri_vm_uuid)
+
         # TODO: get vcenter name and datastore from current vm settings
-        vcenter_name = "vcenterName"
-        datastore_name = "datastoreName"
+        vcenter_name = tintri_vm.get("vmware").get("vcenterName")
+        datastore_name = tintri_vm.get("vmware").get("storageContainers")[0]
 
         payload = {
             "typeId": "com.tintri.api.rest.v310.dto.domain.beans.vm.VirtualMachineCloneSpec",
@@ -296,5 +300,94 @@ class Tintri(object):
         )
         create_custom_field(**cf_dict)
 
+    def get_or_create_take_snapshot_server_action(self):
+        from c2_wrapper import create_hook
+        take_snapshot = {
+            "name": "tintri_create_snapshot",
+            "description": "Server Action to create snapshot in Tintri.",
+            "hook_point": "server_actions",
+            "enabled": False,
+            "module": os.path.join(settings.PROSERV_DIR, "xui/tintri/actions/create_snapshot.py"),
+            "hook_point_attributes": {
+                "label": "Take Tintri Snapshot",
+                "extra_classes": "fas fa-camera",
+                "dialog_message": "Create new snapshot of a vmware VM in Tintri.",
+            },
+            "inputs": [
+                {
+                    "name": "snapshot_duration",
+                    "label": "Duration",
+                    "description": "Duration (in minutes)",
+                    "type": "INT",
+                    "namespace": "action_inputs",
+                }
+            ],
+        }
+
+        hook = create_hook(**take_snapshot)
+        sa = hook.serveraction_set.first()
+        sa.condition = hook
+        sa.save()
+        return sa
+
+
     def get_or_create_clone_from_snapshot_server_action(self):
-        return None
+        from c2_wrapper import create_hook
+        clone_from_snapshot = {
+            "name": "tintri_clone_from_snapshot",
+            "description": "Server Action to create a server from a Tintri snapshot.",
+            "hook_point": "server_actions",
+            "enabled": False,
+            "module": os.path.join(settings.PROSERV_DIR, "xui/tintri/actions/clone_from_snapshot.py"),
+            "hook_point_attributes": {
+                "label": "Clone from Tintri Snapshot",
+                "extra_classes": "fas fa-clone",
+                "dialog_message": "Create new snapshot of a vmware VM in Tintri.",
+            },
+            "inputs": [
+                {
+                    "name": "new_server_name",
+                    "label": "New Server Label",
+                    "description": "Name to give the resulting VM",
+                    "type": "STR",
+                    "namespace": "action_inputs",
+                }
+            ],
+        }
+
+        hook = create_hook(**clone_from_snapshot)
+        sa = hook.serveraction_set.first()
+        sa.condition = hook
+        sa.save()
+        return sa
+
+    def get_or_create_delete_snapshot_server_action(self):
+        from c2_wrapper import create_hook
+        delete_snapshot = {
+            "name": "tintri_delete_snapshot",
+            "description": "Server Action to delete a Tintri snapshot.",
+            "hook_point": "server_actions",
+            "enabled": False,
+            "module": os.path.join(settings.PROSERV_DIR, "xui/tintri/actions/create_snapshot.py"),
+            "hook_point_attributes": {
+                "label": "Take Tintri Snapshot",
+                "extra_classes": "fas fa-camera",
+                "dialog_message": "Create new snapshot of a vmware VM in Tintri.",
+            },
+            "inputs": [
+                {
+                    "name": "snapshot_uuid",
+                    "label": "UUID",
+                    "description": "The UUID of the snapshot being deleted.",
+                    "type": "STR",
+                    "namespace": "action_inputs",
+                }
+            ],
+        }
+
+        hook = create_hook(**delete_snapshot)
+        sa = hook.serveraction_set.first()
+        sa.condition = hook
+        sa.save()
+        return sa
+

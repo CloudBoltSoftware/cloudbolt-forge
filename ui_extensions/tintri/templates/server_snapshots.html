@@ -8,7 +8,7 @@
         <div class="panel-body">
             <div class="btn-toolbar">
                 <a class="btn btn-default open-dialog"
-                    href="#{# url 'create_tintri_snapshot' server.id #}"
+                    href="{% url 'create_tintri_snapshot' server.id %}"
                     id="create-tintri-snapshot">
                     <i class="fas fa-camera"></i>
                     <span class="action-label">Take Snapshot</span>
@@ -28,7 +28,16 @@
                         <td>{{ snapshot.uuid.uuid }}</td>
                         <td>{{ snapshot.created_as_html }}</td>
                         <td>{{ snapshot.expire_as_html }}</td>
-                        <td></td>
+                        <td>
+                          <div>
+                            <a class="open-dialog" title="Clone new VM from Snapshot"
+                               href="{% url 'clone_from_tintri_snapshot' server.id snapshot.uuid.uuid %}">
+                                <i class="far fa-clone"></i></a>
+                            <a class="open-dialog" title="Delete this Snapshot"
+                               href="{% url 'delete_tintri_snapshot' server.id snapshot.uuid.uuid %}">
+                                <i class="far fa-trash"></i></a>
+                          </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

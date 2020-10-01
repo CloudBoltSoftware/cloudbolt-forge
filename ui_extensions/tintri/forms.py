@@ -1,5 +1,6 @@
 from django import forms
 
+from common.forms import C2Form
 from utilities.logger import ThreadLogger
 from utilities.forms import ConnectionInfoForm
 
@@ -52,3 +53,32 @@ class TintriEndpointForm(ConnectionInfoForm):
     def save(self, *args, **kwargs):
         endpoint = super(TintriEndpointForm, self).save(*args, **kwargs)
         return endpoint
+
+
+class TintriSnapshotForm(C2Form):
+    duration = forms.ChoiceField(
+        choices=[
+            ('20', '20 Minutes'),
+            ('60', 'One Hour'),
+            ('180', "3 Hours"),
+            ('1440', "One Day"),
+            ('10080', 'One Week'),
+            ('-1', 'Never Expires')
+        ], label='Duration (in minutes)')
+
+    def __init__(self, *args, **kwargs):
+        self.server = kwargs.pop("server")
+        super().__init__(*args, **kwargs)
+
+    def save(self):
+        return {'snapshot_duration': int(self.cleaned_data['duration'])}
+
+class TintriCloneSnapshotForm(C2Form):
+    new_vm_name = forms.CharField(label="New VM Name")
+
+    def __init__(self, *args, **kwargs):
+        self.server = kwargs.pop("server")
+        super().__init__(*args, **kwargs)
+
+    def save(self):
+        return {'new_vm_name': int(self.cleaned_data['new_vm_name'])}

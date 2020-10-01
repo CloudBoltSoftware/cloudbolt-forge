@@ -11,4 +11,10 @@ xui_urlpatterns = [
         name='delete_tintri_endpoint'),
     url(r'^tintri/verify_endpoint/$', views.verify_tintri_endpoint,
         name='verify_tintri_endpoint'),
+    url(r'^tintri/take_snapshot/(?P<server_id>\d+)/$',
+        views.create_tintri_snapshot, name='create_tintri_snapshot'),
+    url(r'^tintri/delete_snapshot/(?P<server_id>\d+)/(?P<snapshot_uuid>[\w-]+)/$',
+        views.delete_tintri_snapshot, name='delete_tintri_snapshot'),
+    url(r'^tintri/clone_from_snapshot/(?P<server_id>\d+)/(?P<snapshot_uuid>[\w-]+)/$',
+        views.clone_from_tintri_snapshot, name='clone_from_tintri_snapshot'),
 ]

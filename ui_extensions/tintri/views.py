@@ -4,11 +4,6 @@ Provides features to support a Tintri storage array.
 Servers in environments that have a Tintri store will have a "Tintri" tab on
 their detail view. This tab exposes storage performance metrics as well as some
 actions users can take on the server, such as taking a snapshot.
-
-You must create a ConnectionInfo for every CB environment whose servers want
-this Tintri tab. The ConnectionInfo name should follow the pattern "Tintri
-VMstore for Environment 2", where 2 is the ID of the environment. You can
-determine an environment's ID by inspecting the URL for its detail page.
 """
 import os
 import datetime
@@ -24,7 +19,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import ugettext as _
 
-from cbhooks.models import ServerAction
+from cbhooks.views import _format_action_html_response
 from extensions.views import admin_extension, tab_extension, TabExtensionDelegate
 from infrastructure.models import Server
 from resourcehandlers.vmware.models import VsphereResourceHandler
@@ -34,7 +29,7 @@ from utilities.exceptions import CloudBoltException
 from utilities.logger import ThreadLogger
 from utilities.permissions import cbadmin_required
 from utilities.templatetags import helper_tags
-from xui.tintri.forms import TintriEndpointForm
+from xui.tintri.forms import TintriEndpointForm, TintriSnapshotForm
 from xui.tintri.tintri_api import Tintri
 
 logger = ThreadLogger(__name__)
@@ -196,114 +191,6 @@ def get_chart_plotline(vm_stats, attr, name, color):
     return plot
 
 
-def get_tintri_actions():
-    """
-    Get all of the tintri server action ID's in a {}
-
-    Args: None
-
-    Returns:
-        tintri_actions: {} of action ID's
-    """
-    tintri_actions = []
-    snapshot_action = ServerAction.objects.filter(label='Take a Tintri Snapshot').first()
-    if snapshot_action:
-        tintri_actions.append(snapshot_action)
-    # clone_action = ServerAction.objects.get(label='Clone VM using Tintri')
-    clone_action = None
-    if clone_action:
-        tintri_actions.append(clone_action)
-    return tintri_actions
-
-
-def vm_snapshot(tintri, vm_uuid, snapshot_name, consistency_type):
-    """
-    Tintri snapshot of Virtual Machine
-
-    Args:
-        tintri           (obj): Tintri object with session_id
-        vm_uuid          (str): Virtual Machine's UUID
-        snapshot_name    (str): Name of the snapshot
-        consistency_type (str): 'CRASH_CONSISTENT' 'VM_CONSISTENT'
-
-    Returns:
-        snapshot_name: Name of snapshot
-    """
-
-    result = tintri.create_snapshot(consistency=consistency_type,
-                                    retentionMinutes=-1,
-                                    snapshotName=snapshot_name,
-                                    sourceVmTintriUUID=vm_uuid)
-
-    if result.get('status') == 200:
-        return True
-    else:
-        return False, result.get('error').get('message')
-
-
-def vm_clone(tintri, clone_name, vm, vCenterName="10.50.1.10", qty=1, dstore_name='default'):
-
-    """
-    Tintri clone of Virtual Machine
-
-    Issue: Cloning completes but duplicated VMWare VM UUID
-
-    Args:
-        tintri      (obj): Tintri object with session_id
-        tintri_vm   (obj): VM object from get_vm()
-        clone_name  (str): Name for vm clone
-        qty         (int): How many clones
-        dstore_name (str): 'default' for VMStore
-
-    Returns:
-        clone_state: 'COMPLETED' 'FAILED'
-    """
-    uuid = get_vm(tintri, f'{vm}').get('uuid')
-
-    consistency = 'CRASH_CONSISTENT'
-    # clone_spec.vmware.vCenterName = tintri_vm.vmware.vcenterName
-    vCenterName = vCenterName
-
-    # Run as CloudBolt Job
-    task = tintri.clone_vm(cloneVmName=clone_name, vm_uuid=uuid,
-                           consistency=consistency, count=qty, dstore_name=dstore_name)
-
-    # task_uuid = task.uuid.uuid
-    # task_state = task.state
-    # task_progress = task.progressDescription
-    # task_type = task.type
-    return task
-
-
-def vm_protect(tintri, tintri_vm):
-    '''
-    Note: Not yet implemented
-
-    Tintri protect Virtual Machine
-
-    Args:
-        tintri    (obj): Tintri object with session_id
-        tintri_vm (obj): VM object from get_vm()
-
-    Returns:
-    '''
-    pass
-
-
-def vm_restore(tinri, tintri_vm):
-    '''
-    Note: Not yet implemented
-
-    Tintri restore Virtual Machine
-
-    Args:
-        tintri    (obj): Tintri object with session_id
-        tintri_vm (obj): VM object from get_vm()
-
-    Returns:
-    '''
-    pass
-
 
 class TintriTabDelegate(TabExtensionDelegate):
 
@@ -435,7 +322,6 @@ def server_metrics_tintri(request, obj_id=None):
         request, 'tintri/templates/server_metrics.html', dict(
             appliance_info=appliance_info,
             tintri_data=tintri_data,
-            tintri_actions=get_tintri_actions(),
             server=server,
             connection_info=get_ci(server),
             no_vm_message=no_vm_message
@@ -602,7 +488,9 @@ def admin_page(request):
             template_dir='tintri/templates',
             context={
                 "endpoint": tintri.get_connection_info(),
-                "clone_from_snapshot": tintri.get_or_create_clone_from_snapshot_server_action()},
+                "clone_from_snapshot": tintri.get_or_create_clone_from_snapshot_server_action(),
+                "take_snapshot": tintri.get_or_create_take_snapshot_server_action()
+            },
             request=request,
             tabs=[
                 # First tab uses template 'groups/tabs/tab-main.html'
@@ -616,3 +504,106 @@ def admin_page(request):
         )
     }
     return render(request, 'tintri/templates/admin_page.html', tintri_context)
+
+@dialog_view
+def create_tintri_snapshot(request, server_id):
+    profile = request.get_user_profile()
+    server = get_object_or_404(Server, pk=server_id)
+
+    if request.method == 'POST':
+        form = TintriSnapshotForm(request.POST, server=server)
+        action = Tintri().get_or_create_take_snapshot_server_action()
+        if form.is_valid():
+            context = form.save()
+            action_response = action.run_hook_as_job(
+                owner=profile, servers=[server], context=context
+            )
+            action_kwargs = {
+                "action": action,
+                "server": server,
+                "profile": profile,
+                "request": request,
+            }
+            _format_action_html_response(
+                action_response=action_response, **action_kwargs
+            )
+
+            return HttpResponseRedirect(request.META['HTTP_REFERER'])
+    else:
+        form = TintriSnapshotForm(server=server)
+
+    return {
+        'title': "Create Tintri Snapshot",
+        'form': form,
+        'use_ajax': True,
+        'action_url': reverse('create_tintri_snapshot', args=[server_id]),
+        'submit': 'Take Snapshot',
+    }
+
+@dialog_view
+def delete_tintri_snapshot(request, server_id, snapshot_uuid):
+    profile = request.get_user_profile()
+    server = get_object_or_404(Server, pk=server_id)
+
+    if request.method == 'POST':
+        form = TintriSnapshotForm(request.POST, server=server)
+        if form.is_valid():
+            context = form.save()
+            action_response = action.run_hook_as_job(
+                owner=profile, servers=[server], context=context
+            )
+            action_kwargs = {
+                "action": action,
+                "server": server,
+                "profile": profile,
+                "request": request,
+            }
+            _format_action_html_response(
+                action_response=action_response, **action_kwargs
+            )
+
+            return HttpResponseRedirect(request.META['HTTP_REFERER'])
+    else:
+        form = TintriSnapshotForm(server=server)
+
+    return {
+        'title': "Create Tintri Snapshot",
+        'form': form,
+        'use_ajax': True,
+        'action_url': reverse('create_tintri_snapshot', args=[server_id]),
+        'submit': 'Take Snapshot',
+    }
+
+@dialog_view
+def clone_from_tintri_snapshot(request, server_id, snapshot_uuid):
+    profile = request.get_user_profile()
+    server = get_object_or_404(Server, pk=server_id)
+
+    if request.method == 'POST':
+        form = TintriSnapshotForm(request.POST, server=server)
+        if form.is_valid():
+            context = form.save(profile)
+            action_response = action.run_hook_as_job(
+                owner=profile, servers=[server], context=context
+            )
+            action_kwargs = {
+                "action": action,
+                "server": server,
+                "profile": profile,
+                "request": request,
+            }
+            _format_action_html_response(
+                action_response=action_response, **action_kwargs
+            )
+
+            return HttpResponseRedirect(request.META['HTTP_REFERER'])
+    else:
+        form = TintriSnapshotForm(server=server)
+
+    return {
+        'title': "Create Tintri Snapshot",
+        'form': form,
+        'use_ajax': True,
+        'action_url': reverse('create_tintri_snapshot', args=[server_id]),
+        'submit': 'Take Snapshot',
+    }
