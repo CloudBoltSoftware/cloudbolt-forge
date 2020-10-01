@@ -1,6 +1,7 @@
 from django import forms
 
 from common.forms import C2Form
+from common.methods import generate_string_from_template_for_server
 from utilities.logger import ThreadLogger
 from utilities.forms import ConnectionInfoForm
 
@@ -58,7 +59,6 @@ class TintriEndpointForm(ConnectionInfoForm):
 class TintriSnapshotForm(C2Form):
     duration = forms.ChoiceField(
         choices=[
-            ('20', '20 Minutes'),
             ('60', 'One Hour'),
             ('180', "3 Hours"),
             ('1440', "One Day"),
@@ -80,5 +80,11 @@ class TintriCloneSnapshotForm(C2Form):
         self.server = kwargs.pop("server")
         super().__init__(*args, **kwargs)
 
+        name_template = "{{ server.hostname }}-tintriclone-00X"
+        new_name = generate_string_from_template_for_server(
+            name_template, self.server
+        )
+        self.fields['new_vm_name'].initial = new_name
+
     def save(self):
-        return {'new_vm_name': int(self.cleaned_data['new_vm_name'])}
+        return {'new_vm_name': self.cleaned_data['new_vm_name']}

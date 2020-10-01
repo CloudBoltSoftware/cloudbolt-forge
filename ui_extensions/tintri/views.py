@@ -29,7 +29,7 @@ from utilities.exceptions import CloudBoltException
 from utilities.logger import ThreadLogger
 from utilities.permissions import cbadmin_required
 from utilities.templatetags import helper_tags
-from xui.tintri.forms import TintriEndpointForm, TintriSnapshotForm
+from xui.tintri.forms import TintriCloneSnapshotForm, TintriEndpointForm, TintriSnapshotForm
 from xui.tintri.tintri_api import Tintri
 
 logger = ThreadLogger(__name__)
@@ -581,9 +581,11 @@ def clone_from_tintri_snapshot(request, server_id, snapshot_uuid):
     server = get_object_or_404(Server, pk=server_id)
 
     if request.method == 'POST':
-        form = TintriSnapshotForm(request.POST, server=server)
+        form = TintriCloneSnapshotForm(request.POST, server=server)
+        action = Tintri().get_or_create_clone_from_snapshot_server_action()
         if form.is_valid():
             context = form.save()
+            context["snapshot_uuid"] = snapshot_uuid
             action_response = action.run_hook_as_job(
                 owner=profile, servers=[server], context=context
             )
@@ -599,12 +601,13 @@ def clone_from_tintri_snapshot(request, server_id, snapshot_uuid):
 
             return HttpResponseRedirect(request.META['HTTP_REFERER'])
     else:
-        form = TintriSnapshotForm(server=server)
+        form = TintriCloneSnapshotForm(server=server)
 
     return {
-        'title': "Create Tintri Snapshot",
+        'title': "Clone VM from Tintri Snapshot",
+        'content': f"Cloning from snapshot with UUID {snapshot_uuid}",
         'form': form,
         'use_ajax': True,
-        'action_url': reverse('create_tintri_snapshot', args=[server_id]),
-        'submit': 'Take Snapshot',
+        'action_url': reverse('clone_from_tintri_snapshot', args=[server_id, snapshot_uuid]),
+        'submit': 'Clone From Snapshot',
     }
