@@ -266,49 +266,15 @@ class Tintri(object):
 
         return self.api_post(url, body)
 
-    def clone_vm(self, cloneVmName, vm_uuid, consistency, count=1, dstore_name='default'):
-        headers = {'content-type': 'application/json'}
-        url = f'https://{self.host}/api/v{self.api_version}/flex/vm/action=create'
-        body = {
-            "vmware": {
-                "datastoreName": f"{dstore_name}",
-                "folderMoref": None,
-                "typeId": "com.tintri.api.rest.v310.dto.domain.beans.vm.VirtualMachineCloneSpec$VMwareCloneInfo",
-                "hostClusterMoref": "C01",
-                "customizationScript": None,
-                "vCenterName": "10.50.1.10",
-                "cloneVmName": f"{cloneVmName}"
-            },
-            "typeId": "com.tintri.api.rest.v310.dto.domain.beans.vm.VirtualMachineCloneSpec",
-            "hyperv": None,
-            "remoteCopyInfo": None,
-            "restoreInfo": None,
-            "vmId": f"{vm_uuid}",
-            "rhev": None,
-            "consistency": f"{consistency}",
-            "count": count,
-        }
-        if self.session_id:
-            headers['cookie'] = 'JSESSIONID=%s' % self.session_id
-        else:
-            raise Exception("Not Logged in.")
+    def clone_from_snapshot(self, vm_uuid, snapshot_id, new_name):
 
-        httpResp = requests.post(url, headers=headers, data=json.dumps(body), verify=False)
-        import pdb; pdb.set_trace()
-        return httpResp.json()
-
-    def clone_from_snapshot(self, server, snapshot_id, new_name=None):
-
-        if not new_name:
-            new_name = f"{server.get_vm_name()}-tintri-clone-00X"
-
-        tintri_vm = self.get_vm_by_uuid(server.tintri_vm_uuid)
-
-        # TODO: get vcenter name and datastore from current vm settings
+        url = "vm"
+        
+        tintri_vm = self.get_vm_by_uuid(vm_uuid)
         vcenter_name = tintri_vm.get("vmware").get("vcenterName")
         datastore_name = tintri_vm.get("vmware").get("storageContainers")[0]
 
-        payload = {
+        body = {
             "typeId": "com.tintri.api.rest.v310.dto.domain.beans.vm.VirtualMachineCloneSpec",
             "vmId": None,
             "snapshotId": f"{snapshot_id}",
@@ -327,6 +293,9 @@ class Tintri(object):
                 "customizationScript": None
             }
         }
+
+        return self.api_post(url, body)
+
 
     def create_custom_fields_as_needed(self):
         from c2_wrapper import create_custom_field
