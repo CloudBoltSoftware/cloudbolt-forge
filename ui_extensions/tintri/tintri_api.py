@@ -132,11 +132,11 @@ class Tintri(object):
             uri = "/".join([self.get_base_url(), url])
 
         logger.info("tintri url: {}".format(uri))
-        httpresp = requests.get(uri, headers=headers, verify=False)
-        logger.info(httpresp)
+        http_resp = requests.get(uri, headers=headers, verify=False)
+        logger.info(http_resp)
         if as_json:
-            httpresp = httpresp.json()
-        return httpresp
+            http_resp = http_resp.json()
+        return http_resp
 
     def api_post(self, url, payload, as_json=True):
         headers = {'content-type': 'application/json'}
@@ -156,6 +156,26 @@ class Tintri(object):
             http_resp = http_resp.json()
         return http_resp
 
+    def api_delete(self, url, as_json=True):
+        headers = {'content-type': 'application/json'}
+        if self.session_id:
+            headers['cookie'] = f"JSESSIONID={self.session_id}"
+        else:
+            raise Exception("Not Logged in.")
+        if url.startswith("http"):
+            uri = url
+        else:
+            uri = "/".join([self.get_base_url(), url])
+
+        logger.info("tintri url: {}".format(uri))
+        http_resp = requests.delete(uri, headers=headers, verify=False)
+        logger.info(http_resp)
+        if http_resp.status_code == 204:
+            return None
+
+        if as_json:
+            http_resp = http_resp.json()
+        return http_resp
 
     def is_vmstore(self):
         headers = {'content-type': 'application/json'}
@@ -184,6 +204,11 @@ class Tintri(object):
         resp =  self.api_get(url)
         return resp.get("items")
 
+    def delete_snapshot(self, snapshot_uuid):
+        url = f"snapshot/{snapshot_uuid}"
+        resp =  self.api_delete(url)
+        return resp
+
     def get_vms(self, name):
         url = f'vm?name={name}'
         httpResp = self.api_get(url, as_json=False)
@@ -208,6 +233,22 @@ class Tintri(object):
     def get_vm_historic_stats(self, uuid, since, until):
         url = f'vm/{uuid}/statsHistoric?since={str(since)}'
         return self.api_get(url)
+
+    def create_snapshot(self, consistency, retentionMinutes, snapshotName, sourceVmTintriUUID):
+        url = "snapshot"
+        #            ?consistency={consistency}&retentionMinutes={retentionMinutes}&snapshotName={snapshotName}&sourceVmTintriUUID={sourceVmTintriUUID}'
+        # sourceVmTintriUUID = self.get_vms(name='ESXi-6.0').json().get('items')[0].get("uuid").get("uuid")
+
+        body = {
+            "sourceVmTintriUUID": f"{sourceVmTintriUUID}",
+            "retentionMinutes": f"{retentionMinutes}",
+            "consistency": f"{consistency}",
+            "snapshotName": f"{snapshotName}",
+            "replicaRetentionMinutes": f"{retentionMinutes}",
+            "typeId": "com.tintri.api.rest.v310.dto.domain.beans.snapshot.SnapshotSpec"
+        }
+
+        return self.api_post(url, body)
 
     def create_snapshot(self, consistency, retentionMinutes, snapshotName, sourceVmTintriUUID):
         url = "snapshot"
@@ -368,11 +409,11 @@ class Tintri(object):
             "description": "Server Action to delete a Tintri snapshot.",
             "hook_point": "server_actions",
             "enabled": False,
-            "module": os.path.join(settings.PROSERV_DIR, "xui/tintri/actions/create_snapshot.py"),
+            "module": os.path.join(settings.PROSERV_DIR, "xui/tintri/actions/delete_snapshot.py"),
             "hook_point_attributes": {
-                "label": "Take Tintri Snapshot",
-                "extra_classes": "fas fa-camera",
-                "dialog_message": "Create new snapshot of a vmware VM in Tintri.",
+                "label": "Delete Tintri Snapshot",
+                "extra_classes": "fas fa-trash",
+                "dialog_message": "Delete VM snapshot from Tintri.",
             },
             "inputs": [
                 {

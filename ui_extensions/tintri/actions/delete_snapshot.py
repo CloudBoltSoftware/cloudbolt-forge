@@ -1,7 +1,9 @@
 from common.methods import set_progress
 from utilities.logger import ThreadLogger
+from xui.tintri.tintri_api import Tintri
 
 logger = ThreadLogger(__name__)
+
 
 def should_display(*args, **kwargs):
     """
@@ -10,8 +12,15 @@ def should_display(*args, **kwargs):
     """
     return False
 
+
 def run(job, server, **kwargs):
-    set_progress("we are here: delete_snapshot")
-    set_progress(f"server: {server}")
-    set_progress(f"kwargs: {kwargs}")
-    set_progress("snapshot_uuid: '{{ snapshot_uuid }}'")
+
+    snapshot_uuid = kwargs.get('snapshot_uuid')
+    set_progress(f"Attempting to delete snapshot wiht uuid '{snapshot_uuid}' for server '{server}'")
+    tintri = Tintri()
+    session_id = tintri.get_session_id(None, save_to_self=True)
+    set_progress(f"Calls to Tintri API will be using session ID: {session_id}")
+
+
+    resp = tintri.delete_snapshot(snapshot_uuid)
+    set_progress(f"Tintri API response: {resp}")

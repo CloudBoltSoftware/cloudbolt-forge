@@ -489,7 +489,8 @@ def admin_page(request):
             context={
                 "endpoint": tintri.get_connection_info(),
                 "clone_from_snapshot": tintri.get_or_create_clone_from_snapshot_server_action(),
-                "take_snapshot": tintri.get_or_create_take_snapshot_server_action()
+                "take_snapshot": tintri.get_or_create_take_snapshot_server_action(),
+                "delete_snapshot": tintri.get_or_create_delete_snapshot_server_action()
             },
             request=request,
             tabs=[
@@ -499,7 +500,6 @@ def admin_page(request):
                 # Tab 2 is conditionally-shown in this slot and
                 # uses template 'groups/tabs/tab-related-items.html'
                 (_("Overview"), 'overview', {}),
-                (_("Hypervisors"), 'hypervisors', {})
             ],
         )
     }
@@ -546,32 +546,33 @@ def delete_tintri_snapshot(request, server_id, snapshot_uuid):
     server = get_object_or_404(Server, pk=server_id)
 
     if request.method == 'POST':
-        form = TintriSnapshotForm(request.POST, server=server)
-        if form.is_valid():
-            context = form.save()
-            action_response = action.run_hook_as_job(
-                owner=profile, servers=[server], context=context
-            )
-            action_kwargs = {
-                "action": action,
-                "server": server,
-                "profile": profile,
-                "request": request,
-            }
-            _format_action_html_response(
-                action_response=action_response, **action_kwargs
-            )
+        action = Tintri().get_or_create_delete_snapshot_server_action()
+        context = {'snapshot_uuid': snapshot_uuid}
+        action_response = action.run_hook_as_job(
+            owner=profile, servers=[server], context=context
+        )
+        action_kwargs = {
+            "action": action,
+            "server": server,
+            "profile": profile,
+            "request": request,
+        }
+        _format_action_html_response(
+            action_response=action_response, **action_kwargs
+        )
 
-            return HttpResponseRedirect(request.META['HTTP_REFERER'])
-    else:
-        form = TintriSnapshotForm(server=server)
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
     return {
-        'title': "Create Tintri Snapshot",
-        'form': form,
+        'title': "Delete Tintri Snapshot",
+        "theme": "danger",
+        "content": (
+            f"Are you sure you want to delete snapshot with uuid '{snapshot_uuid}' from Tintri?"
+            " This action cannot be undone!"
+        ),
         'use_ajax': True,
-        'action_url': reverse('create_tintri_snapshot', args=[server_id]),
-        'submit': 'Take Snapshot',
+        'action_url': reverse('delete_tintri_snapshot', args=[server_id, snapshot_uuid]),
+        'submit': 'Delete',
     }
 
 @dialog_view
@@ -582,7 +583,7 @@ def clone_from_tintri_snapshot(request, server_id, snapshot_uuid):
     if request.method == 'POST':
         form = TintriSnapshotForm(request.POST, server=server)
         if form.is_valid():
-            context = form.save(profile)
+            context = form.save()
             action_response = action.run_hook_as_job(
                 owner=profile, servers=[server], context=context
             )

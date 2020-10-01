@@ -13,8 +13,7 @@ def should_display(*args, **kwargs):
     return False
 
 def run(job, server, **kwargs):
-    set_progress(f"server: {server}")
-    set_progress(f"kwargs: {kwargs}")
+
     duration = kwargs.get('snapshot_duration')
     if duration >= 0:
         set_progress(f"Requested snapshot retention is {duration} minutes")
