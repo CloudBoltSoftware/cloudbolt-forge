@@ -1,33 +1,15 @@
 {% load helper_tags %}
+{% if no_vm_message %}
+    {{ no_vm_message}}
+{% else %}
+
 <div class="row">
     <div class="col-md-3">
-        <a href="https://www.tintri.com">
+        <a href="{{ tintri_url }}">
             <img
             src="https://info.tintri.com/rs/010-FIO-934/images/Email_Logo.png"
-            alt="Tintri Logo"></img>
+            alt="Tintri Logo" />
         </a><br><br>
-        <div class="btn-toolbar">
-            <div class="btn-group btn-wrapper">
-                <button type="button" data-toggle="dropdown"
-                        class="edit-action btn btn-default dropdown-toggle selection-action">
-                    All Trintri Actions&nbsp;&nbsp;<span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" role="menu">
-                    {% for action in tintri_actions %}
-                        <li role="presentation">
-                            <a role="menuitem"
-                                class="default open-dialog"
-                                tabindex="-1"
-                                data-href="{% url 'run_server_action' server.id action.id %}">
-                                <span class="fa fa-camera"
-                                    style="font-size:20px;color:#5A7FAB;"></span>
-                                {{ action.label }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
     </div>
     <div class="col-md-3">
         <div class="panel panel-default">
@@ -72,14 +54,6 @@
             <div class="panel-body">
                 <div id="chart_latency"></div>
             </div>
-        </div>
-        <div>
-            <a href="http://{{ connection_info.ip }}/" target="blank" title="Browse to this VMstore">
-            <img align="top" src="https://www.tintri.com/sites/default/files/paragraph-images/Tintri_T5000.jpg" alt="Tintri Logo" width="100%"></img>
-            </a>
-            <!-- Current API call for appliance data is too slow -->
-            <br> <b>Product:</b> {{ appliance_info.product }}
-            <br> <b>Model:</b> {{ appliance_info.model }}
         </div>
     </div>
 </div>
@@ -288,3 +262,4 @@ $('#chart_throughput').highcharts({
 
     });
 </script>
+{% endif %}
