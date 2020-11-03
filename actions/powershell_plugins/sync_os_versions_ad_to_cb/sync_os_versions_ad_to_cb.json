@@ -1,0 +1,11 @@
+{
+    "action-input-default-values": [],
+    "base-action-name": "Sync OS versions AD to CB",
+    "dialog-message": "",
+    "enabled": "True",
+    "extra-classes": "fas fa-bolt",
+    "label": "Sync OS versions AD to CB",
+    "requires-approval": "False",
+    "sequence": null,
+    "submit-button-label": "Vaya!"
+}
