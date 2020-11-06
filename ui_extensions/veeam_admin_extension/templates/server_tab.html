@@ -1,0 +1,75 @@
+{% load helper_tags %}
+{% load i18n %}
+<a href="/veeam/refresh_agent/{{server.id}}/" class="btn btn-default open-dialog">
+    {% trans "Refresh Agent" %}
+</a>
+
+{% if install_agent %}
+    {% if job_running %}
+        <p>Agent Installation in progress...</p>
+            <a href="{{ job_url }}">Link to Job</a>
+    {% else %}
+        <a href="/veeam/install_agent/{{server.id}}/" class="btn btn-default open-dialog">
+            {% trans "Install Veeam Agent" %}
+        </a>
+    {% endif %}
+{% else %}
+    {% if job_running or restore_job_running %}
+        <a href="/veeam/take_backup/{{server.id}}/" class="btn btn-default open-dialog disabled" aria-disabled="true">
+            {% trans "Take Backup" %}
+        </a>
+    {% else %}
+        <a href="/veeam/take_backup/{{server.id}}/" class="btn btn-default open-dialog">
+            {% trans "Take Backup" %}
+        </a>
+    {% endif %}
+
+{% endif %}
+
+<p></p>
+{% if backup_job_running %}
+    <p><a href="{{ take_backup_job_url }}"> A Job to take Backup for this server is running</a> </p>
+{% endif %}
+{% if restore_job_running %}
+    <p><a href="{{ restore_job_url }}"> A Job to restore Backup for this server is running</a> </p>
+{% endif %}
+
+{% if not install_agent %}
+<div class="panel panel-default">
+    <div class="panel panel-default">
+        <div class="panel-heading">Restore Points</div>
+        <div class="panel-body">
+            <table width="100%" class="table table-striped">
+                <thead>
+                    <th>Restore Point Name</th>
+                    <th>Restore Point ID</th>
+                    <th>Restore Point Time</th>
+                    <th>Restore VM</th>
+                </thead>
+                <tbody>
+                    {% for restore_point in restore_points %}
+                    <tr>
+                        <td>{{ restore_point.Name }}</td>
+                        <td>{{ restore_point.Id }}</td>
+                        <td>{{ restore_point.time }}</td>
+                        {% if restore_job_running %}
+                        <td><a href="/veeam/restore_backup/{{ server.id }}/{{ restore_point.restore_point_href }}"
+                                class="btn btn-default open-dialog disabled" aria-disabled="true">
+                                {% trans "Restore to this point" %}
+                            </a></td>
+                        {% else %}
+                        <td><a href="/veeam/restore_backup/{{ server.id }}/{{ restore_point.restore_point_href }}"
+                                class="btn btn-default open-dialog">
+                                {% trans "Restore to this point" %}
+                            </a></td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}

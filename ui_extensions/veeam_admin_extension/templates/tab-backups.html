@@ -1,0 +1,40 @@
+{% load i18n %}
+<div class="panel panel-default">
+    <div class="panel panel-default">
+        {% if restore_to_ec2_job_running %}
+            <p><a href="{{ restore_to_ec2_job_url }}"> A Job to restore Backup to EC2 is running</a> </p>
+        {% endif %}
+        {% if restore_to_azure_job_running %}
+            <p><a href="{{ restore_to_azure_job_url }}"> A Job to restore Backup to Azure is running</a> </p>
+        {% endif %}
+        <div class="panel-heading">Backup Tools</div>
+        <div class="panel-body">
+            <table width="100%" class="table table-striped table-hover">
+                <thead>
+                    <th>Backup Name</th>
+                    <th>Backup ID</th>
+                    <th>Restore to Cloud</th>
+                </thead>
+                <tbody>
+                    {% for backup in backups %}
+                    <tr>
+                        <td>{{ backup.name }}</td>
+                        <td>{{ backup.id }}</td>
+                        <td>
+                            <div class="btn-toolbar">
+                            <a href="/veeam/restore_backup_to_cloud/{{ backup.name }}" class="btn btn-default open-dialog">
+                                {% trans "Microsoft Azure" %}
+                            </a>
+                            <a href="/veeam/restore_backup_to_ec2_cloud/{{ backup.name }}" class="btn btn-default open-dialog">
+                                {% trans "Amazon EC2" %}
+                            </a>
+                        </div></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
