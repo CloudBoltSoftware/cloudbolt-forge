@@ -1,0 +1,43 @@
+{% load i18n %}
+<a href="/refresh_agent/{{server.id}}/" class="btn btn-default open-dialog">
+    {% trans "Refresh Agent" %}
+</a>
+
+{% if install_agent %}
+<a href="/install_agent/{{server.id}}/" class="btn btn-default open-dialog">
+    {% trans "Install Veeam Agent" %}
+</a>
+{% endif %}
+<a href="/take_backup/{{server.id}}/" class="btn btn-default open-dialog">
+    {% trans "Take Backup" %}
+</a>
+<p></p>
+<div class="panel panel-default">
+    <div class="panel panel-default">
+        <div class="panel-heading">Restore Points</div>
+        <div class="panel-body">
+            <table width="100%" class="table table-striped">
+                <thead>
+                    <th>Restore Point Name</th>
+                    <th>Restore Point ID</th>
+                    <th>Restore Point Time</th>
+                    <th>Restore VM</th>
+                </thead>
+                <tbody>
+                    {% for restore_point in restore_points %}
+                    <tr>
+                        <td>{{ restore_point.Name }}</td>
+                        <td>{{ restore_point.Id }}</td>
+                        <td>{{ restore_point.time }}</td>
+                        <td><a href="/restore_backup/{{ server.id }}/{{ restore_point.restore_point_href }}" class="btn btn-default open-dialog">
+                                {% trans "Restore to this point" %}
+                            </a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
