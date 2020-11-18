@@ -1,0 +1,35 @@
+{% load i18n %}
+
+<div class="panel">
+    <table id="handlers" data-table>
+        <thead>
+            <tr>
+            <th>{% trans 'Name' %}</th>
+            <th>{% trans 'OS' %}</th>
+            <th>{% trans 'IP Address' %}</th>
+            <th>{% trans 'Sources' %}</th>
+            <th>{% trans 'Up' %}</th>
+            <th>{%trans 'Agent version' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+    
+            {% for host in res %}
+                <tr>
+                    <td>
+                        {%if host.server_url%}
+                        <a href="{{host.server_url}}">{{host.name}}</a>
+                        {%else%}
+                        {{host.name}}
+                        {%endif%}
+                    </td>
+                    <td>{{host.os}}</td>
+                    <td>{{host.ipaddress}}</td>
+                    <td>{{host.sources}}</td>
+                    <td>{{host.up}}</td>
+                    <td>{{host.agent_version}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,108 @@
+{% extends "dashboard/card.html" %}
+
+{% load helper_tags %}
+
+{% comment %}
+Dashboard extensions should generally extend the dashboard/card.html
+template.  This provides some common blocks that you can customize:
+- card_id
+- heading
+- heading_right
+- card-body
+
+For more on templates:
+https://docs.djangoproject.com/en/1.8/topics/templates/#the-django-template-language
+{% endcomment %}
+
+{% comment %}
+Choose a unique ID for this panel in this page. You'll use this to bind
+javascript event handlers, place it elsewhere in the DOM, etc.
+{% endcomment %}
+{% block card_id %}bolty-card{% endblock %}
+
+{% block heading %}Can you help Bolty?{% endblock %}
+
+{% block card_body %}
+    <style type="text/css">
+    .game-rules {
+        background-color: white;
+        margin: 5px 3px;
+        width: 470px;
+        text-align: left;
+        color: #000 !important;
+    }
+    .col-md-2 img {
+        width: 120px;
+        height: 200px;
+    }
+
+    .col-md-2 > .row {
+        height: 40px;
+    }
+
+    .col-md-2 > .row .alert {
+        height: 84px;
+        width: 160px;
+    }
+    .modal-body img {
+       float: right;
+        width: 100px;
+        height: 100px;
+    }
+    </style>
+    <div id="game-canvas">
+    </div>
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Game Background Story</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="ghb" class="modal-body">
+          <img src="{{ STATIC_URL }}bolty_cards/bolty.png" title="Bolty McBolt"/>
+          <p>You are tagging along with your friend Bolty to J.E.R.K. (Just Enough Reproduceable Knowledge),
+        a popular autonomous bot convention. Before long it becomes obvious that the other bots at
+        the party take the convention acronym a little too serious and are constantly making snide
+        comments about bot superiority and openly mocking you.</p>
+
+        <p>Bolty is not about to stand for this behavior so he quickly comes up with a plan to
+        prove to all J.E.R.K.s that <b>CloudBolt</b> users are just as smart, and much nicer, than
+        any bots out there. The plan is as follows:</p>
+
+        <p>Bolty asks you to leave the room momentarily and then tells the J.E.R.K.s to pick
+        <b>5 cards</b> of their choosing from a <b>standard 52 cards deck</b>.  Bolty then arranges
+        the cards on a table with <b>four cards facing up and the last one facing down</b>. The
+        bots invite you back into the room and after a quick glance at the card arrangement you
+        <b>call out the rank and suit of the card that is facing down</b>. The bots profusely
+        apologize after picking up their jaws from the floor</p>.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+function load_game($canvas, gameString) {
+    c2.block.block($canvas, true);
+    var url = '/bolty_cards/get_canvas/?' + gameString;
+    $.get(url, function(response) {
+        $newField = $(response.content);
+        $canvas.empty().append($newField);
+    });
+    c2.block.unblock($canvas);
+}
+
+$(function(){
+    $('#bolty-card').insertBefore('#servers-by-env');
+    load_game($('#game-canvas'), '');
+});
+
+
+
+</script>
+{% endblock card_body %}

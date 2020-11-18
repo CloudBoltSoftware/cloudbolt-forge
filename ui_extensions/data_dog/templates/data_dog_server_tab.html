@@ -1,0 +1,501 @@
+{% load helper_tags %}
+
+{% load i18n %}
+
+{% if not agent_installed %}
+    {% if job_running %}
+        <p>Agent Installation in progress...</p>
+            <a href="{{ job_url }}">Link to Job</a>
+    {% elif server_credentials_not_set %}
+        {{ server_credentials_not_set }}
+    {% elif power_status %}
+    {% if waiting_for_metrics %}
+        Datadog is installed in this server but the metrics have not started showing up.
+    {% else %}
+        Datadog is not installed in this server. <br />
+        <a href="/datadog/install_agent/{{server_id}}/" class="btn btn-default open-dialog">
+            {% trans "Install Data Dog Agent" %}
+        </a>
+    {% endif %}
+
+    {% elif not power_status %}
+        {{ server_not_powered_on }}
+    {% endif %}
+{% else %}
+    {% if uninstall_job_running %}
+        <p>A Job to uninstall the agent is in progress...</p>
+            <a href="{{ uninstall_job_url }}">Link to Job</a>
+    {% elif not datadog_installed %}
+    <p>Datadog agent on this server has been Uninstalled.
+            It will take a few minutes for the metrics to stop showing up.
+    </p>
+    {% endif %}
+<div class="row">
+    <div class="col-md-3">
+        <a href="https://www.datadoghq.com" target="_blank">
+            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/37/Datadog_Logo.png/220px-Datadog_Logo.png"
+                width="50%" height="50%" alt="Data Dog Logo" style="text-align:center;" />
+        </a>
+        {% if datadog_installed %}
+            <div style="margin-top:10px">
+                <div class="btn-group btn-wrapper">
+                    <button type="button" data-toggle="dropdown"
+                            class="edit-action btn btn-default dropdown-toggle selection-action">
+                        Datadog Actions&nbsp;&nbsp;<span class="caret"></span>
+                    </button>
+                    <br>
+                    <br>
+                    <ul class="dropdown-menu" role="menu">
+                        {% for action in datadog_actions %}
+                            <li role="presentation">
+                                <a role="menuitem"
+                                    class="default open-dialog"
+                                    tabindex="-1"
+                                    data-href="{% url 'uninstall_datadog_agent' server_id %}">
+                                    <span class="fa fa-trash"
+                                        style="font-size:20px;color:#5A7FAB;"></span>
+                                    {{ action }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="font-weight:bold; text-align:center; background:#468875; color:white">Disk
+                Used</div>
+            <div class="panel-body" style="text-align:center">
+                <h4>{{ disk_used|title }} GB</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="font-weight:bold; text-align:center; background:#828282; color:white">Free
+                Disk</div>
+            <div class="panel-body" style="text-align:center">
+                <h4>{{ free_disk|title }} GB</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="font-weight:bold; text-align:center; background:#5A7FAB; color:white">Free
+                Ram</div>
+            <div class="panel-body" style="text-align:center">
+                <h4>{{ free_ram|title }} GB</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_cpu_idle"></div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_paged_memory"></div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_disk_write_time"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_cpu_io_wait"></div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_free_memory"></div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_disk_used"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+<script type="text/javascript">
+    $(function () {
+        $('#chart_cpu_idle').highcharts({
+            title: {
+                text: 'CPU Idle'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Percentage'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' %</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ cpu_idle| to_json }}
+        });
+
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        $('#chart_cpu_io_wait').highcharts({
+            title: {
+                text: 'CPU IO Wait'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Percentage'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' %</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ cpu_io_wait| to_json }}
+        });
+
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('#chart_free_memory').highcharts({
+            title: {
+                text: 'Memory Usage'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Free Memory(in GBs)'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' GBs</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ free_memory_series| to_json }}
+        });
+
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('#chart_paged_memory').highcharts({
+            title: {
+                text: 'Paged Memory'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Paged Memory(in GBs)'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' GBs</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ paged_memory| to_json }}
+        });
+
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('#chart_disk_write_time').highcharts({
+            title: {
+                text: 'Disk Write Time'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'MBps'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' MBps</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ disk_write_time| to_json }}
+});
+
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('#chart_disk_used').highcharts({
+            title: {
+                text: 'Disk Used'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'GBs'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' GBs</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ disk_used_series| to_json }}
+});
+
+    });
+</script>
