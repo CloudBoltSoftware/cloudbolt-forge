@@ -1,0 +1,32 @@
+{% load i18n %}
+{% if openshift_ci %}
+<div class="panel">
+    <dl class="vertical">
+        <dt>URL:</dt>
+        <dd>{{ openshift_ci.protocol }}://{{ openshift_ci.ip }}:{{ openshift_ci.port }}</dd>
+    </dl>
+</div>
+{% endif %}
+<div class="btn-toolbar">
+    <b>Openshift credentials</b>
+    <p></p>
+    {% if openshift_ci %}
+    <a class="open-dialog btn btn-default" href="{% url 'edit_openshift_credentials' %}">
+        <span class="icon-edit"></span>
+        Edit Credentials
+    </a>
+    <a class="btn btn-default open-dialog" href="{% url 'verify_openshift_credentials' %}">
+        <span class="icon-verify-connection"></span>
+        Verify Connection
+    </a>
+    <a class="btn btn-default open-dialog" href="{% url 'delete_openshift_credentials' %}">
+        <span class="icon-delete"></span>
+        Delete Credentials
+    </a>
+    {% else %}
+    <a class="open-dialog btn btn-default" href="{% url 'add_openshift_credentials' %}">
+        <span class="icon-add"></span>
+        Add Credentials
+    </a>
+    {% endif %}
+</div>

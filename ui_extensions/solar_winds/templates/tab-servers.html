@@ -1,0 +1,33 @@
+{% load i18n %}
+
+<div class="panel">
+    <table id="handlers" data-table>
+        <thead>
+            <tr>
+                <th>{% trans 'ID' %}</th>
+                <th>{% trans 'Name' %}</th>
+                <th>{% trans 'IP Address' %}</th>
+                <th>{% trans 'OS' %}</th>
+                <th>{%trans 'Environment' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for node in nodes %}
+            <tr>
+                <td>{{node.NodeID}}</td>
+                <td>
+                    {%if node.server_url%}
+                    <a href="{{node.server_url}}">{{node.NodeName}}</a>
+                    {%else%}
+                    {{node.NodeName}}
+                    {%endif%}
+                </td>
+                <td>{{node.IPAddress}}</td>
+                <td>{{node.Vendor}}</td>
+                <td>{{ node.environment }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

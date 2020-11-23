@@ -1,0 +1,37 @@
+{% load i18n %}
+<div class="btn-toolbar">
+    Refrresh this page to see up-to date job status
+</div>
+
+<div class="panel">
+    <table id="handlers" data-table>
+        <thead>
+            <tr>
+                <th>{% trans 'ID' %}</th>
+                <th>{% trans 'Status' %}</th>
+                <th>{% trans 'Type' %}</th>
+                <th>{%trans 'Creation Date' %}</th>
+                <th>{%trans 'End Date' %}</th>
+                <th>{%trans 'Participating Machine' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs  %}
+            <tr>
+                <td>{{job.id}}</td>
+                {% if job.status == "COMPLETED" %}
+                    <td><font color="green">{{job.status}}</font></td>
+                {% elif job.status == "FAILED" %}
+                    <td><font color="red">{{job.status}}</font></td>
+                {% else %}
+                    <td><font color="yellow">{{job.status}}</font></td>
+                {% endif %}
+                <td>{{job.type}}</td>
+                <td>{{job.creationDateTime}}</td>
+                <td>{{job.endDateTime}}</td>
+                <td>{{job.participatingMachines}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

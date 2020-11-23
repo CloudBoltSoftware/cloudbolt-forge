@@ -1,0 +1,178 @@
+{% comment %}
+    Used by order_actions templatetag.
+
+    The orders.modify view determines which action to perform based on
+    request.POST['action'], which is set from the data-action attr of the
+    clicked icon.  Make sure to update the view if you change these values.
+{% endcomment %}
+
+{% load license_tags %}
+{% load i18n %}
+
+<form id="orderActionsForm{{ order.id }}" class="orderActions" method="post" action="{% url 'multi/order_modify' order.id %}">
+    {% csrf_token %}
+
+    <input id="action" type="hidden" name="action" value="" />
+
+    {% if item_lists %} {# detail view: show as buttons #}
+
+        {% if order.status.lower == "pending" %}
+            {% if can_approve %}
+                <button class="btn btn-primary"
+                    data-action="approve">
+                    <i class="icon-approve"></i>
+                    {% trans "Approve" %}
+                </button>
+                <a class="btn btn-default open-dialog"
+                    href="{% url 'deny_order' order.id %}"
+                    id="deny_order">
+                    <i class="icon-deny"></i>
+                    {% trans "Deny" %}&hellip;
+                </a>
+                {% if order.blueprint %}
+                    <a class="btn btn-default"
+                        href="{% url 'edit_order' order.id %}"
+                        id="edit_order">
+                        <i class="icon-edit"></i>
+                        {% trans "Edit" %}
+                    </a>
+                {% endif %}
+            {% elif is_owner %}
+                <button class="btn btn-default"
+                    data-action="remind">
+                    <i class="icon-send"></i>
+                    {% trans "Send reminder" %}
+                </button>
+            {% endif %}
+
+            {% if can_cancel %}
+                <button class="btn btn-default"
+                    data-action="cancel">
+                    <i class="icon-cancel-order"></i>
+                    {% trans "Cancel order" %}
+                </button>
+            {% endif %}
+        {% elif is_cart %}  {# Implies user is owner #}
+            <button class="btn btn-primary"
+                data-action="submit"
+                title="{% trans "Submit order for approval" %}">
+                {% trans "Submit" %}
+            </button>
+            <button class="btn btn-default"
+                data-action="clear"
+                data-toggle="tooltip"
+                title="{% trans "Clear out your current unsubmitted order" %}">
+                <i class="icon-delete"></i>
+                {% trans "Clear" %}
+            </button>
+            {% if order.blueprint %}
+                <a class="btn btn-default"
+                    href="{% url 'edit_order' order.id %}"
+                    id="edit_order">
+                    <i class="icon-edit"></i>
+                    {% trans "Edit" %}
+                </a>
+            {% endif %}
+        {% else %}
+            {# An active/completed order #}
+            <button class="btn btn-default"
+                data-action="duplicate">
+                <i class="icon-duplicate"></i>
+                {% trans "Duplicate" %}
+            </button>
+
+            {% if profile.is_cbadmin and can_be_tested %}
+                <button class="btn btn-default"
+                    data-toggle="tooltip"
+                    title="{% trans "Have this order automatically tested by Continuous Infrastructure Testing." %}"
+                    data-action="add_to_cit">
+                    <i class="icon-stethoscope"></i>
+                    {% trans "Add to CIT" %}
+                </button>
+            {% else %}
+                {# tell user why some orders aren't testable? #}
+            {% endif %}
+        {% endif %}
+
+        {% if can_save_to_catalog %}
+            <button class="btn btn-default"
+                data-action="save_as_blueprint">
+                <i class="icon-save-as-blueprint"></i>
+                {% trans "Save to Catalog" %}
+            </button>
+        {% endif %}
+
+        {% if is_owner or profile.is_cbadmin %}
+            <a class="btn btn-default open-dialog"
+                href="{% url 'rename_order' order.id %}"
+                id="rename_order">
+                <i class="icon-edit"></i>
+                {% trans "Rename order" %}&hellip;
+            </a>
+        {% endif %}
+
+        {% if show_api_link %}
+            <a class="btn btn-default open-dialog"
+                data-dialog-width="1000"
+                data-toggle="tooltip"
+                title="{% trans "Learn how to create an order like this via the API." %}"
+                href="{% url 'order_api_call' order.id %}"
+                id="order_api_call">
+                <i class="icon-api"></i>
+                API &hellip;
+            </a>
+        {% endif %}
+
+    {% else %} {# list view: show as icons #}
+
+      <div class="btn-group pull-right">
+        {% if order.status.lower == "pending" %}
+            {% if can_approve %}
+                <a class="icon-approve btn btn-default btn-sm"
+                    data-toggle="tooltip"
+                    data-action="approve"
+                    title="{% trans "Approve" %}"></a>
+                <a class="icon-deny open-dialog btn btn-default btn-sm"
+                    data-toggle="tooltip"
+                    href="{% url 'deny_order' order.id %}"
+                    id="deny_order"
+                    title="{% trans "Deny" %}"></a>
+            {% elif is_owner %}
+                <a class="icon-send btn btn-default btn-sm"
+                    data-toggle="tooltip"
+                    data-action="remind"
+                    title="{% trans "Send reminder" %}"></a>
+            {% endif %}
+
+            {% if is_owner %}
+                <a class="icon-cancel-order btn btn-default btn-sm"
+                    data-toggle="tooltip"
+                    data-action="cancel"
+                    title="{% trans "Cancel order" %}"></a>
+            {% endif %}
+        {% else %}
+            {# An active/completed order #}
+            <a class="icon-duplicate btn btn-default btn-sm"
+                data-toggle="tooltip"
+                data-action="duplicate"
+                title="{% trans "Duplicate order" %}"></a>
+        {% endif %}
+
+        {% if can_save_to_catalog %}
+            <a class="icon-save-as-blueprint btn btn-default btn-sm"
+                data-toggle="tooltip"
+                data-action="save_as_blueprint"
+                title="{% trans "Save to Catalog" %}"></a>
+        {% endif %}
+
+        {% if is_owner or profile.is_cbadmin %}
+            <a class="icon-edit open-dialog btn btn-default btn-sm"
+                data-toggle="tooltip"
+                href="{% url 'rename_order' order.id %}"
+                id="rename_order"
+                title="{% trans "Rename" %}"></a>
+        {% endif %}
+      </div>
+
+    {% endif %}
+</form>

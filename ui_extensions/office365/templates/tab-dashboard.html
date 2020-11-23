@@ -1,0 +1,39 @@
+{% load i18n %}
+
+<div class="btn-toolbar">
+    {% if office_ci %}
+        <a class="open-dialog btn btn-default"
+                   href="{% url 'edit_office_credentials' %}">
+                    <span class="icon-edit"></span>
+                    Edit
+        </a>
+        <a class="btn btn-default open-dialog"
+                    href="{% url 'verify_office_credentials' %}">
+                    <span class="icon-verify-connection"></span>
+                    Verify Connection
+        </a>
+        <a class="btn btn-default open-dialog"
+                    href="{% url 'delete_office_credentials' %}">
+                    <span class="icon-delete"></span>
+                    Delete
+        </a>
+
+    {% else %}
+     <a class="open-dialog btn btn-default" href="{% url 'add_office_credentials' %}">
+            <span class="icon-add"></span>
+            Add Credentials
+     </a>
+    {% endif %}
+</div>
+    {% if office_ci %}
+        <div class="panel">
+            <dl class="vertical">
+                <dt>URL:</dt>
+                <dd>{{ office_ci.protocol }}://{{ office_ci.ip }}</dd>
+                <dt>Headers:</dt>
+                <dd>{{ office_ci.headers }} </dd>
+            </dl>
+        </div>
+    {% else %}
+        <p><i>No Office365 credentials configured.</i></p>
+    {% endif %}

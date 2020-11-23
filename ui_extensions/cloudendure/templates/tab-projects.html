@@ -1,0 +1,32 @@
+{% load i18n %}
+<div class="btn-toolbar">
+    <a class="open-dialog btn btn-default"
+        href="{% url 'create_cloudendure_project' %}">
+        <span class="icon-add"></span>
+        Create Project
+    </a>
+</div>
+
+<div class="panel">
+    <table id="handlers" data-table>
+        <thead>
+            <tr>
+                <th>{% trans 'ID' %}</th>
+                <th>{% trans 'Name' %}</th>
+                <th>{% trans 'Type' %}</th>
+                <th>{%trans 'Agent Installation Token' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for project in projects %}
+            <tr>
+                <td>{{project.id}}</td>
+                <td>{{project.name}}</td>
+                <td>{{project.type}}</td>
+                <td>{{project.agentInstallationToken}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

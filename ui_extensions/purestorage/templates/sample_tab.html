@@ -1,0 +1,86 @@
+{% load i18n %}
+<div>
+<img src="https://static1.purestorage.com/content/dam/purestorage/Test/UAT/navigation/PureLogo.svg.imgo.svg" class="rounded float-left" alt="pure storage">
+<p></p>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel panel-default">
+        <div class="panel-heading">Volumes</div>
+        <div class="panel-body">
+                
+                
+                <a href="/connect/{{server.id}}/" class="btn btn-default open-dialog" disabled="true">
+                    <span class="icon-add"></span>
+                    {% trans "Connect volume" %}
+                </a>
+                <p></p>
+            <table width="100%" class="table table-striped">
+                <thead>
+                    <th>Name</th>
+                    <th>ID</th>
+                    <th>Size</th>
+                    
+                    <th>Date created</th>
+                </thead>
+                <tbody>
+                    {% for volume in volumes %}
+                    <tr>
+                        <td>{{ volume.name }}</td>
+                        <td>{{ volume.serial }}</td>
+                        <td>{{ volume.size }}</td>
+                        <td>{{ volume.created }}</td>
+                        <td><a href="/disconnect_volume/{{ volume.serial }}" class="btn btn-default open-dialog">
+                                {% trans "Disconnect" %}
+                            </a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-default">
+        <div class="panel panel-default">
+            <div class="panel-heading">Snapshots</div>
+            <div class="panel-body">
+                    <a href="/take_backup/{{server.id}}/" class="btn btn-default open-dialog">
+                        <span class="icon-add"></span>
+                        {% trans "Take snapshot" %}
+                    </a>
+                    <p></p>
+                <table width="100%" class="table table-striped">
+                    <thead>
+                            <th>Name</th>
+                            <th>ID</th>
+                            <th>Source</th>
+                            
+                            <th>Size</th>
+                            
+                            <th>Date created</th>
+                    </thead>
+                    <tbody>
+                        {% for snapshot in snapshots %}
+                        <tr>
+                                <td>{{ snapshot.name }}</td>
+                            
+                            <td>{{ snapshot.serial }}</td>
+                            <td>{{ snapshot.source }}</td>
+                            <td>{{ snapshot.size }}</td>
+                            <td>{{ snapshot.created }}</td>
+                            <td><a href="/restore_snapshot/{{snapshot.serial}}" class="btn btn-default open-dialog">
+                                    {% trans "Restore to this point" %}
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
