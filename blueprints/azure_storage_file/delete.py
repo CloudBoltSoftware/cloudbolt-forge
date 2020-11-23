@@ -21,7 +21,6 @@ def run(job, **kwargs):
 
 
     set_progress("Deleting file %s..." % file_name)
-    status = file_service.delete_file(file_name=file_name, share_name=share_name, directory_name='')
-    print("status: {}".format(status))
+    file_service.delete_file(file_name=file_name, share_name=share_name, directory_name='')
 
     return "Success", "The file has been deleted", ""

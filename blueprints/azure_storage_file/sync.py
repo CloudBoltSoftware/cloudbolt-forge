@@ -44,7 +44,10 @@ def discover_resources(**kwargs):
                                     {
                                         'name': share.name + '-' + file.name,
                                         'azure_storage_file_name': file.name,
+                                        'azure_file_identifier': share.name + '-' + file.name,
                                         'azure_storage_file_share_name': share.name,
+                                        'resource_group_name': resource_group.name,
+                                        'azure_rh_id': handler.id,
                                         'azure_storage_account_name': st['name'],
                                         'azure_account_key': keys[0].value,
                                         'azure_account_key_fallback': keys[1].value
