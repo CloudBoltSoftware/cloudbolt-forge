@@ -26,7 +26,7 @@ def run(job, **kwargs):
     snapshot_name = str(now)
     snapshot_desc = f"Scheduled snapshot taken by Recurring Job at {now}"
     # If there's no default value for the Action Input yet, go with 3
-    default_max_snapshots = int("{{ snapshot_maximum }}") or 3
+    default_max_snapshots = int("{{ snapshot_maximum }}" or 3)
 
     set_progress(f"Searching for Servers that are scheduled to have their snapshot taken now ({now})")
     # Only consider ACTIVE servers (trying to take snapshots of Servers in other states might not go well)
