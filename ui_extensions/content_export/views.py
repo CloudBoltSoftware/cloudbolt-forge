@@ -49,7 +49,7 @@ def export_content_list(request):
     if 'ui-extension-packages' in response:
         XUIIndexer().index()
         for ui in response['ui-extension-packages']:
-            id = ui['package-url'].split('/')[-1]
+            id = ui['package-url'].split('/')[-2]
             ui['id'] = UIExtension.objects.get(name=id).id
             ui['collections'] = 'ui-extension-packages'
             exportable_contents.append(keys_hyphens_to_underscores(ui))
