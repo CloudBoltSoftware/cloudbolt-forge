@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% load helper_tags %}
+{% load static %}
+{% block topnav %}Kumolus Integration Kit{% endblock %}
+{% block title %}Kumolus Administration{% endblock %}
+
+{% block content %}
+    <span class="uplink"><a href="{% url 'admin_home' %}">Admin</a></span>
+    <h1>Kumolus Administration</h1>
+
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3>Welcome</h3></div>
+        <div class="panel-body">
+            Welcome to the Kumolus integation admin extension!
+            <p>
+            <img src="{% static 'azure_functions.png' %}">
+            </p>
+        </div>
+    </div>
+
+{% endblock content %}
