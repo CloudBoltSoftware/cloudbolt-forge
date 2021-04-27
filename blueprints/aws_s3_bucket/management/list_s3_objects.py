@@ -28,15 +28,18 @@ def run(job, resource, **kwargs):
     set_progress("Connecting to AWS s3 cloud")
 
     aws = AWSHandler.objects.get(id=resource.aws_rh_id)
-    wrapper = aws.get_api_wrapper()
     set_progress("This resource belongs to {}".format(aws))
 
+    wrapper = aws.get_api_wrapper()
+    wrapper.region_name = resource.s3_bucket_region
+    
     bucket_name = resource.s3_bucket_name
+    
     client = wrapper.get_boto3_client(
         's3',
         aws.serviceaccount,
         aws.servicepasswd,
-        None
+        wrapper.region_name
     )
 
     rt = create_resource_type_if_needed()

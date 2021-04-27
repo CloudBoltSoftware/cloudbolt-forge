@@ -10,13 +10,17 @@ def generate_options_for_obj_name(server=None, **kwargs):
 
     if resource:
         aws = AWSHandler.objects.get(id=resource.aws_rh_id)
+
         wrapper = aws.get_api_wrapper()
+        wrapper.region_name = resource.s3_bucket_region
+
         bucket_name = resource.s3_bucket_name
+
         client = wrapper.get_boto3_client(
             's3',
             aws.serviceaccount,
             aws.servicepasswd,
-            None
+            wrapper.region_name
         )
         buckets = client.list_objects(Bucket=bucket_name).get('Contents', None)
         if buckets:
