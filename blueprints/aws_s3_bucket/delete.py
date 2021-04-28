@@ -9,15 +9,18 @@ def run(**kwargs):
     resource = kwargs.pop('resources').first()
 
     bucket_name = resource.s3_bucket_name
-    rh_id = resource.aws_rh_id
-    rh = AWSHandler.objects.get(id=rh_id)
-    wrapper = rh.get_api_wrapper()
+
+    aws = AWSHandler.objects.get(id=resource.aws_rh_id)
+    set_progress("This resource belongs to {}".format(aws))
+
+    wrapper = aws.get_api_wrapper()
+    wrapper.region_name = resource.s3_bucket_region
 
     set_progress('Connecting to Amazon S3...')
     conn = wrapper.get_boto3_resource(
-        rh.serviceaccount,
-        rh.servicepasswd,
-        None,
+        aws.serviceaccount,
+        aws.servicepasswd,
+        wrapper.region_name,
         service_name='s3'
     )
 

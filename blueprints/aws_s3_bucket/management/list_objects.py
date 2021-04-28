@@ -24,14 +24,16 @@ def run(job, resource, **kwargs):
     bucket = resource.s3_bucket_name
 
     aws = AWSHandler.objects.get(id=resource.aws_rh_id)
-    wrapper = aws.get_api_wrapper()
     set_progress("This resource belongs to {}".format(aws))
+    
+    wrapper = aws.get_api_wrapper()
+    wrapper.region_name = resource.s3_bucket_region
 
     client = wrapper.get_boto3_client(
         's3',
         aws.serviceaccount,
         aws.servicepasswd,
-        None
+        wrapper.region_name
     )
     res = get_all_objects(client, bucket)
     set_progress(res)
