@@ -2,7 +2,7 @@ import os
 
 from django.conf import settings
 from django.core.management import call_command
-from django.templatetags.static import static
+import xui.static
 from django.shortcuts import render
 from django.utils.html import mark_safe
 from extensions.views import dashboard_extension
