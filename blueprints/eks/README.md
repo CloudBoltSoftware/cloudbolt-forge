@@ -11,6 +11,11 @@
 ### Coding Conventions
  * Please comment your code well, with a docstring at the top of each Python module and on most methods.
  * Configure your editor to help keep your code [PEP8 compliant](https://www.python.org/dev/peps/pep-0008/).
+### Action Inputs
+It is recommended that you import this blueprint, which will use the JSON data to create the action inputs so all their metadata is set up properly. If you cannot do this, make sure:
+ * The subnets and security groups action inputs allow multiple values
+ * The Role ARN, subnets, and security groups action inputs have a regenerated options dependency on env_id
+ * There may be other changes needed, see the .json files for complete details
 ### License
 Contributions to this project are governed by the CONTRIBUTING file and the Apache License.
 ### Contact Us
