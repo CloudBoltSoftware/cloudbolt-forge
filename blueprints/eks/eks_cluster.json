@@ -1,0 +1,49 @@
+{
+    "any-group-can-deploy": true,
+    "auto-historical-resources": false,
+    "build-items": [
+        {
+            "action-name": "Create Cluster",
+            "continue-on-failure": false,
+            "deploy-seq": 1,
+            "description": null,
+            "execute-in-parallel": false,
+            "name": "Create Cluster",
+            "run-on-scale-up": true,
+            "show-on-order-form": true,
+            "type": "plugin"
+        }
+    ],
+    "description": "",
+    "favorited": true,
+    "icon": "thumb_retina_amazon-eks.png",
+    "is-orderable": true,
+    "management-actions": [
+        {
+            "enabled": "True",
+            "label": "Launch Nodes"
+        }
+    ],
+    "name": "EKS Cluster",
+    "resource-type": {
+        "icon": "fas fa-tablet-alt",
+        "label": "Service",
+        "lifecycle": "ACTIVE",
+        "list-view-columns": [],
+        "name": "service",
+        "plural-label": null
+    },
+    "sequence": -1000,
+    "show-recipient-field-on-order-form": false,
+    "teardown-items": [
+        {
+            "action-name": "EKS Teardown",
+            "continue-on-failure": false,
+            "deploy-seq": 2,
+            "description": null,
+            "execute-in-parallel": false,
+            "name": "EKS Teardown",
+            "type": "teardown_plugin"
+        }
+    ]
+}

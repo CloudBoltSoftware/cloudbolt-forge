@@ -1,0 +1,9 @@
+{
+    "action-input-default-values": [],
+    "base-action-name": "Launch Nodes",
+    "dialog-message": "",
+    "enabled": "True",
+    "extra-classes": "",
+    "label": "Launch Nodes",
+    "submit-button-label": ""
+}

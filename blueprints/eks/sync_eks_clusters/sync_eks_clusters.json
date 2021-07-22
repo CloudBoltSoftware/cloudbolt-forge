@@ -1,0 +1,10 @@
+{
+    "description": "",
+    "max-retries": 0,
+    "name": "Sync EKS Clusters",
+    "resource-technologies": [],
+    "script-filename": "sync_clusters.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}

@@ -1,0 +1,10 @@
+{
+    "description": "",
+    "max-retries": 0,
+    "name": "EKS Teardown",
+    "resource-technologies": [],
+    "script-filename": "delete_cluster.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}
