@@ -10,7 +10,7 @@ import time
 
 
 def get_boto_client(env_id=None, boto_service=''):
-    if env_id == None:
+    if env_id is None:
         return None
     env = Environment.objects.get(id=env_id)
     rh = env.resource_handler.cast()
@@ -154,16 +154,12 @@ def create_custom_fields():
                   'description': 'Used by the Amazon EKS blueprint', 'show_as_attribute': True}
     )
 
+
 def run(resource, logger=None, **kwargs):
     env_id = '{{ env_id }}'
-
     role_arn = '{{role_arn}}'
-    subnets = ast.literal_eval("{{subnets}}")
     security_groups = ast.literal_eval("{{security_groups}}")
     cluster_name = '{{ cluster_name }}'
-    env = Environment.objects.get(id=env_id)
-    region = env.aws_region
-    rh = env.resource_handler.cast()
 
     # Network Configuration
     subnets = ast.literal_eval("{{subnets}}")
