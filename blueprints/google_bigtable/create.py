@@ -46,6 +46,11 @@ def create_custom_fields_as_needed():
                                         'description': 'Used by the Google Cloud SQL blueprint'}
     )
 
+    CustomField.objects.get_or_create(
+        name='project_id', defaults={'label': 'Google Cloud project', 'type': 'STR',
+                                        'description': 'Used by the Google Cloud SQL blueprint'}
+    )
+
 
 def create_bigtable(
     wrapper: Resource, project_id: str, instance_id: str, cluster_id, instance_type: str, location: str, serve_nodes: int
@@ -84,7 +89,6 @@ def run(job=None, logger=None, **kwargs):
 
     environment = Environment.objects.get(id='{{ env_id }}')
     project_id = environment.GCP_project
-    proj_str = f"projects/{project_id}"
     rh = environment.resource_handler.cast()
     location_id = str(environment.node_location)
     set_progress("RH: %s" % rh)
@@ -96,6 +100,8 @@ def run(job=None, logger=None, **kwargs):
     # Store the resource handler's ID on this resource so the teardown action
     # knows which credentials to use.
     resource.google_rh_id = rh.id
+    # store the GCP project_id on the resource for passing to the delete API
+    resource.project_id = project_id
     resource.save()
 
     set_progress("instance type: %s" % instance_type)
