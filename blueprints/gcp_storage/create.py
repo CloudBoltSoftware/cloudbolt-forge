@@ -12,6 +12,11 @@ from infrastructure.models import CustomField, Environment
 from resources.models import Resource
 from resourcehandlers.gcp.models import GCPHandler
 
+# Get templated information
+STORAGE_TYPE = "{{ storage_type }}"
+BUCKET_NAME = "{{ bucket_name }}"
+ENVIRONMENT_ID = "{{ env_id }}"
+
 
 def generate_options_for_env_id(server=None, **kwargs):
     gcp_environments = Environment.objects.filter(
@@ -91,23 +96,18 @@ def create_bucket(
 
 
 def run(job=None, logger=None, **kwargs):
-    # Get templated information
-    storage_type = "{{ storage_type }}"
-    bucket_name = "{{ bucket_name }}"
-    environment_id = "{{ env_id }}"
-
     # Get system information
-    environment = Environment.objects.get(id=environment_id)
+    environment = Environment.objects.get(id=ENVIRONMENT_ID)
     project_id = environment.GCP_project
     resource_handler = environment.resource_handler.cast()
 
     set_progress(f"Resource Handler: {resource_handler}")
-    set_progress(f"Storage type: {storage_type}")
+    set_progress(f"Storage type: {STORAGE_TYPE}")
 
     # Set up the Resource
     create_custom_field_objects_if_missing()
     resource = kwargs.pop("resources").first()
-    update_resource(resource, bucket_name, resource_handler)
+    update_resource(resource, BUCKET_NAME, resource_handler)
 
     # Connect to GCP
     job.set_progress("Connecting to Google Cloud...")
@@ -116,9 +116,9 @@ def run(job=None, logger=None, **kwargs):
 
     # Create the bucket
     set_progress(
-        f'Creating Google storage bucket: "{bucket_name}" of type {storage_type}'
+        f'Creating Google storage bucket: "{BUCKET_NAME}" of type {storage_type}'
     )
-    bucket = create_bucket(wrapper, project_id, bucket_name, storage_type)
+    bucket = create_bucket(wrapper, project_id, BUCKET_NAME, storage_type)
     set_progress(f'Created storage bucket: "{bucket}"')
 
     return "SUCCESS", "", ""
