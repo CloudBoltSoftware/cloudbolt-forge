@@ -2,13 +2,10 @@
 Teardown service item action for Google Cloud Bigtable database.
 """
 
-import json, tempfile
-import os
-import time
+import json
 from googleapiclient.discovery import build, Resource
 from google.oauth2.credentials import Credentials
 
-from infrastructure.models import CustomField, Environment
 from common.methods import set_progress
 from resourcehandlers.gcp.models import GCPHandler
 

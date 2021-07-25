@@ -2,14 +2,14 @@
 Plug-in for creating a Google Bigtable database.
 """
 from __future__ import unicode_literals
-import json, tempfile
-import os
+import json
 import time
 from googleapiclient.discovery import build, Resource
 from google.oauth2.credentials import Credentials
 
-from infrastructure.models import CustomField, Environment
 from common.methods import set_progress
+from infrastructure.models import CustomField, Environment
+from orders.models import CustomFieldValue
 from resourcehandlers.gcp.models import GCPHandler
 
 
@@ -21,6 +21,21 @@ def generate_options_for_env_id(server=None, **kwargs):
         options.append((env.id, env.name))
     if not options:
         raise RuntimeError("No valid Google Cloud Platform resource handlers in CloudBolt")
+    return options
+
+
+def generate_options_for_zone(server=None, **kwargs):
+    gcp_envs = Environment.objects.filter(
+        resource_handler__resource_technology__name="Google Cloud Platform")
+    options = []
+    gcp_zone_cf = CustomField.objects.get(name="gcp_zone")
+
+    for env in gcp_envs:
+        configured_zones = env.custom_field_options.filter(field=gcp_zone_cf)
+        for location in configured_zones:
+            options.append((location.id, location.str_value))
+    if not options:
+        raise RuntimeError("Failed to load Google Cloud zone options")
     return options
 
 
@@ -83,14 +98,17 @@ def get_operation_status(wrapper: Resource, operation_name: str) -> bool:
 def run(job=None, logger=None, **kwargs):
     create_custom_fields_as_needed()
     instance_id = '{{ db_identifier }}'
-    instance_type = '{{ instance_type }}'
+    instance_type = "PRODUCTION"  # "DEVELOPMENT" is permitted, but deprecated
+    serve_nodes = 3
+    zone_cfv_id = {{ zone }}
+    zone_cfv = CustomFieldValue.objects.get(id=zone_cfv_id)
+    location_id = zone_cfv.str_value
     set_progress("Instance ID will be: %s" % instance_id)
     assert 6 <= len(instance_id) <= 33
 
     environment = Environment.objects.get(id='{{ env_id }}')
     project_id = environment.GCP_project
     rh = environment.resource_handler.cast()
-    location_id = str(environment.node_location)
     set_progress("RH: %s" % rh)
     set_progress('location_id: %s' % location_id)
 
@@ -110,23 +128,13 @@ def run(job=None, logger=None, **kwargs):
     wrapper = create_bigtable_api_wrapper(rh)
     set_progress("Connection established")
 
-    if instance_type == "DEVELOPMENT":
-        # This is deprecated.
-        # For development instance types, clusters do not have nodes in them:
-        serve_nodes = 0
-    else:
-        # Production instance clusters can have 3 or more nodes each:
-        # In the future we could allow the user to customize this.
-        instance_type = "PRODUCTION"
-        serve_nodes = 3
-
     # NOTE: default_storage_type can be used to determine SSD vs SHD.
     cluster_id = instance_id + '-1'
     set_progress('Cluster ID: %s (will serve %i nodes)' % (cluster_id, serve_nodes))
 
     set_progress("\nCreating instance and cluster...")
 
-    operation = create_bigtable(wrapper, project_id, instance_id, cluster_id, instance_type, location="us-central1-f", serve_nodes=serve_nodes)  
+    operation = create_bigtable(wrapper, project_id, instance_id, cluster_id, instance_type, location=location_id, serve_nodes=serve_nodes)  
 
     while not get_operation_status(wrapper, operation['name']):
         set_progress("Waiting for instance creation to finish...")
