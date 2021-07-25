@@ -29,7 +29,7 @@ def discover_resources(**kwargs):
                 continue
 
             wrapper = create_bigtable_api_wrapper(handler)
-            set_progress("Connection to GCE established")
+            set_progress("Connection to Google Cloud established")
             instances = list_bigtables(wrapper, project).get("instances", None)
 
             for bigtable in instances():
