@@ -13,6 +13,7 @@ from googleapiclient.discovery import build
 from resourcehandlers.gcp.models import GCPHandler
 
 
+# Helper functions for the run() function
 def create_storage_api_wrapper(gcp_handler: GCPHandler) -> GCPResource:
     """
     Using googleapiclient.discovery, build the api wrapper for the storage api:
@@ -40,6 +41,7 @@ def delete_bucket(
     return created_bucket
 
 
+# The main function for this plugin
 def run(job=None, logger=None, **kwargs):
     # Get system information
     resource = kwargs.pop("resources").first()

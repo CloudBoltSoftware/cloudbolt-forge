@@ -17,6 +17,7 @@ RESOURCE_IDENTIFIER = "bucket_name"
 api_dict = Dict[str, Union[str, List, Dict]]
 
 
+# Helper functions for the discover_resources() function
 def create_storage_api_wrapper(handler: GCPHandler) -> Optional[GCPResource]:
     """
     Using googleapiclient.discovery, build the api wrapper for the storage api.
@@ -104,6 +105,7 @@ def get_blobs_in_bucket(wrapper: GCPHandler, bucket_name: str) -> List[api_dict]
     return _get_paginated_list_result(wrapper.objects, "items", bucket=bucket_name)
 
 
+# The main function for this plugin
 def discover_resources(**kwargs):
     """
     Finds all buckets in all projects in all GCP resource handlers currently imported

@@ -18,6 +18,7 @@ BUCKET_NAME = "{{ bucket_name }}"
 ENVIRONMENT_ID = "{{ env_id }}"
 
 
+# generate_options_for_* functions are used to create option in the ui
 def generate_options_for_env_id(server=None, **kwargs):
     gcp_environments = Environment.objects.filter(
         resource_handler__resource_technology__slug="gcp"
@@ -42,6 +43,7 @@ def generate_options_for_storage_type(server=None, **kwargs):
     ]
 
 
+# Helper functions for the run() function
 def create_custom_field_objects_if_missing():
     CustomField.objects.get_or_create(
         name="google_rh_id",
@@ -94,7 +96,7 @@ def create_bucket(
     created_bucket = insert_request.execute()
     return created_bucket
 
-
+# The main function for this plugin
 def run(job=None, logger=None, **kwargs):
     # Get system information
     environment = Environment.objects.get(id=ENVIRONMENT_ID)
