@@ -94,7 +94,11 @@ def get_buckets_in_project(wrapper: GCPResource, project_id: str) -> List[api_di
     Using the storage api wrapper, get all buckets from the project.
     https://googleapis.github.io/google-api-python-client/docs/dyn/storage_v1.buckets.html#list
     """
-    return _get_paginated_list_result(wrapper.buckets, "items", project=project_id)
+    buckets = _get_paginated_list_result(wrapper.buckets, "items", project=project_id)
+    # the api returns buckets without their project_id, so we add it here
+    for bucket in buckets:
+        bucket["project_id"] = project_id
+    return buckets
 
 
 def get_blobs_in_bucket(wrapper: GCPHandler, bucket_name: str) -> List[api_dict]:
@@ -148,6 +152,7 @@ def discover_resources(**kwargs):
         # Import the buckets
         for bucket in buckets:
             bucket_name = str(bucket.get("name", ""))
+            project_id = str(bucket.get("project_id", ""))
 
             # See if we've found this bucket already
             for storage in discovered_google_storage:
@@ -165,8 +170,10 @@ def discover_resources(**kwargs):
                 },
             )
 
-            # Update information on the Resource
-            storage_bucket.google_rh_id = handler.id
+            # Add extra information onto the Resource
+            set_progress(f"Adding extra info on resource for bucket: {bucket}")
+            storage_bucket.gcp_rh_id = handler.id
+            storage_bucket.gcp_project_id = project_id
             storage_bucket.bucket_name = bucket_name
             storage_bucket.lifecycle = "ACTIVE"
             storage_bucket.save()

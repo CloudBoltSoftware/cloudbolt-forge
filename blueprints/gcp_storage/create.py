@@ -46,7 +46,7 @@ def generate_options_for_storage_type(server=None, **kwargs):
 # Helper functions for the run() function
 def create_custom_field_objects_if_missing():
     CustomField.objects.get_or_create(
-        name="google_rh_id",
+        name="gcp_rh_id",
         defaults={
             "label": "GCP Resource Handler ID",
             "type": "STR",
@@ -61,12 +61,23 @@ def create_custom_field_objects_if_missing():
             "description": "Used by the GCP Storage blueprint",
         },
     )
+    CustomField.objects.get_or_create(
+        name="gcp_project_id",
+        defaults={
+            "label": "GCP Storage bucket project id",
+            "type": "STR",
+            "description": "Used by the GCP Storage blueprint",
+        },
+    )
 
 
-def update_resource(resource: Resource, bucket_name: str, resource_handler: GCPHandler):
+def update_resource(
+    resource: Resource, bucket_name: str, project_id: str, resource_handler: GCPHandler
+):
     resource.name = bucket_name
     resource.bucket_name = bucket_name
-    resource.google_rh_id = resource_handler.id
+    resource.gcp_project_id = project_id
+    resource.gcp_rh_id = resource_handler.id
     resource.save()
 
 
@@ -96,6 +107,7 @@ def create_bucket(
     created_bucket = insert_request.execute()
     return created_bucket
 
+
 # The main function for this plugin
 def run(job=None, logger=None, **kwargs):
     # Get system information
@@ -109,7 +121,7 @@ def run(job=None, logger=None, **kwargs):
     # Set up the Resource
     create_custom_field_objects_if_missing()
     resource = kwargs.pop("resources").first()
-    update_resource(resource, BUCKET_NAME, resource_handler)
+    update_resource(resource, BUCKET_NAME, project_id, resource_handler)
 
     # Connect to GCP
     job.set_progress("Connecting to Google Cloud...")
@@ -118,9 +130,9 @@ def run(job=None, logger=None, **kwargs):
 
     # Create the bucket
     set_progress(
-        f'Creating Google storage bucket: "{BUCKET_NAME}" of type {storage_type}'
+        f'Creating Google storage bucket: "{BUCKET_NAME}" of type {STORAGE_TYPE}'
     )
-    bucket = create_bucket(wrapper, project_id, BUCKET_NAME, storage_type)
+    bucket = create_bucket(wrapper, project_id, BUCKET_NAME, STORAGE_TYPE)
     set_progress(f'Created storage bucket: "{bucket}"')
 
     return "SUCCESS", "", ""
