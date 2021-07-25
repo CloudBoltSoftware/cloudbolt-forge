@@ -114,13 +114,24 @@ def discover_resources(**kwargs):
     discovered_google_storage = []
 
     # Gather system information
-    blob_blueprint = ServiceBlueprint.objects.filter(name__iexact="GCP Objects").first()
+    blob_blueprint = ServiceBlueprint.objects.filter(name__iexact="GCP Blobs").first()
     gcp_storage_blueprint = ServiceBlueprint.objects.filter(
         name__iexact="GCP Storage"
     ).first()
     group = Group.objects.first()
-    blob_resource_type = ResourceType.objects.filter(name__iexact="Blob").first()
+    blob_resource_type = ResourceType.objects.filter(name__iexact="GCP_Blob").first()
     storage_resource_type = ResourceType.objects.filter(name__iexact="Storage").first()
+
+    # See if we should discover blobs:
+    should_discover_blobs = blob_blueprint and blob_resource_type
+    if not should_discover_blobs:
+        # Blob discovery requires a separate informational "GCP Blobs" Blueprint
+        # With a resource type of "GCP Blob."
+        # This fact should be documented on this blueprint's description
+        set_progress(
+            "No 'GCP Blobs' Blueprint and/or 'GCP Blob' Resource Type detected in "
+            "CloudBolt, so discovery will skip automatic Blob discovery."
+        )
 
     # Loop through all existing GCPHandlers
     for handler in GCPHandler.objects.all():
@@ -134,6 +145,7 @@ def discover_resources(**kwargs):
         buckets = get_buckets_in_handler(handler, wrapper)
         set_progress(f"Found {len(buckets)} buckets in {handler}")
 
+        # Import the buckets
         for bucket in buckets:
             bucket_name = str(bucket.get("name", ""))
 
@@ -168,12 +180,18 @@ def discover_resources(**kwargs):
                 }
             )
 
-            # Discover blobs while here
+            # We're done unless we should be discovering blobs
+            if not should_discover_blobs:
+                continue
+
+            # Discover blobs in buckets if we are set up to do so
             blobs = get_blobs_in_bucket(wrapper, bucket_name)
             set_progress(
                 f"Found {len(blobs)} blobs in bucket {bucket_name} in {handler}"
             )
 
+            if not blob_blueprint:
+                blob_blueprint = gcp_storage_blueprint
             for blob in blobs:
                 Resource.objects.get_or_create(
                     name=blob["name"],
