@@ -32,7 +32,7 @@ BP_PAYLOAD = """
                         "parameters": {
                             "db-identifier-a130": "googlebigtablecit1",
                             "env-id-a130": "57",
-                            "instance-type-a130": "2"
+                            "zone-a130": "2012"
                         }
                     }
                 },

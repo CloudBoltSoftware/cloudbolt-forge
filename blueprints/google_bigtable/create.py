@@ -24,16 +24,16 @@ def generate_options_for_env_id(server=None, **kwargs):
     return options
 
 
-def generate_options_for_zone(server=None, **kwargs):
-    gcp_envs = Environment.objects.filter(
-        resource_handler__resource_technology__name="Google Cloud Platform")
+def generate_options_for_zone(server=None, control_value=None, **kwargs):
+    if not control_value:
+        return []
+    env = Environment.objects.get(id=control_value)
     options = []
     gcp_zone_cf = CustomField.objects.get(name="gcp_zone")
 
-    for env in gcp_envs:
-        configured_zones = env.custom_field_options.filter(field=gcp_zone_cf)
-        for location in configured_zones:
-            options.append((location.id, location.str_value))
+    configured_zones = env.custom_field_options.filter(field=gcp_zone_cf)
+    for location in configured_zones:
+        options.append((location.id, location.str_value))
     if not options:
         raise RuntimeError("Failed to load Google Cloud zone options")
     return options
