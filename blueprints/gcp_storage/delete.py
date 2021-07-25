@@ -55,11 +55,11 @@ def run(job=None, logger=None, **kwargs):
     set_progress("Connection established")
 
     # Delete the bucket
-    set_progress('Deleting bucket "%s"...' % bucket_name)
+    set_progress(f'Deleting bucket "{bucket_name}"...')
     try:
         delete_bucket(wrapper, bucket_name)
     except Exception as error:
         return "FAILURE", f"{error}", ""
 
-    set_progress('Bucket "%s" was deleted' % bucket_name)
+    set_progress(f'Bucket "{bucket_name}" was deleted')
     return "SUCCESS", "", ""
