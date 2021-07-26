@@ -9,11 +9,6 @@ from googleapiclient.discovery import Resource as GCPResource
 from googleapiclient.discovery import build
 from resourcehandlers.gcp.models import GCPHandler
 from resources.models import Resource
-from servicecatalog.models import ServiceBlueprint
-import os
-import json, tempfile
-from google.cloud import storage
-from resourcehandlers.gcp.models import GCPHandler
 
 FILE_NAME = "{{file_name}}"
 
@@ -115,4 +110,4 @@ def run(job, *args, **kwargs):
     delete_object_in_gcp(wrapper, resource.bucket_name, FILE_NAME)
     delete_object_in_cb(resource, FILE_NAME)
 
-    return "SUCCESS", f"`{FILE_NAME}` has been copied to {COPY_TO}", ""
+    return "SUCCESS", f"`{FILE_NAME}` has been deleted", ""
