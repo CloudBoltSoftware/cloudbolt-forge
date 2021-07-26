@@ -47,6 +47,10 @@ def generate_options_for_storage_type(server=None, **kwargs):
 
 # Helper functions for the run() function
 def create_custom_field_objects_if_missing():
+    """
+    Create custom fields for GCP Bucket Resources
+    This is copied in both the create and sync scripts.
+    """
     CustomField.objects.get_or_create(
         name="gcp_rh_id",
         defaults={

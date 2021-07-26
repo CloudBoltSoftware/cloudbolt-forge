@@ -18,6 +18,37 @@ api_dict = Dict[str, Union[str, List, Dict]]
 
 
 # Helper functions for the discover_resources() function
+def create_custom_field_objects_if_missing():
+    """
+    Create custom fields for GCP Bucket Resources
+    This is copied in both the create and sync scripts.
+    """
+    CustomField.objects.get_or_create(
+        name="gcp_rh_id",
+        defaults={
+            "label": "GCP Resource Handler ID",
+            "type": "STR",
+            "description": "Used by the GCP Storage blueprint",
+        },
+    )
+    CustomField.objects.get_or_create(
+        name="bucket_name",
+        defaults={
+            "label": "Google Storage bucket name",
+            "type": "STR",
+            "description": "Used by the GCP Storage blueprint",
+        },
+    )
+    CustomField.objects.get_or_create(
+        name="gcp_project_id",
+        defaults={
+            "label": "GCP Storage bucket project id",
+            "type": "STR",
+            "description": "Used by the GCP Storage blueprint",
+        },
+    )
+
+
 def create_storage_api_wrapper(handler: GCPHandler) -> Optional[GCPResource]:
     """
     Using googleapiclient.discovery, build the api wrapper for the storage api.
@@ -125,6 +156,9 @@ def discover_resources(**kwargs):
     group = Group.objects.first()
     blob_resource_type = ResourceType.objects.filter(name__iexact="GCP_Blob").first()
     storage_resource_type = ResourceType.objects.filter(name__iexact="Storage").first()
+
+    # Set up custom fields if necessary
+    create_custom_field_objects_if_missing()
 
     # See if we should discover blobs:
     should_discover_blobs = blob_blueprint and blob_resource_type
