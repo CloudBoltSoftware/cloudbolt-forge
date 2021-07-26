@@ -21,7 +21,7 @@ RESOURCE_IDENTIFIER = "bucket_name"
 api_dict = Dict[str, Union[str, List, Dict]]
 
 
-# Helper functions for the discover_resources() function
+# Helper functions for the main function below
 def create_custom_field_objects_if_missing():
     """
     Create custom fields for GCP Bucket Resources

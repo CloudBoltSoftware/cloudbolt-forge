@@ -16,7 +16,7 @@ MOVE_TO = "{{move_to}}"
 api_dict = Dict[str, Union[str, List, Dict]]
 
 
-# Helper functions for the discover_resources() function
+# Helper functions for the main function below
 def create_storage_api_wrapper(handler: GCPHandler) -> Optional[GCPResource]:
     """
     Using googleapiclient.discovery, build the api wrapper for the storage api.
