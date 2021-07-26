@@ -133,6 +133,8 @@ def run(job, *args, **kwargs):
         return "FAILURE", "", error_message
 
     # Delete the objects
-    delete_object_in_gcp(wrapper, resource.bucket_name, FILE_NAME)
-
-    return "SUCCESS", f"`{FILE_NAME}` has been deleted", ""
+    try:
+        delete_object_in_gcp(wrapper, resource.bucket_name, FILE_NAME)
+        return "SUCCESS", f"`{FILE_NAME}` has been deleted", ""
+    except Exception as error:
+        return "FAILURE", f"{error}", ""

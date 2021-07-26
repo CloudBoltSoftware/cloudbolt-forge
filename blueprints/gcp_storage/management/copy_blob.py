@@ -160,6 +160,8 @@ def run(job, *args, **kwargs):
         return "FAILURE", "", error_message
 
     # Copy the objects
-    copy_object_in_gcp(wrapper, resource.bucket_name, COPY_TO, FILE_NAME)
-
-    return "SUCCESS", f"`{FILE_NAME}` has been copied to {COPY_TO}", ""
+    try:
+        copy_object_in_gcp(wrapper, resource.bucket_name, COPY_TO, FILE_NAME)
+        return "SUCCESS", f"`{FILE_NAME}` has been copied to {COPY_TO}", ""
+    except Exception as error:
+        return "FAILURE", f"{error}", ""

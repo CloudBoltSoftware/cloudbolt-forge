@@ -147,7 +147,8 @@ def run(job=None, logger=None, **kwargs):
     set_progress(
         f'Creating Google storage bucket: "{BUCKET_NAME}" of type {STORAGE_TYPE}'
     )
-    bucket = create_bucket(wrapper, project_id, BUCKET_NAME, STORAGE_TYPE)
-    set_progress(f'Created storage bucket: "{bucket}"')
-
-    return "SUCCESS", "", ""
+    try:
+        bucket = create_bucket(wrapper, project_id, BUCKET_NAME, STORAGE_TYPE)
+        return "SUCCESS", f'Created storage bucket: "{bucket}"', ""
+    except Exception as error:
+        return "FAILURE", f"{error}", ""

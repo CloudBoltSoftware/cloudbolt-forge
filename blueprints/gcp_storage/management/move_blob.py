@@ -179,7 +179,9 @@ def run(job, *args, **kwargs):
     set_progress("Moving an object in GCP by making a copy then deleting the original.")
 
     # Move the object
-    copy_object_in_gcp(wrapper, resource.bucket_name, MOVE_TO, FILE_NAME)
-    delete_object_in_gcp(wrapper, resource.bucket_name, FILE_NAME)
-
-    return "SUCCESS", f"`{FILE_NAME}` has been moved to {MOVE_TO}", ""
+    try:
+        copy_object_in_gcp(wrapper, resource.bucket_name, MOVE_TO, FILE_NAME)
+        delete_object_in_gcp(wrapper, resource.bucket_name, FILE_NAME)
+        return "SUCCESS", f"`{FILE_NAME}` has been moved to {MOVE_TO}", ""
+    except Exception as error:
+        return "FAILURE", f"{error}", ""

@@ -143,6 +143,12 @@ def run(job, *args, **kwargs):
         return "FAILURE", "", error_message
 
     # Download the object
-    download_object(wrapper, bucket.name, FILE_NAME, save_to_location)
-
-    return "SUCCESS", f"`{FILE_NAME}` Downloaded successfully to {save_to_location}", ""
+    try:
+        download_object(wrapper, bucket.name, FILE_NAME, save_to_location)
+        return (
+            "SUCCESS",
+            f"`{FILE_NAME}` Downloaded successfully to {save_to_location}",
+            "",
+        )
+    except Exception as error:
+        return "FAILURE", f"{error}", ""

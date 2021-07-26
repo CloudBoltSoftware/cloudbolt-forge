@@ -68,8 +68,6 @@ def run(job=None, logger=None, **kwargs):
     set_progress(f'Deleting bucket "{bucket_name}"...')
     try:
         delete_bucket(wrapper, bucket_name)
+        return "SUCCESS", f'Bucket "{bucket_name}" was deleted', ""
     except Exception as error:
         return "FAILURE", f"{error}", ""
-
-    set_progress(f'Bucket "{bucket_name}" was deleted')
-    return "SUCCESS", "", ""

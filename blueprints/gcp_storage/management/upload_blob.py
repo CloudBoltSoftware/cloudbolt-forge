@@ -161,6 +161,8 @@ def run(job, *args, **kwargs):
         return "FAILURE", "", error_message
 
     # Upload the object
-    upload_object(wrapper, bucket.name, file_name, FILE, MAKE_BLOB_PUBLIC)
-
-    return f"SUCCESS", f"`{file_name}` Uploaded successfully", ""
+    try:
+        upload_object(wrapper, bucket.name, file_name, FILE, MAKE_BLOB_PUBLIC)
+        return f"SUCCESS", f"`{file_name}` Uploaded successfully", ""
+    except Exception as error:
+        return "FAILURE", f"{error}", ""

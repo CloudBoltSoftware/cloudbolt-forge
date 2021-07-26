@@ -139,12 +139,14 @@ def run(job, *args, **kwargs):
         return "FAILURE", "", error_message
 
     # Update the metadata for the blob / object
-    update_object_metadata(
-        wrapper, bucket.name, FILE_NAME, predefinedAcl=ACCESS_CONTROL
-    )
-
-    return (
-        "SUCCESS",
-        f"`{FILE_NAME}` is now set to access control `{ACCESS_CONTROL}`",
-        "",
-    )
+    try:
+        update_object_metadata(
+            wrapper, bucket.name, FILE_NAME, predefinedAcl=ACCESS_CONTROL
+        )
+        return (
+            "SUCCESS",
+            f"`{FILE_NAME}` is now set to access control `{ACCESS_CONTROL}`",
+            "",
+        )
+    except Exception as error:
+        return "FAILURE", f"{error}", ""
