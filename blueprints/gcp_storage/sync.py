@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 import json
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Tuple, Union
 
 from accounts.models import Group
 from common.methods import set_progress
@@ -51,6 +51,27 @@ def create_custom_field_objects_if_missing():
             "description": "Used by the GCP Storage blueprint",
         },
     )
+
+
+def is_system_set_up(gcp_storage_blueprint, storage_resource_type) -> Tuple[bool, str]:
+    """
+    Checks that the inputs are all true, returning a
+    """
+    if not gcp_storage_blueprint:
+        message = (
+            "the sync plugin for GCP Buckets must be set on the Discovery tab of a "
+            'blueprint called "GCP Storage".'
+        )
+        return False, message
+
+    if not storage_resource_type:
+        message = (
+            "the sync plugin for GCP Buckets requires a existing Resource Type "
+            '"Storage".'
+        )
+        return False, message
+
+    return True, ""
 
 
 def create_storage_api_wrapper(handler: GCPHandler) -> Optional[GCPResource]:
@@ -137,7 +158,7 @@ def get_buckets_in_project(wrapper: GCPResource, project_id: str) -> List[api_di
 
 
 # The main function for this plugin
-def discover_resources(**kwargs):
+def discover_resources(**kwargs) -> List[Dict]:
     """
     Finds all buckets in all projects in all GCP resource handlers currently imported
     into CloudBolt
@@ -151,8 +172,14 @@ def discover_resources(**kwargs):
     group = Group.objects.first()
     storage_resource_type = ResourceType.objects.filter(name__iexact="Storage").first()
 
-    # Set up custom fields if necessary
+    # Make sure the system is set up correctly
     create_custom_field_objects_if_missing()
+    set_up, message = is_system_set_up(gcp_storage_blueprint, storage_resource_type)
+    if set_up:
+        set_progress("The system is set up for GCP Bucket Discovery.")
+    else:
+        set_progress(f"FAILURE: Could not sync GCP Buckets because {message}")
+        return []
 
     # Loop through all existing GCPHandlers
     for handler in GCPHandler.objects.all():
