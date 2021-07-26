@@ -14,16 +14,24 @@ from resourcehandlers.gcp.models import GCPHandler
 
 
 # Helper functions for the run() function
-def create_storage_api_wrapper(gcp_handler: GCPHandler) -> GCPResource:
+def create_storage_api_wrapper(handler: GCPHandler) -> Optional[GCPResource]:
     """
-    Using googleapiclient.discovery, build the api wrapper for the storage api:
+    Using googleapiclient.discovery, build the api wrapper for the storage api.
     https://googleapis.github.io/google-api-python-client/docs/dyn/storage_v1.html
     """
-    credentials_dict = json.loads(gcp_handler.gcp_api_credentials)
+    if not handler.gcp_api_credentials:
+        set_progress(f"Handler {handler} is missing gcp api credentials.")
+        return None
+
+    credentials_dict = json.loads(handler.gcp_api_credentials)
     credentials = Credentials(**credentials_dict)
+
+    set_progress(f"Connecting to GCP for handler: {handler}")
     storage_wrapper: GCPResource = build(
         "storage", "v1", credentials=credentials, cache_discovery=False
     )
+    set_progress("Connection established")
+
     return storage_wrapper
 
 
@@ -50,9 +58,10 @@ def run(job=None, logger=None, **kwargs):
     resource_handler = GCPHandler.objects.get(id=resource_handler_id)
 
     # Connecte to GCP
-    set_progress("Connecting to Google Cloud...")
     wrapper = create_storage_api_wrapper(resource_handler)
-    set_progress("Connection established")
+    if not wrapper:
+        error_message = "Please verify the connection on the Resource Handler."
+        return "FAILURE", "", error_message
 
     # Delete the bucket
     set_progress(f'Deleting bucket "{bucket_name}"...')
