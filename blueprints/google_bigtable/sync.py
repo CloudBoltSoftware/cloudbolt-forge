@@ -29,6 +29,10 @@ def discover_resources(**kwargs):
                 continue
 
             wrapper = create_bigtable_api_wrapper(handler)
+            if not wrapper:
+                set_progress("Could not connect to Google Cloud.  Skipping this resource handler.")
+                continue
+            
             set_progress("Connection to Google Cloud established")
             instances = list_bigtables(wrapper, project).get("instances", None)
 

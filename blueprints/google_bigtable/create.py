@@ -12,6 +12,8 @@ from infrastructure.models import CustomField, Environment
 from orders.models import CustomFieldValue
 from resourcehandlers.gcp.models import GCPHandler
 
+INSTANCE_TYPE = "PRODUCTION"  # "DEVELOPMENT" is permitted, but deprecated
+
 
 def generate_options_for_env_id(server=None, **kwargs):
     gcp_envs = Environment.objects.filter(
@@ -98,7 +100,6 @@ def get_operation_status(wrapper: Resource, operation_name: str) -> bool:
 def run(job=None, logger=None, **kwargs):
     create_custom_fields_as_needed()
     instance_id = '{{ db_identifier }}'
-    instance_type = "PRODUCTION"  # "DEVELOPMENT" is permitted, but deprecated
     serve_nodes = 3
     zone_cfv_id = {{ zone }}
     zone_cfv = CustomFieldValue.objects.get(id=zone_cfv_id)
@@ -122,7 +123,7 @@ def run(job=None, logger=None, **kwargs):
     resource.project_id = project_id
     resource.save()
 
-    set_progress("instance type: %s" % instance_type)
+    set_progress("instance type: %s" % INSTANCE_TYPE)
 
     job.set_progress('Connecting to Google Cloud...')
     wrapper = create_bigtable_api_wrapper(rh)
@@ -134,7 +135,7 @@ def run(job=None, logger=None, **kwargs):
 
     set_progress("\nCreating instance and cluster...")
 
-    operation = create_bigtable(wrapper, project_id, instance_id, cluster_id, instance_type, location=location_id, serve_nodes=serve_nodes)  
+    operation = create_bigtable(wrapper, project_id, instance_id, cluster_id, INSTANCE_TYPE, location=location_id, serve_nodes=serve_nodes)  
 
     while not get_operation_status(wrapper, operation['name']):
         set_progress("Waiting for instance creation to finish...")
