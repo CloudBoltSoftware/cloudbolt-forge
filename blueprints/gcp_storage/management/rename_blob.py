@@ -162,7 +162,7 @@ def run(job, *args, **kwargs):
     # Rename the object
     try:
         copy_object_within_bucket_in_gcp(
-            wrapper, resource.bucket_name, NEW_NAME, FILE_NAME
+            wrapper, resource.bucket_name, FILE_NAME, NEW_NAME
         )
         delete_object_in_gcp(wrapper, resource.bucket_name, FILE_NAME)
         return "SUCCESS", f"`{FILE_NAME}` has been moved to {NEW_NAME}", ""

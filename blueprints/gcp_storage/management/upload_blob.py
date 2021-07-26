@@ -12,6 +12,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import HttpError, MediaIoBaseUpload
 from resourcehandlers.gcp.models import GCPHandler
 from resources.models import Resource
+from utilities.logger import ThreadLogger
+
+logger = ThreadLogger(__name__)
 
 FILE = "{{file}}"
 MAKE_BLOB_PUBLIC = bool("{{make_blob_public}}")
@@ -40,11 +43,29 @@ def create_storage_api_wrapper(handler: GCPHandler) -> Optional[GCPResource]:
     return storage_wrapper
 
 
+def bucket_has_uniform_level_access(wrapper: GCPResource, bucket_name: str) -> bool:
+    """
+    If a bucket is set to control access to blobs, we can't specify the individual
+    blob's public vs private setting.
+    """
+    bucket = wrapper.buckets().get(bucket=bucket_name).execute()
+    logger.info(f"Got info for bucket: {bucket}")
+    iam_configuration = bucket.get("iamConfiguration", {})
+    access_configuration = iam_configuration.get("uniformBucketLevelAccess", {})
+    has_uniform_level_access = access_configuration.get("enabled", False)
+    return has_uniform_level_access
+
+
 def upload_object(
-    wrapper, bucket_name: str, object_name: str, file_location: str, is_public: bool
+    wrapper: GCPResource,
+    bucket_name: str,
+    object_name: str,
+    file_location: str,
+    make_public: bool,
 ):
     """
     Upload an object from a file to a bucket
+    If a bucket isn't
 
     Media insertion:
     https://googleapis.github.io/google-api-python-client/docs/dyn/storage_v1.objects.html#insert
@@ -61,11 +82,19 @@ def upload_object(
         "bucket": bucket_name,
         "body": {},
         "name": object_name,
-        "predefinedAcl": "publicRead" if is_public else "private",
     }
 
+    if bucket_has_uniform_level_access(wrapper, bucket_name):
+        set_progress(
+            f"Bucket {bucket_name} has uniform bucket level access set. Ignoring "
+            "privacy selection for the 'Make Blob Public' option. Read why at "
+            "https://cloud.google.com/storage/docs/uniform-bucket-level-access"
+        )
+    else:
+        insert_kwargs["predefinedAcl"] = ("publicRead" if make_public else "private",)
+
     set_progress(f"Opening file '{file_location}'")
-    with open(file_location) as file:
+    with open(file_location, "rb") as file:
         set_progress("Beginning to upload file.")
         media = MediaIoBaseUpload(file, **upload_kwargs)
         wrapper.objects().insert(**insert_kwargs, media_body=media).execute()

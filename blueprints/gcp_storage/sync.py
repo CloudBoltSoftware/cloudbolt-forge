@@ -13,6 +13,9 @@ from infrastructure.models import CustomField
 from resourcehandlers.gcp.models import GCPHandler
 from resources.models import Resource, ResourceType
 from servicecatalog.models import ServiceBlueprint
+from utilities.logger import ThreadLogger
+
+logger = ThreadLogger(__name__)
 
 RESOURCE_IDENTIFIER = "bucket_name"
 api_dict = Dict[str, Union[str, List, Dict]]
@@ -185,7 +188,10 @@ def discover_resources(**kwargs):
             )
 
             # Add extra information onto the Resource
-            set_progress(f"Adding extra info on resource for bucket: {bucket}")
+            logger.info(
+                f"Adding extra info on resource for bucket: {bucket_name} in project "
+                f"{project_id} on handler {handler}"
+            )
             storage_bucket.gcp_rh_id = handler.id
             storage_bucket.gcp_project_id = project_id
             storage_bucket.bucket_name = bucket_name

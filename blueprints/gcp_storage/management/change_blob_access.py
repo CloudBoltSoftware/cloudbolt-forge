@@ -10,6 +10,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import HttpError
 from resourcehandlers.gcp.models import GCPHandler
 from resources.models import Resource
+from utilities.logger import ThreadLogger
+
+logger = ThreadLogger(__name__)
 
 FILE_NAME = "{{file_name}}"
 ACCESS_CONTROL = "{{access_control}}"
@@ -45,7 +48,7 @@ def update_object_metadata(
     passes all kwargs to objects().update()
     https://googleapis.github.io/google-api-python-client/docs/dyn/storage_v1.objects.html#update
     """
-    wrapper.objects().update(bucket=bucket_name, object=object_name, **kwargs)
+    wrapper.objects().update(bucket=bucket_name, object=object_name, body={}, **kwargs)
 
 
 def _get_paginated_list_result(
@@ -89,6 +92,19 @@ def get_blobs_in_bucket(wrapper: GCPHandler, bucket_name: str) -> List[api_dict]
     https://googleapis.github.io/google-api-python-client/docs/dyn/storage_v1.objects.html#list
     """
     return _get_paginated_list_result(wrapper.objects, "items", bucket=bucket_name)
+
+
+def bucket_has_uniform_level_access(wrapper: GCPResource, bucket_name: str) -> bool:
+    """
+    If a bucket is set to control access to blobs, we can't specify the individual
+    blob's public vs private setting.
+    """
+    bucket = wrapper.buckets().get(bucket=bucket_name).execute()
+    logger.info(f"Got info for bucket: {bucket}")
+    iam_configuration = bucket.get("iamConfiguration", {})
+    access_configuration = iam_configuration.get("uniformBucketLevelAccess", {})
+    has_uniform_level_access = access_configuration.get("enabled", False)
+    return has_uniform_level_access
 
 
 # generate_options_for_* functions are used to create option in the ui
@@ -137,6 +153,15 @@ def run(job, *args, **kwargs):
     if not wrapper:
         error_message = "Please verify the connection on the Resource Handler."
         return "FAILURE", "", error_message
+
+    # Check if we can change the public / private settings
+    if bucket_has_uniform_level_access(wrapper, bucket.name):
+        message = (
+            f"Bucket {bucket.name} has uniform bucket level access set. Can not "
+            "change privacy setting for an individual blob / object. Read why at "
+            "https://cloud.google.com/storage/docs/uniform-bucket-level-access"
+        )
+        return "FAILURE", message, ""
 
     # Update the metadata for the blob / object
     try:
