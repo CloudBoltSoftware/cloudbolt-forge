@@ -9,6 +9,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import Resource as GCPResource
 from googleapiclient.discovery import build
 from googleapiclient.http import HttpError
+from infrastructure.models import CustomField
 from resourcehandlers.gcp.models import GCPHandler
 from resources.models import Resource, ResourceType
 from servicecatalog.models import ServiceBlueprint

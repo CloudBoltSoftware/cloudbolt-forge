@@ -5,6 +5,7 @@ Teardown service item action for Google Storage bucket.
 from __future__ import unicode_literals
 
 import json
+from typing import Optional
 
 from common.methods import set_progress
 from google.oauth2.credentials import Credentials
