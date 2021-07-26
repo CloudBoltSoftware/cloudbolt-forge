@@ -95,25 +95,25 @@ def duplicate_blob_with_new_parent(blob: Resource, parent_resource: Resource):
 
 
 def copy_object_in_cb(
-    resource: Resource,
+    bucket: Resource,
     destination_bucket_name: str,
     object_name: str,
 ):
     """
     If there's a blob resource, duplicate it.
     """
-    blob = get_blob_resource(resource, object_name)
+    blob = get_blob_resource(bucket, object_name)
 
     if not blob:
         return
 
     # Get destination bucket resource
-    destination_bucket = get_bucket_resource(
-        resource.gcp_rh_id, destination_bucket_name
-    )
+    destination_bucket = get_bucket_resource(bucket.gcp_rh_id, destination_bucket_name)
     if not destination_bucket:
         set_progress(
-            f"Could not duplicate resource in CloudBolt. Destination Bucket {destination_bucket_name} does not exist with a handler id {resource.gcp_rh_id}."
+            "Could not duplicate resource in CloudBolt. Destination Bucket "
+            f"{destination_bucket_name} does not exist with a handler id "
+            f"{bucket.gcp_rh_id}."
         )
         return
 
