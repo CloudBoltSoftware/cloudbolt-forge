@@ -133,14 +133,6 @@ def get_buckets_in_project(wrapper: GCPResource, project_id: str) -> List[api_di
     return buckets
 
 
-def get_blobs_in_bucket(wrapper: GCPHandler, bucket_name: str) -> List[api_dict]:
-    """
-    Using the storage api wrapper, get all objects (aka blobs) from the bucket.
-    https://googleapis.github.io/google-api-python-client/docs/dyn/storage_v1.objects.html#list
-    """
-    return _get_paginated_list_result(wrapper.objects, "items", bucket=bucket_name)
-
-
 # The main function for this plugin
 def discover_resources(**kwargs):
     """
@@ -150,27 +142,14 @@ def discover_resources(**kwargs):
     discovered_google_storage = []
 
     # Gather system information
-    blob_blueprint = ServiceBlueprint.objects.filter(name__iexact="GCP Blobs").first()
     gcp_storage_blueprint = ServiceBlueprint.objects.filter(
         name__iexact="GCP Storage"
     ).first()
     group = Group.objects.first()
-    blob_resource_type = ResourceType.objects.filter(name__iexact="GCP_Blob").first()
     storage_resource_type = ResourceType.objects.filter(name__iexact="Storage").first()
 
     # Set up custom fields if necessary
     create_custom_field_objects_if_missing()
-
-    # See if we should discover blobs:
-    should_discover_blobs = blob_blueprint and blob_resource_type
-    if not should_discover_blobs:
-        # Blob discovery requires a separate informational "GCP Blobs" Blueprint
-        # With a resource type of "GCP Blob."
-        # This fact should be documented on this blueprint's description
-        set_progress(
-            "No 'GCP Blobs' Blueprint and/or 'GCP Blob' Resource Type detected in "
-            "CloudBolt, so discovery will skip automatic Blob discovery."
-        )
 
     # Loop through all existing GCPHandlers
     for handler in GCPHandler.objects.all():
@@ -221,29 +200,5 @@ def discover_resources(**kwargs):
                     "name": bucket_name,
                 }
             )
-
-            # We're done unless we should be discovering blobs
-            if not should_discover_blobs:
-                continue
-
-            # Discover blobs in buckets if we are set up to do so
-            blobs = get_blobs_in_bucket(wrapper, bucket_name)
-            set_progress(
-                f"Found {len(blobs)} blobs in bucket {bucket_name} in {handler}"
-            )
-
-            if not blob_blueprint:
-                blob_blueprint = gcp_storage_blueprint
-            for blob in blobs:
-                Resource.objects.get_or_create(
-                    name=blob["name"],
-                    defaults={
-                        "blueprint": blob_blueprint,
-                        "group": group,
-                        "parent_resource": storage_bucket,
-                        "resource_type": blob_resource_type,
-                        "lifecycle": "ACTIVE",
-                    },
-                )
 
     return discovered_google_storage

@@ -1,18 +1,19 @@
 from __future__ import unicode_literals
 
 import json
-from typing import Optional
+from typing import Dict, List, Optional, Union
 
 from common.methods import set_progress
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import Resource as GCPResource
 from googleapiclient.discovery import build
+from googleapiclient.http import HttpError
 from resourcehandlers.gcp.models import GCPHandler
 from resources.models import Resource
-from servicecatalog.models import ServiceBlueprint
 
 FILE_NAME = "{{file_name}}"
 COPY_TO = "{{copy_to}}"
+api_dict = Dict[str, Union[str, List, Dict]]
 
 
 # Helper functions for the discover_resources() function
@@ -58,80 +59,73 @@ def copy_object_in_gcp(
     set_progress("File copied in GCP.")
 
 
-def get_bucket_resource(handler_id: str, bucket_name: str) -> Optional[Resource]:
-    # First find Resources from the same blueprint with the right name
-    gcp_storage_blueprint = ServiceBlueprint.objects.filter(
-        name__iexact="GCP Storage"
-    ).first()
-    buckets_from_all_rh = Resource.objects.filter(
-        blueprint=gcp_storage_blueprint, name=bucket_name
-    )
-    # Then make sure it's on the same Resource Handler
-    destination_bucket_resource = next(
-        (x for x in buckets_from_all_rh if x.gcp_rh_id == handler_id), None
-    )
-    return destination_bucket_resource
-
-
-def get_blob_resource(parent_resource: Resource, name: str) -> Optional[Resource]:
-    try:
-        return Resource.objects.get(
-            lifecycle="ACTIVE",
-            resource_type__name__iexact="GCP_Blob",
-            parent_resource=parent_resource,
-            name=name,
-        )
-    except Resource.DoesNotExist:
-        return None
-
-
-def duplicate_blob_with_new_parent(blob: Resource, parent_resource: Resource):
-    # Technique from Django docs:
-    # https://docs.djangoproject.com/en/3.2/topics/db/queries/#copying-model-instances
-    blob.pk = None
-    blob._state.adding = True
-    blob.parent_resource = parent_resource
-    blob.save()
-
-
-def copy_object_in_cb(
-    bucket: Resource,
-    destination_bucket_name: str,
-    object_name: str,
-):
+def _get_paginated_list_result(
+    resource_method, collection_name: str, *args, **kwargs
+) -> List[api_dict]:
     """
-    If there's a blob resource, duplicate it.
+    Call a method on a collection on a resource that returns a paginated list.
+    *args and **kwargs get passed to the list collection
+    Returns an un-paginated list and handles HttpErrors.
+
+    For example, calling for the list of images you'd call:
+        _get_paginated_list_result(
+            self.compute.images, 'items', project=project_id
+        )
+    This gets self.compute.images().list(project=project_id)['items'], then appends
+    further pages using self.compute.images().list_next()
     """
-    blob = get_blob_resource(bucket, object_name)
+    request = resource_method().list(*args, **kwargs)
+    collection = []
 
-    if not blob:
-        return
+    while request is not None:
+        try:
+            response = request.execute()
+            collection_page = response.get(collection_name, [])
+            collection.extend(collection_page)
 
-    # Get destination bucket resource
-    destination_bucket = get_bucket_resource(bucket.gcp_rh_id, destination_bucket_name)
-    if not destination_bucket:
-        set_progress(
-            "Could not duplicate resource in CloudBolt. Destination Bucket "
-            f"{destination_bucket_name} does not exist with a handler id "
-            f"{bucket.gcp_rh_id}."
-        )
-        return
+            request = resource_method().list_next(
+                previous_request=request, previous_response=response
+            )
 
-    # Make sure we're not already tracking the file (in case of an overwrite)
-    destination_blob = get_blob_resource(destination_bucket, object_name)
-    if destination_blob:
-        set_progress(
-            f"The Destination GCP Blob resource already exists CloudBolt. "
-            "This must be an overwrite, so we're skipping the copy in CloudBolt."
-        )
-        return
+        except HttpError as er:
+            set_progress(f"There was an error while executing a Google API call: {er}")
+            break
 
-    # Copy the blob. Technique from django docs:
-    duplicate_blob_with_new_parent(blob, destination_bucket)
-    set_progress(f"The GCP Blob resource has been copied in CloudBolt.")
+    return collection
+
+
+def get_blobs_in_bucket(wrapper: GCPHandler, bucket_name: str) -> List[api_dict]:
+    """
+    Using the storage api wrapper, get all objects (aka blobs) from the bucket.
+    https://googleapis.github.io/google-api-python-client/docs/dyn/storage_v1.objects.html#list
+    """
+    return _get_paginated_list_result(wrapper.objects, "items", bucket=bucket_name)
 
 
 # generate_options_for_* functions are used to create option in the ui
+def generate_options_for_file_name(**kwargs):
+    """
+    Get all blobs/object names in the bucket.
+    """
+    bucket: Resource = kwargs.get("resource")
+    if not bucket:
+        return []
+
+    # Gather system info
+    handler_id = bucket.google_rh_id
+    bucket_name = bucket.name
+
+    # Connect to Google
+    handler = GCPHandler.objects.get(id=handler_id)
+    wrapper = create_storage_api_wrapper(handler)
+
+    # Get Blob / Object names
+    blobs = get_blobs_in_bucket(wrapper, bucket_name)
+    object_names = [blob["name"] for blob in blobs]
+
+    return object_names
+
+
 def generate_options_for_copy_to(**kwargs):
     """
     Get all buckets in the same Resource Handler as the Resource
@@ -153,20 +147,6 @@ def generate_options_for_copy_to(**kwargs):
     return buckets_on_resource_handler
 
 
-def generate_options_for_file_name(**kwargs):
-    """
-    Get all blobs/object names in the bucket.
-    """
-    resource: Resource = kwargs.get("resource")
-    if not resource:
-        return []
-
-    objects_in_bucket = Resource.objects.filter(parent_resource=resource)
-    object_names = [o.name for o in objects_in_bucket]
-
-    return object_names
-
-
 # The main function for this plugin
 def run(job, *args, **kwargs):
     # Get system information
@@ -181,6 +161,5 @@ def run(job, *args, **kwargs):
 
     # Copy the objects
     copy_object_in_gcp(wrapper, resource.bucket_name, COPY_TO, FILE_NAME)
-    copy_object_in_cb(resource, COPY_TO, FILE_NAME)
 
     return "SUCCESS", f"`{FILE_NAME}` has been copied to {COPY_TO}", ""
