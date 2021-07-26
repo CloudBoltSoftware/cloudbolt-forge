@@ -32,7 +32,7 @@ def discover_resources(**kwargs):
             if not wrapper:
                 set_progress("Could not connect to Google Cloud.  Skipping this resource handler.")
                 continue
-            
+
             set_progress("Connection to Google Cloud established")
             instances = list_bigtables(wrapper, project).get("instances", None)
 
@@ -66,6 +66,9 @@ def create_bigtable_api_wrapper(gcp_handler: GCPHandler) -> Resource:
     Using googleapiclient.discovery, build the api wrapper for the bigtableadmin api:
     https://googleapis.github.io/google-api-python-client/docs/dyn/bigtableadmin_v2.projects.instances.html
     """
+    if not gcp_handler.gcp_api_credentials:
+        set_progress("Could not find Google Cloud credentials for this reource handler.")
+        return None
     credentials_dict = json.loads(gcp_handler.gcp_api_credentials)
     credentials = Credentials(**credentials_dict)
     bigtable_wrapper: Resource = build("bigtableadmin", "v2", credentials=credentials, cache_discovery=False)
