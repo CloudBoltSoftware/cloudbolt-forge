@@ -23,7 +23,7 @@ def discover_resources(**kwargs):
                       handler: {}'.format(handler))
         
         #only get bigtables of projects in the set
-        for env in Environment.object.filter(resource_handler_id=handler.id):
+        for env in Environment.objects.filter(resource_handler_id=handler.id):
             project = env.GCP_project
             if project not in projects:
                 continue
@@ -36,13 +36,14 @@ def discover_resources(**kwargs):
             set_progress("Connection to Google Cloud established")
             instances = list_bigtables(wrapper, project).get("instances", None)
 
-            for bigtable in instances():
+            for bigtable in instances:
                 if bigtable.get("displayName"):
                     discovered_google_bigtables.append(
                         {
                             'name': bigtable.get("displayName", "noName"),
                             'instance_name': bigtable.get("displayName", "noName"),
                             'google_rh_id': handler.id,
+                            'project_id': project,
                         }
                     )
             #remove project from the set after getting its bigtables
