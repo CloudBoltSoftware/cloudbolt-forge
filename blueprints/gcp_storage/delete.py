@@ -55,7 +55,7 @@ def run(job=None, logger=None, **kwargs):
     # Get system information
     resource = kwargs.pop("resources").first()
     bucket_name = resource.attributes.get(field__name="bucket_name").value
-    resource_handler_id = resource.attributes.get(field__name="google_rh_id").value
+    resource_handler_id = resource.attributes.get(field__name="gcp_rh_id").value
     resource_handler = GCPHandler.objects.get(id=resource_handler_id)
 
     # Connecte to GCP

@@ -129,7 +129,7 @@ def generate_options_for_file_name(**kwargs):
         return []
 
     # Gather system info
-    handler_id = bucket.google_rh_id
+    handler_id = bucket.gcp_rh_id
     bucket_name = bucket.name
 
     # Connect to Google
@@ -151,7 +151,7 @@ def generate_options_for_move_to(**kwargs):
     if not resource:
         return []
 
-    resource_handler = GCPHandler.objects.get(id=resource.google_rh_id)
+    resource_handler = GCPHandler.objects.get(id=resource.gcp_rh_id)
     storage_resources = Resource.objects.filter(resource_type__name__iexact="Storage")
 
     # All buckets should have the custom string field 'gcp_rh_id'
@@ -168,7 +168,7 @@ def generate_options_for_move_to(**kwargs):
 def run(job, *args, **kwargs):
     # Get system information
     resource: Resource = kwargs.get("resource")
-    resource_handler = GCPHandler.objects.get(id=resource.google_rh_id)
+    resource_handler = GCPHandler.objects.get(id=resource.gcp_rh_id)
 
     # Connect to GCP
     wrapper = create_storage_api_wrapper(resource_handler)

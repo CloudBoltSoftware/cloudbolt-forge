@@ -112,7 +112,7 @@ def generate_options_for_file_name(**kwargs):
         return []
 
     # Gather system info
-    handler_id = bucket.google_rh_id
+    handler_id = bucket.gcp_rh_id
     bucket_name = bucket.name
 
     # Connect to Google
@@ -134,7 +134,7 @@ def run(job, *args, **kwargs):
     # Get system information
     save_to_location = os.path.join(SAVE_TO, FILE_NAME)
     bucket: Resource = kwargs.get("resource")
-    resource_handler = GCPHandler.objects.get(id=bucket.google_rh_id)
+    resource_handler = GCPHandler.objects.get(id=bucket.gcp_rh_id)
 
     # Connect to GCP
     wrapper = create_storage_api_wrapper(resource_handler)

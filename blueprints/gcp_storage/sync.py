@@ -201,7 +201,7 @@ def discover_resources(**kwargs):
             # Save our changes to the return list
             discovered_google_storage.append(
                 {
-                    "google_rh_id": handler.id,
+                    "gcp_rh_id": handler.id,
                     "bucket_name": bucket_name,
                     "name": bucket_name,
                 }
