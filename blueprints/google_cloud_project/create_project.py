@@ -22,7 +22,8 @@ def kebab_case(input_string):
     return output_string
 
 
-def execute_and_wait(service, request, sleep=10):
+def execute_and_wait(service, request, sleep=10, timeout=300):
+    timeout_time = time.time() + timeout
     set_progress(f"Request: {request.__dict__}")
     response = request.execute()
     set_progress(f"Sent Request to GCP's {service._baseUrl}, waiting for response...")
@@ -36,6 +37,10 @@ def execute_and_wait(service, request, sleep=10):
     set_progress(f"get_operation_response: {get_operation_response}")
 
     while not get_operation_response.get("done", False):
+        if time.time() > timeout_time:
+            raise CloudBoltException(
+                f"{service._baseUrl} operation did not complete in the maximun allowed time of {timeout} seconds"
+            )
         set_progress(f"Still waiting for GCP to finish executing the request {service._baseUrl}...")
         time.sleep(sleep)
         get_operation_request = service.operations().get(**response)
