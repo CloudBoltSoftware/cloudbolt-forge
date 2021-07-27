@@ -17,7 +17,7 @@ from utilities.logger import ThreadLogger
 logger = ThreadLogger(__name__)
 
 FILE = "{{file}}"
-MAKE_BLOB_PUBLIC = bool("{{make_blob_public}}")
+MAKE_BLOB_PUBLIC = "{{make_blob_public}}" == "True"
 api_dict = Dict[str, Union[str, List, Dict]]
 
 
@@ -91,7 +91,9 @@ def upload_object(
             "https://cloud.google.com/storage/docs/uniform-bucket-level-access"
         )
     else:
-        insert_kwargs["predefinedAcl"] = "publicRead" if make_public else "private"
+        acl_value = "publicRead" if make_public else "private"
+        insert_kwargs["predefinedAcl"] = acl_value
+        set_progress(f"Setting access to file as {acl_value}")
 
     set_progress(f"Opening file '{file_location}'")
     with open(file_location, "rb") as file:
