@@ -176,6 +176,7 @@ def generate_options_for_make_blob_public(**kwargs):
 def run(job, *args, **kwargs):
     # Confirm the path is valid
     if not os.path.exists(FILE):
+        logger.warning(f"Bad path: '{FILE}'")
         return "FAILURE", "The path to the file isn't a valid path.", ""
     file_name = Path(FILE).name
 

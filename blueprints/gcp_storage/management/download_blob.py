@@ -11,6 +11,10 @@ from googleapiclient.discovery import build
 from googleapiclient.http import HttpError, MediaIoBaseDownload
 from resourcehandlers.gcp.models import GCPHandler
 from resources.models import Resource
+from utilities.logger import ThreadLogger
+
+logger = ThreadLogger(__name__)
+
 
 FILE_NAME = "{{file_name}}"
 SAVE_TO = "{{save_to}}"
@@ -129,6 +133,7 @@ def generate_options_for_file_name(**kwargs):
 def run(job, *args, **kwargs):
     # Confirm the path is valid
     if not os.path.isdir(SAVE_TO):
+        logger.warning(f"Bad path: '{SAVE_TO}'")
         return "FAILURE", "The path to save the file isn't a valid path.", ""
 
     # Get system information
