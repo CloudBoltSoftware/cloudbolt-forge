@@ -17,7 +17,6 @@ from utilities.logger import ThreadLogger
 logger = ThreadLogger(__name__)
 
 FILE = "{{file}}"
-MAKE_BLOB_PUBLIC = "{{make_blob_public}}" == "True"
 api_dict = Dict[str, Union[str, List, Dict]]
 
 
@@ -43,25 +42,11 @@ def create_storage_api_wrapper(handler: GCPHandler) -> Optional[GCPResource]:
     return storage_wrapper
 
 
-def bucket_has_uniform_level_access(wrapper: GCPResource, bucket_name: str) -> bool:
-    """
-    If a bucket is set to control access to blobs, we can't specify the individual
-    blob's public vs private setting.
-    """
-    bucket = wrapper.buckets().get(bucket=bucket_name).execute()
-    logger.info(f"Got info for bucket: {bucket}")
-    iam_configuration = bucket.get("iamConfiguration", {})
-    access_configuration = iam_configuration.get("uniformBucketLevelAccess", {})
-    has_uniform_level_access = access_configuration.get("enabled", False)
-    return has_uniform_level_access
-
-
 def upload_object(
     wrapper: GCPResource,
     bucket_name: str,
     object_name: str,
     file_location: str,
-    make_public: bool,
 ):
     """
     Upload an object from a file to a bucket
@@ -83,17 +68,6 @@ def upload_object(
         "body": {},
         "name": object_name,
     }
-
-    if bucket_has_uniform_level_access(wrapper, bucket_name):
-        set_progress(
-            f"Bucket {bucket_name} has uniform bucket level access set. Ignoring "
-            "privacy selection for the 'Make Blob Public' option. Read why at "
-            "https://cloud.google.com/storage/docs/uniform-bucket-level-access"
-        )
-    else:
-        acl_value = "publicRead" if make_public else "private"
-        insert_kwargs["predefinedAcl"] = acl_value
-        set_progress(f"Setting access to file as {acl_value}")
 
     set_progress(f"Opening file '{file_location}'")
     with open(file_location, "rb") as file:
@@ -194,7 +168,7 @@ def run(job, *args, **kwargs):
 
     # Upload the object
     try:
-        upload_object(wrapper, bucket.name, file_name, FILE, MAKE_BLOB_PUBLIC)
+        upload_object(wrapper, bucket.name, file_name, FILE)
         return f"SUCCESS", f"`{file_name}` Uploaded successfully", ""
     except Exception as error:
         return "FAILURE", f"{error}", ""
