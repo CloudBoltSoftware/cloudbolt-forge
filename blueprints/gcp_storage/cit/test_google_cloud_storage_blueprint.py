@@ -18,21 +18,24 @@ logger.setLevel(40)
 
 API_CLIENT_CI = "CIT API Client"
 
-BLUEPRINT = 23
+BP_NAME = "GCP Storage"
 
+# NOTE: This Payload should be a copy of the API call for a successful blueprint order
+# on the system running this test. Source the API call from the "API ..." button at the
+# top of the successful Order detail page (like at "https://10.30.74.20/orders/2/"").
 BP_PAYLOAD = """
 {
-    "group": "/api/v2/groups/GRP-od84jq2g/",
+    "group": "/api/v2/groups/GRP-u2trrfjy/",
     "items": {
         "deploy-items": [
             {
-                "blueprint": "/api/v2/blueprints/BP-n7t5cow0/",
+                "blueprint": "/api/v2/blueprints/BP-rxbot99x/",
                 "blueprint-items-arguments": {
                     "build-item-GCP Storage Create": {
                         "parameters": {
-                            "bucket-name-a144": "cit-test-bucket-109238",
-                            "env-id-a144": "4",
-                            "storage-type-a144": "STANDARD"
+                            "bucket-name-a142": "cit-test-bucket-109238",
+                            "env-id-a142": "2",
+                            "storage-type-a142": "STANDARD"
                         }
                     }
                 },
@@ -45,7 +48,7 @@ BP_PAYLOAD = """
 }
 """
 
-NEW_RESOURCE_NAME = "cit-test-bp-23"
+NEW_RESOURCE_NAME = "cit-test-bucket-109238"
 
 
 def get_order_id_from_href(order_href):
@@ -85,29 +88,47 @@ def get_api_client():
         ci.username, ci.password, ci.ip, ci.port, protocol=ci.protocol
     )
 
-
-def run(job, *args, **kwargs):
-    bp = ServiceBlueprint.objects.get(id=BLUEPRINT)
-    set_progress("Running Continuous Infrastructure Test for blueprint {}".format(bp))
-
-    client = get_api_client()
-
+def remove_test_resource_if_exists(client, bp):
     # Run blueprint synchronization in case the storage has been created online
-    bp.resource_set.filter(name__iexact=NEW_RESOURCE_NAME).delete()
+    set_progress(f"-->Deleting {NEW_RESOURCE_NAME} in CloudBolt if it exists")
+    bp.resource_set.filter(name=NEW_RESOURCE_NAME).delete()
 
+    set_progress(f"-->Syncinc resources by running Discovery Plugin.")
     bp.sync_resources()
     resource_exists = bp.resource_set.filter(
         name__iexact=NEW_RESOURCE_NAME, lifecycle="ACTIVE"
     ).exists()
 
     if resource_exists:
+        set_progress(f"-->Runing Teardown Plugin on discovered {NEW_RESOURCE_NAME}")
         # Delete the resource
         resource = bp.resource_set.get(
             name__iexact=NEW_RESOURCE_NAME, lifecycle="ACTIVE"
         )
         test_delete_resource(client, resource)
 
-    # At this point we are sure the resource doesn't exist
+
+def run(job, *args, **kwargs):
+    set_progress(f"Looking for a blueprint called '{BP_NAME}'")
+    bp = ServiceBlueprint.objects.get(name=BP_NAME)
+    if bp:
+        set_progress("Found Blueprint {bp}. Running Continuous Infrastructure Test")
+    else:
+        return "FAILURE", f"Could not find a blueprint named '{BP_NAME}'", ""
+
+    set_progress(
+        "Getting api client for Cloudbolt to run the CIT Test (defined in "
+        f"Admin / ConnectionInfo / {API_CLIENT_CI})"
+    )
+    try:
+        client = get_api_client()
+    except Exception as ex:
+        return "FAILURE", f"Could not connect to {API_CLIENT_CI}", ex
+
+    # Make sure the resource doesn't currently exist anywhere
+    set_progress(f"Making sure the resource isn't in CloudBolt or the Resource Handler")
+    remove_test_resource_if_exists(client, bp)
+
     # Order the BP
     set_progress("### ORDERING BLUEPRINT ###", tasks_done=0, total_tasks=3)
     test_order_blueprint(client)
