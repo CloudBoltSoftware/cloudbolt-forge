@@ -91,7 +91,7 @@ def upload_object(
             "https://cloud.google.com/storage/docs/uniform-bucket-level-access"
         )
     else:
-        insert_kwargs["predefinedAcl"] = ("publicRead" if make_public else "private",)
+        insert_kwargs["predefinedAcl"] = "publicRead" if make_public else "private"
 
     set_progress(f"Opening file '{file_location}'")
     with open(file_location, "rb") as file:
