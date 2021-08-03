@@ -2,44 +2,56 @@
 Teardown service item action for Google Cloud Bigtable database.
 """
 
-from resourcehandlers.gce.models import GCEHandler
+import json
+from googleapiclient.discovery import build, Resource
+from google.oauth2.credentials import Credentials
+
 from common.methods import set_progress
-import json, tempfile
-from google.cloud import bigtable
-import os
+from resourcehandlers.gcp.models import GCPHandler
 
 
-def create_client(rh):
-    json_fd, json_path = tempfile.mkstemp()
+def create_bigtable_api_wrapper(gcp_handler: GCPHandler) -> Resource:
+    """
+    Using googleapiclient.discovery, build the api wrapper for the bigtableadmin api:
+    https://googleapis.github.io/google-api-python-client/docs/dyn/bigtableadmin_v2.projects.instances.html
+    """
+    if not gcp_handler.gcp_api_credentials:
+        set_progress("Could not find Google Cloud credentials for this reource handler.")
+        return None
+    credentials_dict = json.loads(gcp_handler.gcp_api_credentials)
+    credentials = Credentials(**credentials_dict)
+    bigtable_wrapper: Resource = build("bigtableadmin", "v2", credentials=credentials, cache_discovery=False)
+    return bigtable_wrapper
 
-    json_dict = {'client_email': rh.serviceaccount,
-                 'token_uri': 'https://www.googleapis.com/oauth2/v4/token',
-                 'private_key': rh.servicepasswd
-                 }
 
-    with open(json_path, 'w') as fh:
-        json.dump(json_dict, fh)
+def delete_bigtable(wrapper: Resource, project_id: str, instance_id: str):
+    """
+    Delete a bigtable instance 
+    https://cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances/delete
+    """
 
-    client = bigtable.client.Client.from_service_account_json(json_path,
-                                                              admin=True, project=rh.project)
-    os.close(json_fd)
-    return client
+    instance_str = f"projects/{project_id}/instances/{instance_id}"
+
+    delete_request = wrapper.projects().instances().delete(name=instance_str)  
+
+    # return should be None
+    return delete_request.execute()
 
 
 def run(job, logger=None, **kwargs):
     resource = kwargs.pop('resources').first()
 
     instance_id = resource.attributes.get(field__name='instance_name').value
+    project_id = resource.attributes.get(field__name='project_id').value
     rh_id = resource.attributes.get(field__name='google_rh_id').value
-    rh = GCEHandler.objects.get(id=rh_id)
+    rh = GCPHandler.objects.get(id=rh_id)
 
     set_progress('Connecting to Google Cloud...')
-    client = create_client(rh)
+    wrapper = create_bigtable_api_wrapper(rh)
     set_progress("Connection established")
 
     set_progress("\nDeleting instance %s..." % instance_id)
-    instance = client.instance(instance_id)
-    instance.delete()
+    delete_bigtable(wrapper, project_id, instance_id)
     # Will raise an informative NotFound exception if instance does not exist,
     # which will appear in CloudBolt job output.
 
