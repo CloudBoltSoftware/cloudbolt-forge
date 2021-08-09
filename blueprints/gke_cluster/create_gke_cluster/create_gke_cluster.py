@@ -31,12 +31,13 @@ from orders.models import CustomFieldValue
 from portals.models import PortalConfig
 from resourcehandlers.gcp.models import GCPProject, GCPHandler
 from utilities.exceptions import CloudBoltException
+from google.oauth2.credentials import Credentials
 
-ENV_ID = "{{ gcp_project }}"
-CLUSTER_NAME = "{{ name }}"
-GCP_ZONE_ID = "{{ gcp_zone }}"
+ENV_ID = '{{ gcp_project }}'
+CLUSTER_NAME = '{{ name }}'
+GCP_ZONE_ID = '{{ gcp_zone }}'
 try:
-    NODE_COUNT = int("{{ node_count }}")
+    NODE_COUNT = int('{{ node_count }}')
 except ValueError:
     NODE_COUNT = 1
 TIMEOUT = 1800  # 30 minutes
@@ -50,59 +51,60 @@ class GKEClusterBuilder(object):
         self.zone = zone
         gcp_project = GCPProject.objects.get(id=self.environment.gcp_project)
         self.project_name = self.environment.gcp_project
+        
+        
+        api_key = getattr(self.handler, "gcp_api_credentials", None)
+        
+        if not api_key:
+            try:
+                service_account_key = json.loads(gcp_project.service_account_info)
+            except Exception:
+                service_account_key = json.loads(gcp_project.service_account_key)
+            
+            client_email = service_account_key.get('client_email')
+            private_key = service_account_key.get('private_key')
 
-        try:
-            service_account_key = json.loads(gcp_project.service_account_info)
-        except Exception:
-            service_account_key = json.loads(gcp_project.service_account_key)
+            set_progress('Using client_email: {}'.format(client_email))
+            set_progress('Make sure that the associated service account has permission to edit GKE Nodes')
 
-        client_email = service_account_key.get("client_email")
-        private_key = service_account_key.get("private_key")
+            self.credentials = ServiceAccountCredentials.from_json_keyfile_dict({
+                'client_email': client_email,
+                'private_key': private_key,
+                'type': 'service_account',
+                'client_id': None,
+                'private_key_id': None,
+            })
+        else:
+            set_progress("Using the API Key in the resource handler")
+            set_progress("Make sure your OAuth account has permission to edit GKE Nodes")
+            self.credentials = Credentials(**json.loads(api_key))
+        
+        self.container_client = self.get_client('container')
+        self.compute_client = self.get_client('compute')
 
-        set_progress("Using client_email: {}".format(client_email))
-        set_progress(
-            "Make sure that the associated service account has permission to edit GKE Nodes"
-        )
-
-        self.credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-            {
-                "client_email": client_email,
-                "private_key": private_key,
-                "type": "service_account",
-                "client_id": None,
-                "private_key_id": None,
-            }
-        )
-        self.container_client = self.get_client("container")
-        self.compute_client = self.get_client("compute")
-
-    def get_client(self, serviceName, version="v1"):
+    def get_client(self, serviceName, version='v1'):
         return build(serviceName, version, credentials=self.credentials)
 
     def create_cluster(self, node_count):
         cluster_resource = self.container_client.projects().zones().clusters()
         request = cluster_resource.create(
-            projectId=self.project_name,
-            zone=self.zone,
-            body={
-                "cluster": {
-                    "name": self.cluster_name,
-                    "initial_node_count": node_count,
-                    "master_auth": {
-                        "username": "cloudbolt",
-                        "password": "".join(
-                            random.choices(string.ascii_uppercase + string.digits, k=16)
-                        ),
-                    },
+            projectId=self.project_name, zone=self.zone, body={
+                'cluster': {
+                    'name': self.cluster_name,
+                    'initial_node_count': node_count,
+                    'master_auth': {
+                        'clientCertificateConfig': {}
+                    }
                 }
-            },
-        )
+            })
         return request.execute()
 
     def get_cluster(self):
         cluster_resource = self.container_client.projects().zones().clusters()
         request = cluster_resource.get(
-            projectId=self.project_name, zone=self.zone, clusterId=self.cluster_name,
+            projectId=self.project_name,
+            zone=self.zone,
+            clusterId=self.cluster_name,
         )
         return request.execute()
 
@@ -113,7 +115,7 @@ class GKEClusterBuilder(object):
             if timeout is not None and (time.time() - start > timeout):
                 break
             cluster = self.get_cluster()
-            endpoint = cluster.get("endpoint")
+            endpoint = cluster.get('endpoint')
             time.sleep(5)
         return endpoint
 
@@ -124,23 +126,21 @@ class GKEClusterBuilder(object):
             if timeout is not None and (time.time() - start > timeout):
                 break
             request = self.compute_client.instances().list(
-                project=self.project_name,
-                zone=self.zone,
-                filter="name:gke-{}-default-pool*".format(self.cluster_name),
-            )
+                project=self.project_name, zone=self.zone,
+                filter="name:gke-{}-default-pool*".format(self.cluster_name))
             response = request.execute()
-            nodes = response.get("items") or []
+            nodes = response.get('items') or []
             time.sleep(5)
         return nodes
 
     def wait_for_running_status(self, timeout=None):
-        status = ""
+        status = ''
         start = time.time()
-        while status != "RUNNING":
+        while status != 'RUNNING':
             if timeout is not None and (time.time() - start > timeout):
                 break
             cluster = self.get_cluster()
-            status = cluster.get("status")
+            status = cluster.get('status')
             time.sleep(5)
         return status
 
@@ -150,26 +150,28 @@ def generate_options_for_gcp_project(group=None, **kwargs):
     List all GCP Projects that are orderable by the current group.
     """
     if not GCPHandler.objects.exists():
-        raise CloudBoltException(
-            "Ordering this Blueprint requires having a "
-            "configured Google Cloud Platform resource handler."
-        )
+        raise CloudBoltException('Ordering this Blueprint requires having a '
+                                 'configured Google Cloud Platform resource handler.')
     envs = Environment.objects.filter(
-        resource_handler__resource_technology__name="Google Cloud Platform"
-    ).select_related("resource_handler")
+        resource_handler__resource_technology__name='Google Cloud Platform') \
+        .select_related('resource_handler')
     if group:
         group_env_ids = [env.id for env in group.get_available_environments()]
         envs = envs.filter(id__in=group_env_ids)
-    return [(env.id, "{env}".format(env=env)) for env in envs]
+    return [
+        (env.id, u'{env}'.format(env=env)) for env in envs
+    ]
 
 
 def generate_options_for_gcp_zone(group=None, **kwargs):
     """
     List all GCP zones.
     """
-    field = CustomField.objects.get(name="gcp_zone")
+    field = CustomField.objects.get(name='gcp_zone')
     zones = CustomFieldValue.objects.filter(field=field)
-    return [(zone.id, "{zone}".format(zone=zone)) for zone in zones]
+    return [
+        (zone.id, u'{zone}'.format(zone=zone)) for zone in zones
+    ]
 
 
 def create_required_parameters():
@@ -177,37 +179,33 @@ def create_required_parameters():
     We create the containerorchestrator namespace, to keep this CF from adding noise to
     the Parameters list page.
     """
-    namespace, created = Namespace.objects.get_or_create(name="containerorchestrators")
+    namespace, created = Namespace.objects.get_or_create(name='containerorchestrators')
     CustomField.objects.get_or_create(
-        name="container_orchestrator_id",
+        name='container_orchestrator_id',
         defaults=dict(
             label="Container Orchestrator ID",
-            description=(
-                "Used by the Multi-Node Kubernetes Blueprint. Maps the provisioned CloudBolt resource"
-                "to the Container Orchestrator used to manage the Kubernetes cluster."
-            ),
+            description=("Used by the Multi-Node Kubernetes Blueprint. Maps the provisioned CloudBolt resource"
+                         "to the Container Orchestrator used to manage the Kubernetes cluster."),
             type="INT",
             namespace=namespace,
-        ),
+        )
     )
     CustomField.objects.get_or_create(
-        name="create_gke_k8s_cluster_project",
+        name='create_gke_k8s_cluster_project',
         defaults=dict(
             label="GKE Cluster: Project",
             description="Used by the GKE Cluster blueprint",
             type="INT",
             namespace=namespace,
-        ),
-    )
+        ))
     CustomField.objects.get_or_create(
-        name="create_gke_k8s_cluster_name",
+        name='create_gke_k8s_cluster_name',
         defaults=dict(
             label="GKE Cluster: Cluster Name",
             description="Used by the GKE Cluster blueprint",
             type="STR",
             namespace=namespace,
-        ),
-    )
+        ))
 
 
 def run(job=None, logger=None, **kwargs):
@@ -220,78 +218,78 @@ def run(job=None, logger=None, **kwargs):
 
     # Save cluster data on the resource so teardown works later
     create_required_parameters()
-    resource = kwargs["resource"]
+    resource = kwargs['resource']
     resource.create_gke_k8s_cluster_project = environment.id
     resource.gcp_zone = gcp_zone
+    
+    if len(CLUSTER_NAME) > 20:
+        raise CloudBoltException("Desired cluster name must be 20 characters long or shorter")
+
     resource.create_gke_k8s_cluster_name = CLUSTER_NAME
     resource.name = CLUSTER_NAME
     resource.save()
 
-    job.set_progress("Connecting to GKE...")
+    job.set_progress('Connecting to GKE...')
     builder = GKEClusterBuilder(environment, gcp_zone, CLUSTER_NAME)
 
-    job.set_progress("Sending request for new cluster {}...".format(CLUSTER_NAME))
+    job.set_progress('Sending request for new cluster {}...'.format(CLUSTER_NAME))
     builder.create_cluster(NODE_COUNT)
 
-    job.set_progress(
-        "Waiting up to {} seconds for provisioning to complete.".format(TIMEOUT)
-    )
+    job.set_progress('Waiting up to {} seconds for provisioning to complete.'
+                     .format(TIMEOUT))
     start = time.time()
-    job.set_progress("Waiting for cluster IP address...")
+    job.set_progress('Waiting for cluster IP address...')
     endpoint = builder.wait_for_endpoint(timeout=TIMEOUT)
     if not endpoint:
-        return (
-            "FAILURE",
-            "No IP address returned after {} seconds".format(TIMEOUT),
-            "",
-        )
+        return ("FAILURE",
+                "No IP address returned after {} seconds".format(TIMEOUT),
+                "")
 
     remaining_time = TIMEOUT - (time.time() - start)
-    job.set_progress("Waiting for nodes to report hostnames...")
+    job.set_progress('Waiting for nodes to report hostnames...')
     nodes = builder.wait_for_nodes(NODE_COUNT, timeout=remaining_time)
     if len(nodes) < NODE_COUNT:
-        return ("FAILURE", "Nodes are not ready after {} seconds".format(TIMEOUT), "")
+        return ("FAILURE",
+                "Nodes were not ready after {} seconds".format(TIMEOUT),
+                "")
 
-    job.set_progress("Importing cluster...")
+    job.set_progress('Importing cluster...')
     cluster = builder.get_cluster()
-    tech = ContainerOrchestratorTechnology.objects.get(name="Kubernetes")
+    tech = ContainerOrchestratorTechnology.objects.get(name='Kubernetes')
     kubernetes = Kubernetes.objects.create(
         name=CLUSTER_NAME,
-        ip=cluster["endpoint"],
+        ip=cluster['endpoint'],
         port=443,
-        protocol="https",
-        serviceaccount=cluster["masterAuth"]["username"],
-        servicepasswd=cluster["masterAuth"]["password"],
+        protocol='https',
+        auth_type='CERTIFICATE',
+        ca_file_contents=cluster['masterAuth']['clusterCaCertificate'],
         container_technology=tech,
         environment=environment,
     )
     resource.container_orchestrator_id = kubernetes.id
     resource.save()
-
+    
     # create a new Environment for the new container orchestrator, and attach it
-    # to the selected GCP Project
-    env = Environment.objects.create(
-        name="Resource-{} Environment".format(resource.id),
-        container_orchestrator=kubernetes,
-    )
+    # to the selected GCP Project 
+    env = Environment.objects.create(name="Resource-{} Environment".format(resource.id), container_orchestrator=kubernetes)
     env.gcp_project = builder.project_name
     env.save()
-
-    url = "https://{}{}".format(
+    
+    url = 'https://{}{}'.format(
         PortalConfig.get_current_portal().domain,
-        reverse("container_orchestrator_detail", args=[kubernetes.id]),
+        reverse('container_orchestrator_detail', args=[kubernetes.id])
     )
     job.set_progress("Cluster URL: {}".format(url))
 
-    job.set_progress("Importing nodes...")
+    job.set_progress('Importing nodes...')
     for node in nodes:
         # Generate libcloud UUID from GCE ID
-        id_unicode = "{}:{}".format(node["id"], "gce")
-        uuid = hashlib.sha1(id_unicode.encode("utf-8")).hexdigest()
+        id_unicode = '{}:{}'.format(node['id'], 'gce')
+        uuid = hashlib.sha1(id_unicode.encode('utf-8')).hexdigest()
         # Create a barebones server record. Other details like CPU and Mem Size
         # will be populated the next time the GCE handler is synced.
         server = Server.objects.create(
-            hostname=node["name"],
+            hostname=node['name'],
             resource_handler_svr_id=uuid,
             environment=environment,
             resource_handler=environment.resource_handler,
@@ -300,14 +298,15 @@ def run(job=None, logger=None, **kwargs):
         )
         resource.server_set.add(server)
 
-    job.set_progress("Waiting for cluster to report as running...")
+    job.set_progress('Waiting for cluster to report as running...')
     remaining_time = TIMEOUT - (time.time() - start)
     status = builder.wait_for_running_status(timeout=remaining_time)
-    if status != "RUNNING":
-        return (
-            "FAILURE",
-            "Status is {} after {} seconds (expected RUNNING)".format(status, TIMEOUT),
-            "",
-        )
+    if status != 'RUNNING':
+        return ("FAILURE",
+                "Status is {} after {} seconds (expected RUNNING)".format(
+                    status, TIMEOUT),
+                "")
 
-    return ("SUCCESS", "Cluster is ready and can be accessed at {}".format(url), "")
+    return ("SUCCESS",
+            "Cluster is ready and can be accessed at {}".format(url),
+            "")

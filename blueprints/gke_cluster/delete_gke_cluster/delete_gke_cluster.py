@@ -13,6 +13,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 from containerorchestrators.kuberneteshandler.models import Kubernetes
 from infrastructure.models import Environment
 from resourcehandlers.gcp.models import GCPProject
+from google.oauth2.credentials import Credentials
+from common.methods import set_progress
 
 
 def run(job=None, logger=None, resource=None, **kwargs):
@@ -39,24 +41,31 @@ def run(job=None, logger=None, resource=None, **kwargs):
     project_name = environment.gcp_project
 
     gcp_project = GCPProject.objects.get(id=environment.gcp_project)
+    
+    api_key = getattr(handler, "gcp_api_credentials", None)
+    
+    if not api_key:
+        try:
+            service_account_key = json.loads(gcp_project.service_account_info)
+        except Exception:
+            service_account_key = json.loads(gcp_project.service_account_key)
 
-    try:
-        service_account_key = json.loads(gcp_project.service_account_info)
-    except Exception:
-        service_account_key = json.loads(gcp_project.service_account_key)
+        client_email = service_account_key.get("client_email")
+        private_key = service_account_key.get("private_key")
 
-    client_email = service_account_key.get("client_email")
-    private_key = service_account_key.get("private_key")
-
-    credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-        {
-            "client_email": client_email,
-            "private_key": private_key,
-            "type": "service_account",
-            "client_id": None,
-            "private_key_id": None,
-        }
-    )
+        credentials = ServiceAccountCredentials.from_json_keyfile_dict(
+            {
+                "client_email": client_email,
+                "private_key": private_key,
+                "type": "service_account",
+                "client_id": None,
+                "private_key_id": None,
+            }
+        )
+    else:
+        set_progress("Using the API Key in the resource handler")
+        set_progress("Make sure your OAuth account has permission to edit GKE Nodes")
+        credentials = Credentials(**json.loads(api_key))
 
     client = build("container", "v1", credentials=credentials)
     cluster_resource = client.projects().zones().clusters()
