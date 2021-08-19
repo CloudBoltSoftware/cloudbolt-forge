@@ -69,7 +69,8 @@ def add_credentials(request):
 def verify_credentials(request):
     openshift_manager = OpenshiftManager()
     openshift_ci = openshift_manager.get_connection_info()
-    openshift = OpenshiftManager(openshift_ci.ip, openshift_manager.get_token())
+    token = openshift_manager.get_token()
+    openshift = OpenshiftManager(openshift_ci.ip, token, openshift_ci.port, openshift_ci.protocol)
     response = openshift.verify_rest_credentials()
 
     if response:

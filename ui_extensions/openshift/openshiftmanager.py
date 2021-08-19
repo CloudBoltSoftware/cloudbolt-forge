@@ -6,7 +6,7 @@ from utilities.models import ConnectionInfo
 class OpenshiftManager:
     def __init__(self, host=None, token=None, port=443, protocol='https'):
         """API Object Constructor."""
-        self.BASE_URL = '{}://{}:{}/oapi/v1'.format(protocol, host, port)
+        self.BASE_URL = f'{protocol}://{host}:{port}/apis/'
         self.host = host
         self.token = token
         self.headers = {
