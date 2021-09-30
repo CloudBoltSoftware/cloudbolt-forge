@@ -101,6 +101,16 @@ def create_custom_fields_as_needed():
     )
 
 
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+
+    return handler.tenant_id
+
+
 def run(job, **kwargs):
     resource = kwargs.get("resource")
     create_custom_fields_as_needed()
@@ -130,7 +140,7 @@ def run(job, **kwargs):
 
     set_progress("Connecting To Azure...")
     credentials = ServicePrincipalCredentials(
-        client_id=rh.client_id, secret=rh.secret, tenant=rh.tenant_id,
+        client_id=rh.client_id, secret=rh.secret, tenant=get_tenant_id_for_azure(rh),
     )
     client = postgresql.PostgreSQLManagementClient(credentials, rh.serviceaccount)
     set_progress("Connection to Azure established")

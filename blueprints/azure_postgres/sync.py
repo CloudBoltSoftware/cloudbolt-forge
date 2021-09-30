@@ -9,6 +9,16 @@ from resourcehandlers.azure_arm.models import AzureARMHandler
 RESOURCE_IDENTIFIER = "azure_database_name"
 
 
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+
+    return handler.tenant_id
+
+
 def discover_resources(**kwargs):
 
     discovered_azure_sql = []
@@ -19,8 +29,9 @@ def discover_resources(**kwargs):
                 handler
             )
         )
+        
         credentials = ServicePrincipalCredentials(
-            client_id=handler.client_id, secret=handler.secret, tenant=handler.tenant_id
+            client_id=handler.client_id, secret=handler.secret, tenant=get_tenant_id_for_azure(handler)
         )
         azure_client = postgresql.PostgreSQLManagementClient(
             credentials, handler.serviceaccount
