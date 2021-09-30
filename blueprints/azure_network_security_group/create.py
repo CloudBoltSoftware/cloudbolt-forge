@@ -16,6 +16,16 @@ cb_version = settings.VERSION_INFO["VERSION"]
 CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.2")
 
 
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+
+    return handler.tenant_id
+
+
 def generate_options_for_env_id(server=None, **kwargs):
     envs = Environment.objects.filter(
         resource_handler__resource_technology__name="Azure"
@@ -107,7 +117,7 @@ def run(job, **kwargs):
     set_progress("Connecting To Azure Network Service...")
 
     credentials = ServicePrincipalCredentials(
-        client_id=rh.client_id, secret=rh.secret, tenant=rh.tenant_id,
+        client_id=rh.client_id, secret=rh.secret, tenant=get_tenant_id_for_azure(rh),
     )
     network_client = NetworkManagementClient(credentials, rh.serviceaccount)
     set_progress("Connection to Azure networks established")
