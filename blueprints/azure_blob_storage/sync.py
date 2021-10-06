@@ -10,6 +10,16 @@ import azure.mgmt.resource.resources as resources
 RESOURCE_IDENTIFIER = 'azure_storage_blob_name'
 
 
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+
+    return handler.tenant_id
+
+
 def discover_resources(**kwargs):
 
     discovered_az_block_storages = []
@@ -21,7 +31,7 @@ def discover_resources(**kwargs):
         credentials = ServicePrincipalCredentials(
             client_id=handler.client_id,
             secret=handler.secret,
-            tenant=handler.tenant_id
+            tenant=get_tenant_id_for_azure(handler)
         )
         azure_blob_client = storage.StorageManagementClient(
             credentials, handler.serviceaccount)
