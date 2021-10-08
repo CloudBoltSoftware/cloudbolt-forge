@@ -13,6 +13,16 @@ from resourcehandlers.azure_arm.models import AzureARMHandler
 RESOURCE_IDENTIFIER = "azure_network_security_group"
 
 
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+
+    return handler.tenant_id
+
+
 def discover_resources(**kwargs):
     discovered_virtual_nets = []
     for handler in AzureARMHandler.objects.all():
@@ -23,7 +33,7 @@ def discover_resources(**kwargs):
             )
         )
         credentials = ServicePrincipalCredentials(
-            client_id=handler.client_id, secret=handler.secret, tenant=handler.tenant_id
+            client_id=handler.client_id, secret=handler.secret, tenant=get_tenant_id_for_azure(handler)
         )
         network_client = NetworkManagementClient(credentials, handler.serviceaccount)
 
