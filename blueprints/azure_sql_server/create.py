@@ -1,12 +1,27 @@
 """
 Creates an Azure Sql Server
 """
-from common.methods import set_progress
+import settings
+from common.methods import is_version_newer, set_progress
 from infrastructure.models import CustomField
 from infrastructure.models import Environment
 from azure.common.credentials import ServicePrincipalCredentials
 from msrestazure.azure_exceptions import CloudError
 from azure.mgmt.sql import SqlManagementClient
+
+
+cb_version = settings.VERSION_INFO["VERSION"]
+CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.2")
+
+
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+
+    return handler.tenant_id
 
 
 def generate_options_for_env_id(server=None, **kwargs):
@@ -20,9 +35,18 @@ def generate_options_for_resource_group(control_value=None, **kwargs):
     if control_value is None:
         return []
     env = Environment.objects.get(id=control_value)
-    rh = env.resource_handler.cast()
-    groups = rh.armresourcegroup_set.all()
-    return [g.name for g in groups]
+    if CB_VERSION_93_PLUS:
+        # Get the Resource Groups as defined on the Environment. The Resource Group is a
+        # CustomField that is only updated on the Env when the user syncs this field on the
+        # Environment specific parameters.
+        resource_groups = env.custom_field_options.filter(
+            field__name="resource_group_arm"
+        )
+        return [rg.str_value for rg in resource_groups]
+    else:
+        rh = env.resource_handler.cast()
+        groups = rh.armresourcegroup_set.all()
+        return [g.name for g in groups]
 
 
 def run(job, **kwargs):
@@ -72,7 +96,7 @@ def run(job, **kwargs):
     credentials = ServicePrincipalCredentials(
         client_id=rh.client_id,
         secret=rh.secret,
-        tenant=rh.tenant_id,
+        tenant=get_tenant_id_for_azure(rh),
     )
     client = SqlManagementClient(credentials, rh.serviceaccount)
     set_progress("Connection to Azure established")
@@ -102,9 +126,9 @@ def run(job, **kwargs):
     )
 
     server = async_server_create.result()
-    assert server.name == server_name
+    assert server.name.casefold() == server_name.casefold()
 
     svr = client.servers.get(resource_group, server_name)
-    assert svr.name == server_name
+    assert svr.name.casefold() == server_name.casefold()
 
     set_progress('Server "%s" has been created.' % server_name)
