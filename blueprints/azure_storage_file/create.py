@@ -1,6 +1,7 @@
 """
 Upload a file to azure storage
 """
+import os
 from common.methods import set_progress
 from infrastructure.models import CustomField
 from resources.models import Resource
@@ -13,7 +14,15 @@ from azure.storage.file import FileService
 from django.conf import settings
 from pathlib import Path
 
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
 
+    return handler.tenant_id
+    
 def generate_options_for_storage_account(server=None, **kwargs):
     discovered_az_stores = []
     for handler in AzureARMHandler.objects.all():
@@ -21,7 +30,7 @@ def generate_options_for_storage_account(server=None, **kwargs):
         credentials = ServicePrincipalCredentials(
             client_id=handler.client_id,
             secret=handler.secret,
-            tenant=handler.tenant_id
+            tenant=get_tenant_id_for_azure(handler)
         )
         azure_client = storage.StorageManagementClient(credentials, handler.serviceaccount)
         set_progress("Connection to Azure established")
@@ -75,7 +84,8 @@ def run(job, **kwargs):
 
     set_progress('Creating a file share...')
     file_service.create_share(share_name=azure_storage_file_share_name, quota=1)
-
+    
+    file = os.path.join(settings.MEDIA_ROOT, file)
     set_progress('Creating a file...')
     if file_service.exists(share_name=azure_storage_file_share_name, file_name=file_name, directory_name=''):
         file_service.create_file_from_path(share_name=azure_storage_file_share_name, file_name=file_name, directory_name='', local_file_path=file)
@@ -90,3 +100,4 @@ def run(job, **kwargs):
         resource.azure_storage_file_name = file_name
         resource.save()
     return "Success", "The File has succesfully been uploaded", ""
+    
