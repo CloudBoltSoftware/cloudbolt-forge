@@ -64,16 +64,17 @@ def run(job, *args, **kwargs):
                               cache_discovery=False)
     body = {
         "name": new_project_name,
-        "projectId": new_project_id,
-        "parent": {
-            "type": "organization",
-            "id": "789128875639"
-        }
+        "projectId": new_project_id
     }
 
     request = service.projects().create(body=body)
     get_operation_response = execute_and_wait(service, request, sleep=2)
-
+    
+    set_progress(f"get_operation_response: {get_operation_response} ")
+    
+    if "error" in get_operation_response.keys():
+        raise CloudBoltException("You do not have permission to create projects within this organization")
+    
     new_project_number = get_operation_response["response"]["projectNumber"]
     new_project_object = resource_handler.add_gcp_project(new_project_id, new_project_name,
                                                           new_project_number)
@@ -94,16 +95,14 @@ def run(job, *args, **kwargs):
     execute_and_wait(service, request)
 
     # create all necessary CloudBolt objects
-    try:
-        set_progress(
-            f"Adding and importing new project {new_project_name} to {resource_handler.name}")
-        token = json.loads(resource_handler.gcp_api_credentials)["token"]
-        resource_handler.import_gcp_project(new_project_id, new_project_number, token)
-        resource_handler.create_location_specific_env(new_project_id)
-        set_progress("Imported the new project, done!")
-    except Exception as err:
-        set_progress("Encountered an error")
-        raise err
+    set_progress(
+        f"Adding and importing new project {new_project_name} to {resource_handler.name}")
+    token = json.loads(resource_handler.gcp_api_credentials)["token"]
+    new_gcp_project = resource_handler.add_gcp_project(new_project_id, new_project_name, new_project_number)
+    resource_handler.import_gcp_project(project=new_gcp_project)
+    resource_handler.create_location_specific_env(new_gcp_project.id)
+    set_progress("Imported the new project, done!")
+
 
 
 def generate_options_for_gcp_resource_handler(group=None, **kwargs):
