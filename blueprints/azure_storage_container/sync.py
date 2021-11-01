@@ -1,59 +1,56 @@
 from common.methods import set_progress
 from azure.common.credentials import ServicePrincipalCredentials
 import azure.mgmt.storage as storage
-from resourcehandlers.azure_arm.models import ARMResourceGroup, AzureARMHandler
-from resources.models import ResourceType, Resource
+from resourcehandlers.azure_arm.models import AzureARMHandler
+import azure.mgmt.resource.resources as resources
 from accounts.models import Group
 from servicecatalog.models import ServiceBlueprint
 
 RESOURCE_IDENTIFIER = 'azure_container_id'
 
-
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+    return handler.tenant_id
+    
 def discover_resources(**kwargs):
     containers = []
-    resource_type = ResourceType.objects.get(name__iexact='storage')
-    blue_print = ServiceBlueprint.objects.get(name__iexact='azure storage container')
-
+    
     for handler in AzureARMHandler.objects.all():
-        set_progress('Connecting to Azure for handler: {}'.format(handler))
-
-        # getting all storage accounts
+        set_progress('Connecting to Azure storage \
+        container for handler: {}'.format(handler))
         credentials = ServicePrincipalCredentials(
             client_id=handler.client_id,
             secret=handler.secret,
-            tenant=handler.tenant_id,
+            tenant=get_tenant_id_for_azure(handler)
         )
-        client = storage.StorageManagementClient(credentials, handler.serviceaccount)
+        azure_client = storage.StorageManagementClient(
+            credentials, handler.serviceaccount)
+        azure_resources_client = resources.ResourceManagementClient(
+            credentials, handler.serviceaccount)
 
-        accounts = client.storage_accounts.list()
-        for resource_group in ARMResourceGroup.objects.all():
-            for account in accounts:
-                for container in client.blob_containers.list(resource_group_name=resource_group.name, account_name=account.name).value:
-                    try:
-                        storage_account = container.as_dict().get('id').split('/')[-5]
-                        resource, _ = Resource.objects.get_or_create(
-                            name=container.name,
-                            defaults={
-                                'blueprint': blue_print,
-                                'resource_type': resource_type,
-                                'group': Group.objects.get(name__icontains='unassigned'),
-                                'parent_resource': Resource.objects.filter(name__icontains=account.name).first(),
-                            })
-                        resource_g_name = resource_group.name
-
-                        # Get and save account key
-                        res = client.storage_accounts.list_keys(resource_g_name, storage_account)
+        for resource_group in azure_resources_client.resource_groups.list():
+            for account in azure_client.storage_accounts.list_by_resource_group(resource_group.name)._get_next().json()['value']:
+                try:    
+                    for container in azure_client.blob_containers.list(resource_group_name=resource_group.name, account_name=account['name'])._get_next().json()['value']:
+                        res = azure_client.storage_accounts.list_keys(
+                        resource_group.name, account['name'])
                         keys = res.keys
-                        resource.lifecycle = "ACTIVE"
-                        resource.azure_rh_id = handler.id
-                        resource.azure_container_name = container.name
-                        resource.azure_account_key = keys[0].value
-                        resource.resource_group_name = resource_g_name
-                        resource.azure_account_name = account.name
-                        resource.save()
-
-                    except Exception as e:
-                        set_progress('Azure ClientError: {}'.format(e))
-                        continue
+                        containers.append(
+                            {
+                                'azure_container_id' : container['id'],
+                                'azure_rh_id':handler.id,
+                                'azure_account_name':account['name'],
+                                'azure_container_name':container['name'],
+                                'azure_account_key':keys[0].value,
+                                'resource_group_name':resource_group.name,
+                                'azure_location': account['location']
+                            }
+                        )
+                except Exception as e:
+                    set_progress("Azure Exception: {}".format(e))
 
     return containers
