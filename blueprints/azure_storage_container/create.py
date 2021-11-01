@@ -1,12 +1,23 @@
-from common.methods import set_progress
+import settings
+from common.methods import set_progress, is_version_newer
 from infrastructure.models import Environment
 from azure.common.credentials import ServicePrincipalCredentials
 import azure.mgmt.storage as storage
-from resourcehandlers.azure_arm.models import ARMResourceGroup
+from resourcehandlers.azure_arm.models import AzureARMHandler
 from azure.storage.blob import BlockBlobService, PublicAccess
 from resources.models import Resource
 from infrastructure.models import CustomField
 
+cb_version = settings.VERSION_INFO["VERSION"]
+CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.2")
+
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+    return handler.tenant_id
 
 def generate_options_for_env_id(server=None, **kwargs):
     envs = Environment.objects.filter(
@@ -19,10 +30,17 @@ def generate_options_for_resource_group(control_value=None, **kwargs):
     if control_value is None:
         return []
     env = Environment.objects.get(id=control_value)
-    rh = env.resource_handler.cast()
-    groups = rh.armresourcegroup_set.all()
-    resource_groups = [(g.id, g.name) for g in groups]
-    return resource_groups
+    if CB_VERSION_93_PLUS:
+        # Get the Resource Groups as defined on the Environment. The Resource Group is a
+        # CustomField that is only updated on the Env when the user syncs this field on the
+        # Environment specific parameters.
+        resource_groups = env.custom_field_options.filter(
+            field__name="resource_group_arm"
+        )
+        return [rg.str_value for rg in resource_groups]
+    else:
+        rh = env.resource_handler.cast()
+        return list(rh.armresourcegroup_set.values_list('name',flat=True))
 
 
 def generate_options_for_storage_accounts(control_value=None, **kwargs):
@@ -30,24 +48,18 @@ def generate_options_for_storage_accounts(control_value=None, **kwargs):
     if control_value is None or control_value == "":
         return []
 
-    resource_group = ARMResourceGroup.objects.get(id=control_value)
-    rh = resource_group.handler
-    credentials = ServicePrincipalCredentials(
-        client_id=rh.client_id,
-        secret=rh.secret,
-        tenant=rh.tenant_id,
-    )
-    client = storage.StorageManagementClient(credentials, rh.serviceaccount)
-    accounts = client.storage_accounts.list()
-    for account in accounts:
-        try:
-            client.storage_accounts.list_keys(resource_group.name, account.name)
-            storage_accounts.append(account.name)
-        except Exception as e:
-            continue
-
+    for handler in AzureARMHandler.objects.all():
+        set_progress('Connecting to Azure Storage for handler: {}'.format(handler))
+        credentials = ServicePrincipalCredentials(
+            client_id=handler.client_id,
+            secret=handler.secret,
+            tenant=get_tenant_id_for_azure(handler)
+        )
+        azure_client = storage.StorageManagementClient(credentials, handler.serviceaccount)
+        set_progress("Connection to Azure established")
+        for st in azure_client.storage_accounts.list():
+            storage_accounts.append(st.name)
     return storage_accounts
-
 
 def generate_options_for_permissions(**kwargs):
     return [
@@ -101,22 +113,19 @@ def run(job, *args, **kwargs):
     credentials = ServicePrincipalCredentials(
         client_id=rh.client_id,
         secret=rh.secret,
-        tenant=rh.tenant_id,
+        tenant=get_tenant_id_for_azure(rh)
     )
     client = storage.StorageManagementClient(credentials, rh.serviceaccount)
-
-    resource_g = ARMResourceGroup.objects.get(id=resource_group)
-    resource_g_name = resource_g.name
-
+    
     resource.name = container_name
     resource.azure_account_name = storage_account
     resource.azure_container_name = container_name
-    resource.resource_group_name = resource_g_name
+    resource.resource_group_name = resource_group
     resource.azure_location = location
     resource.lifecycle = "ACTIVE"
     resource.azure_rh_id = rh.id
     # Get and save accountkey
-    res = client.storage_accounts.list_keys(resource_g_name, storage_account)
+    res = client.storage_accounts.list_keys(resource_group, storage_account)
     keys = res.keys
 
     resource.azure_account_key = keys[0].value
