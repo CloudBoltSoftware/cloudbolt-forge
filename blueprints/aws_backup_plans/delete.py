@@ -11,8 +11,7 @@ def run(job, **kwargs):
     rh_id = resource.attributes.get(field__name='aws_rh_id').value
     region = resource.attributes.get(field__name='aws_region').value
     rh = AWSHandler.objects.get(id=rh_id)
-    backup_plan_name=resource.name
-    backup_vault_name=backup_plan_name+'backup-vault'
+
     set_progress("Connecting to aws backups...")
     client = boto3.client('backup',
                        region_name=region,
@@ -20,14 +19,9 @@ def run(job, **kwargs):
                        aws_secret_access_key=rh.servicepasswd
                        )
 
-    
+    set_progress("Deleting the backup plan...")
 
     try:
-    	set_progress("Deleting the backup plan vault...")
-        client.delete_backup_vault(
-    BackupVaultName=backup_vault_name)
-    
-    	set_progress("Deleting the backup plan...")
         client.delete_backup_plan(BackupPlanId=backup_plan_id)
     except Exception as e:
         return "FAILURE", "Backup plan could not be deleted", e
