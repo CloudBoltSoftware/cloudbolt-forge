@@ -7,13 +7,11 @@ import time
 def run(job, logger=None, **kwargs):
     resource = kwargs.pop('resources').first()
 
-    selection_name = resource.attributes.get(
-        field__name='selection_name').value
-
+    selection_name = resource.name
     region = resource.attributes.get(field__name='aws_region').value
     rh_id = resource.attributes.get(field__name='aws_rh_id').value
     backup_plan_id = resource.attributes.get(
-        field__name='backup_plan_id').value
+        field__name='backup_plan_id').value.split(',')[0]
     selection_id = resource.attributes.get(
         field__name='backup_selection_id').value
     rh = AWSHandler.objects.get(id=rh_id)
