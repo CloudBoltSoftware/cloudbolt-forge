@@ -19,10 +19,20 @@ cb_version = settings.VERSION_INFO["VERSION"]
 CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.1")
 
 
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+
+    return handler.tenant_id
+
+
 def get_azure_storage_client(handler) -> StorageManagementClient:
     """Return an Azure storage client with the Resource Handler details."""
     credentials = ServicePrincipalCredentials(
-        client_id=handler.client_id, secret=handler.secret, tenant=handler.tenant_id,
+        client_id=handler.client_id, secret=handler.secret, tenant=get_tenant_id_for_azure(handler),
     )
     client = storage.StorageManagementClient(credentials, handler.serviceaccount)
     return client
@@ -162,7 +172,7 @@ def run(job, **kwargs):
         resource.azure_storage_account_name = storage_account
         resource.azure_account_key = keys[0].value
         resource.azure_account_key_fallback = keys[1].value
-        resource.azure_storage_queue_name = "Azure queues - " + azure_queue_name
+        resource.azure_storage_queue_name = azure_queue_name
         resource.save()
 
     return "Success", "", ""
