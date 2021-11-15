@@ -39,8 +39,8 @@ def run(job, logger=None, **kwargs):
 
     region = "{{ region }}"
     backup_plan_name = "{{ backup_plan_name }}"
-    backup_plan_rule_name = backup_plan_name + " backup-rule"
-    target_backup_vault_name = backup_plan_name + " backup-vault"
+    backup_plan_rule_name = backup_plan_name + "backup-rule"
+    target_backup_vault_name = backup_plan_name + "backup-vault"
 
     set_progress('Connecting to Amazon Backup')
     client = boto3.client('backup',
@@ -64,6 +64,18 @@ def run(job, logger=None, **kwargs):
                 }]
             })
         set_progress('Amazon backup plan created succesfully.')
+    except client.exceptions.AlreadyExistsException as e:
+        try:
+    	    response = client.create_backup_plan(
+    		    BackupPlan={
+    		        'BackupPlanName': backup_plan_name,
+    		        'Rules': [{
+    		            "RuleName": backup_plan_rule_name,
+    		            'TargetBackupVaultName': target_backup_vault_name
+    		        }]
+    		    })
+        except ClientError as e:
+            return "FAILURE", "The security group could not be created. Reason: ", e	
     except ClientError as e:
         return "FAILURE", "The security group could not be created. Reason: ", e
     
