@@ -28,7 +28,7 @@ def generate_options_for_backup_plan(**kwargs):
                               region_name=region,
                               aws_access_key_id=rh.serviceaccount,
                               aws_secret_access_key=rh.servicepasswd)
-        backup_plan_ids.append([(backup_plan_id.get('BackupPlanId') + ',' + backup_plan_id.get('BackupPlanName'),
+        backup_plan_ids.append([(backup_plan_id.get('BackupPlanId') + ',' + backup_plan_id.get('BackupPlanName')+','+region,
                                  backup_plan_id.get('BackupPlanName')) for backup_plan_id in client.list_backup_plans().get('BackupPlansList')])
     return flatten(backup_plan_ids)
 
@@ -36,8 +36,7 @@ def generate_options_for_backup_plan(**kwargs):
 def generate_options_for_region(control_value=None, **kwargs):
     if control_value is None:
         return []
-    region = ServiceBlueprint.objects.get(id=97).resource_set.filter(
-        name=control_value.split(',')[1]).first().aws_region
+    region=control_value.split(',')[2]
     return [region]
 
 
@@ -59,8 +58,7 @@ def generate_options_for_iam_role_arn(**kwargs):
 def generate_options_for_resource_class(control_value=None, **kwargs):
     if control_value is None:
         return ['DynamoDB', 'EBS', 'EFS', 'RDS', 'Storage Gateway']
-    region = ServiceBlueprint.objects.get(id=97).resource_set.filter(
-        name=control_value.split(',')[1]).first().aws_region
+    region = control_value.split(',')[2]
     return [(region + ',' + 'DynamoDB', 'DynamoDB'), (region + ',' + 'EBS', 'EBS'), (region + ',' + 'EFS', 'EFS'),
             (region + ',' + 'RDS', 'RDS'), (region + ',' + 'StorageGateway', 'StorageGateway')]
 
@@ -178,6 +176,7 @@ def run(job, logger=None, **kwargs):
     resource.backup_selection_name = selection_name
     resource.backup_plan_id = backup_plan
     resource.iam_role_arn = iam_role_arn
+    resource.backup_selection_id = response['SelectionId']
     resource.save()
 
     return "SUCCESS", "The Backup Plan was successfully created", ""
