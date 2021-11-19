@@ -57,8 +57,8 @@ def generate_options_for_storage_accounts(control_value=None, **kwargs):
         )
         azure_client = storage.StorageManagementClient(credentials, handler.serviceaccount)
         set_progress("Connection to Azure established")
-        for st in azure_client.storage_accounts.list():
-            storage_accounts.append(st.name)
+        for st in azure_client.storage_accounts.list_by_resource_group(control_value)._get_next().json()['value']:
+            storage_accounts.append(st['name'])
     return storage_accounts
 
 def generate_options_for_permissions(**kwargs):
@@ -118,6 +118,7 @@ def run(job, *args, **kwargs):
     client = storage.StorageManagementClient(credentials, rh.serviceaccount)
     
     resource.name = container_name
+    resource.azure_container_id = container_name + '-' + storage_account
     resource.azure_account_name = storage_account
     resource.azure_container_name = container_name
     resource.resource_group_name = resource_group
