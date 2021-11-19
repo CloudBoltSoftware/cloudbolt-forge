@@ -41,10 +41,10 @@ def discover_resources(**kwargs):
                         keys = res.keys
                         containers.append(
                             {
-                                'azure_container_id' : container['id'],
+                                'name' : container['name'],
+                                'azure_container_id' : container['name'] + '-' + account['name'],
                                 'azure_rh_id':handler.id,
                                 'azure_account_name':account['name'],
-                                'azure_container_name':container['name'],
                                 'azure_account_key':keys[0].value,
                                 'resource_group_name':resource_group.name,
                                 'azure_location': account['location']
