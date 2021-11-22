@@ -1,7 +1,8 @@
 """
 Creates an Azure security rule
 """
-from common.methods import set_progress
+import settings
+from common.methods import set_progress, is_version_newer
 from infrastructure.models import CustomField
 from infrastructure.models import Environment
 from azure.common.credentials import ServicePrincipalCredentials
@@ -9,6 +10,16 @@ from resourcehandlers.azure_arm.models import AzureARMHandler
 from azure.mgmt.network import NetworkManagementClient
 from msrestazure.azure_exceptions import CloudError
 
+cb_version = settings.VERSION_INFO["VERSION"]
+CB_VERSION_93_PLUS = is_version_newer(cb_version, "9.2.2")
+
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+    return handler.tenant_id
 
 def generate_options_for_env_id(server=None, **kwargs):
     options = list(Environment.objects.filter(
@@ -19,6 +30,14 @@ def generate_options_for_resource_group(control_value=None, **kwargs):
     if control_value is None:
         return []
     env = Environment.objects.get(id=control_value)
+    if CB_VERSION_93_PLUS:
+        # Get the Resource Groups as defined on the Environment. The Resource Group is a
+        # CustomField that is only updated on the Env when the user syncs this field on the
+        # Environment specific parameters.
+        resource_groups = env.custom_field_options.filter(
+            field__name="resource_group_arm"
+        )
+        return [rg.str_value for rg in resource_groups]
     rh = env.resource_handler.cast()
     return list(rh.armresourcegroup_set.values_list('name',flat=True))
 
@@ -107,7 +126,7 @@ def run(job, **kwargs):
     credentials = ServicePrincipalCredentials(
         client_id=rh.client_id,
         secret=rh.secret,
-        tenant=rh.tenant_id,
+        tenant=get_tenant_id_for_azure(rh)
     )
     network_client = NetworkManagementClient(credentials, rh.serviceaccount)
     set_progress("Connection to Azure networks established")
