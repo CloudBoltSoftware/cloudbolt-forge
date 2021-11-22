@@ -76,9 +76,9 @@ def run(job, **kwargs):
         set_progress("Converting relative URL to filesystem path")
         file = file.replace(settings.MEDIA_URL, settings.MEDIA_ROOT)
 
-    account_key = Resource.objects.filter(name__icontains='{{ storage_account }}')[0].azure_account_key
-    fallback_account_key = Resource.objects.filter(name__icontains="{{ storage_account }}")[0].azure_account_key_fallback
-
+    st_account = Resource.objects.get(name__iexact="{{ storage_account }}")
+    account_key, fallback_account_key = st_account.azure_account_key, st_account.azure_account_key_fallback
+    
     set_progress("Connecting To Azure...")
     file_service = FileService(account_name=storage_account, account_key=account_key)
 
@@ -93,6 +93,7 @@ def run(job, **kwargs):
     else:
         file_service.create_file_from_path(share_name=azure_storage_file_share_name, file_name=file_name, directory_name='', local_file_path=file)
         resource.name = azure_storage_file_share_name + '-' + file_name
+        resource.azure_file_identifier = azure_storage_file_share_name + '-' + file_name
         resource.azure_storage_account_name = storage_account
         resource.azure_account_key = account_key
         resource.azure_account_key_fallback = fallback_account_key
@@ -100,4 +101,3 @@ def run(job, **kwargs):
         resource.azure_storage_file_name = file_name
         resource.save()
     return "Success", "The File has succesfully been uploaded", ""
-    
