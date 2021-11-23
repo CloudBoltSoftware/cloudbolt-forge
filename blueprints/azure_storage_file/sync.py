@@ -48,20 +48,17 @@ def discover_resources(**kwargs):
                     for share in file_service.list_shares():
                         for file in file_service.list_directories_and_files(share_name=share.name).items:
                             if type(file) is File:
-                                discovered_azure_sql.append(
-                                    {
-                                        'name': share.name + '-' + file.name,
-                                        'azure_storage_file_name': file.name,
-                                        'azure_file_identifier': share.name + '-' + file.name,
-                                        'azure_storage_file_share_name': share.name,
-                                        'resource_group_name': resource_group.name,
-                                        'azure_rh_id': handler.id,
-                                        'azure_storage_account_name': st['name'],
-                                        'azure_account_key': keys[0].value,
-                                        'azure_account_key_fallback': keys[1].value
-                                    }
-                                )
-            except:
-                continue
-
+                                data = {
+                                    'name': share.name + '-' + file.name,
+                                    'azure_storage_file_name': file.name,
+                                    'azure_file_identifier': share.name + '-' + file.name,
+                                    'resource_group_name': resource_group.name,
+                                    'azure_rh_id': handler.id,
+                                    'azure_storage_account_name': st['name'],
+                                    'azure_account_key': keys[0].value,
+                                    'azure_account_key_fallback': keys[1].value
+                                }
+                                discovered_azure_sql.append(data)
+            except Exception as e:
+                raise e
     return discovered_azure_sql
