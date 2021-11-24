@@ -1,420 +1,558 @@
 """
-Install the following packages on your CB:
-  pip install kubernetes
-  pip install azure-cli
+Build service item action for AKS Cluster Deployment
 
-Install kubectl:
-  az aks install-cli
-
-Configure Azure login creds:
-  az login        # this is a one time process
-
-Confirm cluster access:
-  az aks list  - # lists all clusters
-
+This action uses an ARM Template to create an AKS Cluster
 """
+from jobs.models import Job
+from utilities.events import add_server_event
 
-from __future__ import unicode_literals
-import hashlib
-import time
+if __name__ == "__main__":
+    import os
+    import sys
+    import django
 
-from django.urls import reverse
-from kubernetes.client import Configuration, ApiClient
-from kubernetes import config, client
-from resourcehandlers.azure_arm.models import AzureARMHandler
-from azure.mgmt.resource import ResourceManagementClient
-from azure.common.credentials import ServicePrincipalCredentials
-from azure.mgmt.resource.resources.models import ResourceGroup
-from azure.mgmt.containerservice.models import ManagedClusterAgentPoolProfile
-from azure.mgmt.containerservice.models import ManagedCluster
-from containerorchestrators.models import ContainerOrchestratorTechnology
-from containerorchestrators.kuberneteshandler.models import Kubernetes
-from azure.mgmt.containerservice import ContainerServiceClient
-from infrastructure.models import CustomField, Environment, Server
-from portals.models import PortalConfig
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+    sys.path.append("/opt/cloudbolt")
+    sys.path.append("/var/opt/cloudbolt/proserv")
+    django.setup()
+
 from common.methods import set_progress
-from utilities.exceptions import CloudBoltException
-from msrestazure.azure_exceptions import CloudError
-from resources.models import ResourceType, Resource
-from azure.mgmt.containerservice.models import ManagedClusterServicePrincipalProfile
-import subprocess
-import yaml
+from infrastructure.models import CustomField, Server
+from infrastructure.models import Environment
 import json
-from threading import Timer
-from msrest.polling import *
+from utilities.logger import ThreadLogger
+from accounts.models import Group
 
-ENV_ID = '{{ cloudbolt_environment }}'
-resource_group = '{{ resource_groups }}'
-dns_prefix = '{{ cluster_dns_prefix }}'
-agent_pool_name = '{{ cluster_pool_name}}'
-CLUSTER_NAME = '{{ cluster_name }}'
-
-try:
-    environment = Environment.objects.get(id=ENV_ID)
-    handler = environment.resource_handler.cast()
-    client_id = handler.client_id
-    secret = handler.secret
-    location = handler.get_env_location(environment)
-except:
-    set_progress("Couldn't get environment.")
-
-service = "lb-front"
-image = 'nginx:1.15'
-
-try:
-    NODE_COUNT = int('{{ node_count }}')
-except ValueError:
-    NODE_COUNT = 1
-TIMEOUT = 600  # 10 minutes
+logger = ThreadLogger(__name__)
 
 
-def get_credentials():
-    creds = ServicePrincipalCredentials(
-        client_id=handler.client_id,
-        secret=handler.secret,
-        tenant=handler.tenant_id,
+# TODO: Add in day two with ARM Templates?
+# TODO: Should we create RGs every time?
+
+def generate_options_for_env_id(**kwargs):
+    group_name = kwargs["group"]
+    try:
+        group = Group.objects.get(name=group_name)
+    except:
+        return None
+    envs = group.get_available_environments()
+    set_progress(f'Available Envs: {envs}')
+    options = [('', '--- Select an Environment ---')]
+    for env in envs:
+        if env.resource_handler:
+            if env.resource_handler.resource_technology:
+                if env.resource_handler.resource_technology.name == "Azure":
+                    options.append((env.id, env.name))
+    return options
+
+
+def generate_options_for_resource_group(field, control_value=None, **kwargs):
+    if not control_value:
+        options = [('', '--- First, Select an Environment ---')]
+        return options
+
+    options = [('', '--- Select a Resource Group ---')]
+    env = Environment.objects.get(id=control_value)
+
+    groups = env.custom_field_options.filter(
+        field__name='resource_group_arm')
+    if groups:
+        for g in groups:
+            options.append((g.str_value, g.str_value))
+        return options
+    return [('', 'No Resource Groups found in this Environment')]
+
+
+def generate_options_for_node_size(field, control_value=None, **kwargs):
+    if not control_value:
+        options = [('', '--- First, Select an Environment ---')]
+        return options
+
+    env = Environment.objects.get(id=control_value)
+    cfvs = env.get_cfvs_for_custom_field('node_size')
+    options = [(opt.value, opt.value) for opt in cfvs]
+    if ('Standard_B4ms', 'Standard_B4ms') in options:
+        return {'options': options, 'initial_value': ('Standard_B4ms',
+                                                      'Standard_B4ms')}
+    if len(options) > 0:
+        return options
+    return [('', '--- No Node Sizes found in this Environment ---')]
+
+
+def generate_options_for_kubernetes_version(**kwargs):
+    # These options can safely be modified to show the Kubernetes Versions
+    # relevant to your environment
+    options = [('1.21.2', '1.21.2'), ('1.21.1', '1.21.1'),
+               ('1.20.7', '1.20.7'), ('1.20.5', '1.20.5'),
+               ('1.19.11', '1.19.11'), ('1.19.9', '1.19.9')]
+    return {'options': options, 'initial_value': ('1.20.7', '1.20.7')}
+
+
+def create_cf(cf_name, cf_label, description, cf_type="STR", required=False,
+              **kwargs):
+    defaults = {
+        'label': cf_label,
+        'description': description,
+        'required': required,
+    }
+    for key, value in kwargs.items():
+        defaults[key] = value
+
+    cf = CustomField.objects.get_or_create(
+        name=cf_name,
+        type=cf_type,
+        defaults=defaults
     )
-    return creds
 
 
-def get_service_profile():
-    profile = ManagedClusterServicePrincipalProfile(
-        client_id=handler.client_id,
-        secret=handler.secret,
-    )
-    return profile
+def get_or_create_cfs():
+    create_cf('azure_rh_id', 'Azure RH ID', 'Used by the Azure blueprints')
+    create_cf('azure_region', 'Azure Region', 'Used by the Azure blueprints',
+              show_on_servers=True)
+    create_cf('azure_deployment_id', 'ARM Deployment ID',
+              'Used by the ARM Template blueprint', show_on_servers=True)
+    create_cf('azure_correlation_id', 'ARM Correlation ID',
+              'Used by the ARM Template blueprint')
 
 
-def get_resource_client():
-    credentials = get_credentials()
-    subscription_id = handler.serviceaccount
-    resource_client = ResourceManagementClient(credentials, subscription_id)
-    return resource_client
+def get_provider_type_from_id(resource_id):
+    return resource_id.split('/')[6]
 
 
-def get_container_client():
-    subscription_id = handler.serviceaccount
-    credentials = get_credentials()
-    container_client = ContainerServiceClient(credentials, subscription_id)
-    return container_client
+def get_resource_type_from_id(resource_id):
+    return resource_id.split('/')[7]
 
 
-def create_resource_group():
-    resource_client = get_resource_client()
-    result = resource_client.resource_groups.create_or_update(
-        resource_group,
-        parameters=ResourceGroup(
-            location=location,
-            tags={},
-        )
-    )
-    return result
+def get_api_version_key_from_id(id_value):
+    provider_type = get_provider_type_from_id(id_value)
+    resource_type = get_resource_type_from_id(id_value)
+    ms_type = f'{provider_type}/{resource_type}'
+    id_split = id_value.split('/')
+    if len(id_split) == 11:
+        ms_type = f'{ms_type}/{id_split[9]}'
+    ms_type_us = ms_type.replace('.', '').replace('/', '_').lower()
+    api_version_key = f'{ms_type_us}_api_version'
+    return api_version_key
 
 
-def create_cluster(node_count):
-    """
-    Azure requires node pool name to be 9 alphanumeric characters, and lowercase.
-    """
-    profile = get_service_profile()
-    container_client = get_container_client()
-    cluster_resource = container_client.managed_clusters.create_or_update(
-        resource_group,
-        CLUSTER_NAME,
-        parameters=ManagedCluster(
-            location=location,
-            tags=None,
-            dns_prefix=dns_prefix.lower(),
-            service_principal_profile=profile,
-            agent_pool_profiles=[{
-                'name': agent_pool_name.lower()[:9],
-                'vm_size': 'Standard_DS2_v2',
-                'count': node_count,
-            }],
-        ),
-    )
-    return cluster_resource
+def get_azure_server_name(id_value):
+    return id_value.split('/')[8]
 
 
-def create_deployment_object():
-    """
-    Creates the LB service and exposes the external IP
-    """
-    container = client.V1Container(
-        name="my-nginx",
-        image="nginx:1.15",
-        ports=[client.V1ContainerPort(container_port=80)])
-    template = client.V1PodTemplateSpec(
-        metadata=client.V1ObjectMeta(labels={"app": "nginx"}),
-        spec=client.V1PodSpec(containers=[container]))
-    spec = client.ExtensionsV1beta1DeploymentSpec(
-        replicas=1,
-        template=template)
-    set_progress("Instantiate the deployment object")
-    deployment = client.ExtensionsV1beta1Deployment(
-        api_version="extensions/v1beta1",
-        kind="Deployment",
-        metadata=client.V1ObjectMeta(name="nginx-deployment"),
-        spec=spec)
-    time.sleep(60)
-    return deployment
+def create_field_set_value(field_name_id, id_value, i, resource):
+    create_cf(field_name_id, f'ARM Created Resource {i} ID',
+              'Used by the ARM Template blueprint',
+              show_on_servers=True)
+    resource.set_value_for_custom_field(field_name_id, id_value)
+    return resource
 
 
-def create_deployment(api_instance, deployment):
-    api_response = api_instance.create_namespaced_deployment(body=deployment, namespace="default")
-    time.sleep(60)
-    return ("SUCCESS", "Deployment created. Status={}".format(api_response.status), "")
-
-
-def create_service():
-    api = client.CoreV1Api()
-    body = {
-        'apiVersion': 'v1',
-        'kind': 'Service',
-        'metadata': {
-            'name': service,
+def get_arm_template():
+    return """
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Managed Cluster resource."
+            }
         },
-        'spec': {
-            'type': 'LoadBalancer',
-            'selector': {
-                'app': service,
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "The location of AKS resource."
+            }
+        },
+        "dnsPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "DNS prefix to use with hosted Kubernetes API server FQDN."
+            }
+        },
+        "osDiskSizeGB": {
+            "type": "int",
+            "defaultValue": 0,
+            "metadata": {
+                "description": "Disk size (in GiB) to provision for each of the agent pool nodes. This value ranges from 0 to 1023. Specifying 0 will apply the default disk size for that agentVMSize."
             },
-            'ports': [
-                client.V1ServicePort(port=80, target_port=80),
+            "minValue": 0,
+            "maxValue": 1023
+        },
+        "kubernetesVersion": {
+            "type": "string",
+            "defaultValue": "1.20.7",
+            "metadata": {
+                "description": "The version of Kubernetes."
+            }
+        },
+        "networkPlugin": {
+            "type": "string",
+            "defaultValue": "kubenet",
+            "allowedValues": [
+                "kubenet"
             ],
-            'restartPolicy': 'Never',
-            'serviceAccountName': "default",
+            "metadata": {
+                "description": "Network plugin used for building Kubernetes network."
+            }
+        },
+        "enableRBAC": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Boolean flag to turn on and off of RBAC."
+            }
+        },
+        "enablePrivateCluster": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Enable private network access to the Kubernetes cluster."
+            }
+        },
+        "enableHttpApplicationRouting": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Boolean flag to turn on and off http application routing."
+            }
+        },
+        "enableAzurePolicy": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Boolean flag to turn on and off Azure Policy addon."
+            }
+        }, 
+        "nodeSize": {
+            "type": "string",
+            "defaultValue": "Standard_B4ms",
+            "metadata": {
+                "description": "Size of the Nodes in the cluster."
+            }
+        },
+        "nodeCount": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "How many nodes to deploy for the cluster."
+            },
+            "minValue": 1,
+            "maxValue": 50
+        },
+        "inputTags": {
+            "type": "object",
+            "metadata": {
+                "description": "Key value pairs of tags to create on each resource."
+            }
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2021-02-01",
+            "dependsOn": [],
+            "type": "Microsoft.ContainerService/managedClusters",
+            "location": "[parameters('location')]",
+            "name": "[parameters('resourceName')]",
+            "properties": {
+                "kubernetesVersion": "[parameters('kubernetesVersion')]",
+                "enableRBAC": "[parameters('enableRBAC')]",
+                "dnsPrefix": "[parameters('dnsPrefix')]",
+                "agentPoolProfiles": [
+                    {
+                        "name": "agentpool",
+                        "osDiskSizeGB": "[parameters('osDiskSizeGB')]",
+                        "count": "[parameters('nodeCount')]",
+                        "enableAutoScaling": false,
+                        "vmSize": "[parameters('nodeSize')]",
+                        "osType": "Linux",
+                        "storageProfile": "ManagedDisks",
+                        "type": "VirtualMachineScaleSets",
+                        "mode": "System",
+                        "maxPods": 110,
+                        "availabilityZones": [],
+                        "tags": "[parameters('inputTags')]"
+                    }
+                ],
+                "networkProfile": {
+                    "loadBalancerSku": "standard",
+                    "networkPlugin": "[parameters('networkPlugin')]"
+                },
+                "apiServerAccessProfile": {
+                    "enablePrivateCluster": "[parameters('enablePrivateCluster')]"
+                },
+                "addonProfiles": {
+                    "httpApplicationRouting": {
+                        "enabled": "[parameters('enableHttpApplicationRouting')]"
+                    },
+                    "azurepolicy": {
+                        "enabled": "[parameters('enableAzurePolicy')]"
+                    }
+                }
+            },
+            "tags": "[parameters('inputTags')]",
+            "identity": {
+                "type": "SystemAssigned"
+            }
+        }
+    ],
+    "outputs": {
+        "controlPlaneFQDN": {
+            "type": "string",
+            "value": "[reference(concat('Microsoft.ContainerService/managedClusters/', parameters('resourceName'))).fqdn]"
         }
     }
-    result = api.create_namespaced_service(namespace='default', body=body)
-    return result
+}    
+"""
 
 
-def get_cluster():
-    result = subprocess.check_output(['az', 'aks', 'show', '-g', resource_group, '-n', CLUSTER_NAME, '-o', 'json'])
-    res = json.loads(result)
-    cluster = res['name']
-    return cluster
+def run(job, **kwargs):
+    logger.debug(f"Dictionary of keyword args passed to this "
+                 f"plug-in: {kwargs.items()}")
+    resource = kwargs.get('resource')
+    if resource:
+        set_progress(f'Starting deploy of ARM Template for resource: '
+                     f'{resource}')
+        env_id = "{{env_id}}"
+        resource_group = "{{resource_group}}"
+        deployment_name = f'{resource.name}-cbdeploy-job-{job.id}'
+        if not (env_id and resource_group):
+            msg = (f'Required parameter not found. env_id: {env_id}, '
+                   f'resource_group: {resource_group}')
+            set_progress(msg)
+            return "FAILURE", msg, ""
+
+        # Store data about deployment to the resource
+        bp_context = kwargs.get('blueprint_context')["aks_cluster_build"]
+        for param in bp_context.keys():
+            if param == 'service_item_id':
+                continue
+            if param == '__untrusted_expressions':
+                continue
+            cf_name = param
+            cf_value = bp_context[cf_name]
+            cf_type = type(cf_value).__name__.upper()
+            cf_label = cf_name.replace('_', ' ').title()
+            create_cf(cf_name, cf_label, "", cf_type, show_on_servers=True)
+            resource.set_value_for_custom_field(cf_name, cf_value)
+            resource.save()
+
+        # Generic ARM Params
+        timeout = 900
+
+        # Other Params
+        owner = job.owner
+        group = resource.group
+        env = Environment.objects.get(id=env_id)
+        rh = env.resource_handler.cast()
+
+        # Inject Tags
+        # Get Tags from Group and Resource Handler. If matching attrs exist on
+        # the resource then include them as tags
+        tags = rh.taggableattribute_set.all()
+        tags_to_apply = {}
+        # Grab tags from the Group level first. Only applies params if a single
+        # value is set for the group, and the param is required
+        for tag in tags:
+            tag_attribute = tag.attribute
+            tag_name = tag.label
+            cfvs = group.get_cfvs_for_custom_field(tag_attribute)
+            if cfvs is not None:
+                if len(cfvs) == 1:
+                    cf = group.custom_fields.get(name=tag_attribute)
+                    if cf.required:
+                        tag_value = cfvs.first().value
+                        if tag_value is not None:
+                            tags_to_apply[tag_name] = f'{tag_value}'
+
+        # Then grab tags from the Resource (these would overwrite Group level)
+        for tag in tags:
+            tag_attribute = tag.attribute
+            tag_name = tag.label
+            eval_str = f'resource.{tag_attribute}'
+            try:
+                tag_value = eval(eval_str)
+            except AttributeError:
+                continue
+            if tag_value is not None:
+                tags_to_apply[tag_name] = f'{tag_value}'
+
+        # Create Parameter inputs
+        params_dict = {
+            "resourceName": "{{resource.name}}",
+            "location": env.node_location,
+            "nodeSize": "{{node_size}}",
+            "nodeCount": {{node_count}},
+            "osDiskSizeGB": {{os_disk_size}},
+            "kubernetesVersion": "{{kubernetes_version}}",
+            "dnsPrefix": "{{dns_prefix}}",
+            "enableRBAC": {{enable_rbac}},
+            "enablePrivateCluster": {{enable_private_cluster}},
+            "enableHttpApplicationRouting": {{http_application_routing}},
+            "enableAzurePolicy": {{enable_azure_policy}},
+            "inputTags": tags_to_apply
+        }
+
+        # Get the template from file path
+        template = json.loads(get_arm_template())
+
+        # Write the API Versions back to the Resource - to be used on delete
+        for template_resource in template["resources"]:
+            api_version = template_resource["apiVersion"]
+            ms_type = template_resource["type"]
+            type_split = ms_type.split('/')
+            ms_type_us = ms_type.replace('.', '').replace('/', '_').lower()
+            api_version_key = f'{ms_type_us}_api_version'
+            # If the API version is already set for an Azure type on the
+            # resource, no need to set again, check to see if it exists then
+            # set if not present
+            try:
+                val = resource.get_cfv_for_custom_field(api_version_key).value
+                logger.debug(f'Value already set for api_version_key: '
+                             f'{api_version_key}, value: {val}')
+            except AttributeError:
+                api_key_name = f'{type_split[-1]} API Version'
+                logger.debug(f'Creating CF: {api_version_key}')
+                create_cf(api_version_key, api_key_name, (
+                    f'The API Version that {ms_type} '
+                    f'resources were provisioned with in this deployment')
+                )
+                resource.set_value_for_custom_field(api_version_key,
+                                                    api_version)
+            except NameError:
+                resource.set_value_for_custom_field(api_version_key,
+                                                    api_version)
+
+        # Submit the template request
+        if timeout:
+            timeout = int(timeout)
+        else:
+            timeout = 3600
+        wrapper = rh.get_api_wrapper()
+        logger.debug(f'Submitting request for ARM template. deployment_name: '
+                     f'{deployment_name}, resource_group: {resource_group}, '
+                     f'template: {template}')
+        set_progress(f'Submitting ARM request to Azure. This can take a while.'
+                     f' Timeout is set to: {timeout}')
+        deployment = wrapper.deploy_template(deployment_name, resource_group,
+                                             template, params_dict,
+                                             timeout=timeout)
+        set_progress(f'Deployment created successfully')
+        logger.debug(f'deployment info: {deployment}')
+        get_or_create_cfs()
+        deploy_props = deployment.properties
+        logger.debug(f'deployment properties: {deploy_props}')
+        resource.azure_rh_id = rh.id
+        resource.azure_region = env.node_location
+        resource.azure_deployment_id = deployment.id
+        resource.azure_correlation_id = deploy_props.correlation_id
+        resource.resource_group = resource_group
+        i = 0
+        for output_resource in deploy_props.additional_properties[
+            "outputResources"]:
+            id_value = output_resource["id"]
+            type_value = id_value.split('/')[-2]
+
+            # If a server, create the CloudBolt Server object
+            if type_value == 'virtualMachines':
+                resource_client = wrapper.resource_client
+                api_version_key = get_api_version_key_from_id(id_value)
+                api_version = resource.get_cfv_for_custom_field(
+                    api_version_key).value
+                vm = resource_client.resources.get_by_id(id_value,
+                                                         api_version)
+                vm_dict = vm.__dict__
+                svr_id = vm_dict["properties"]["vmId"]
+                location = vm_dict["location"]
+                node_size = vm_dict["properties"]["hardwareProfile"]["vmSize"]
+                disk_ids = [vm_dict["properties"]["storageProfile"]["osDisk"]
+                            ["managedDisk"]["id"]]
+                for disk in vm_dict["properties"]["storageProfile"]\
+                        ["dataDisks"]:
+                    disk_ids.append(disk["managedDisk"]["id"])
+                if svr_id:
+                    # Server manager does not have the create_or_update method,
+                    # so we do this manually.
+                    try:
+                        server = Server.objects.get(
+                            resource_handler_svr_id=svr_id)
+                        server.resource = resource
+                        server.group = group
+                        server.owner = resource.owner
+                        server.environment = env
+                        server.save()
+                        logger.info(
+                            f"Found existing server record: '{server}'")
+                    except Server.DoesNotExist:
+                        logger.info(
+                            f"Creating new server with resource_handler_svr_id "
+                            f"'{svr_id}', resource '{resource}', group '{group}', "
+                            f"owner '{resource.owner}', and "
+                            f"environment '{env}'"
+                        )
+                        server_name = get_azure_server_name(id_value)
+                        server = Server(
+                            hostname=server_name,
+                            resource_handler_svr_id=svr_id,
+                            resource=resource,
+                            group=group,
+                            owner=resource.owner,
+                            environment=env,
+                            resource_handler=rh
+                        )
+                        server.save()
+                        server.resource_group = resource_group
+                        server.save()
+
+                        tech_dict = {
+                            "location": location,
+                            "resource_group": resource_group,
+                            "storage_account": None,
+                            "extensions": [],
+                            "availability_set": None,
+                            "node_size": node_size,
+                        }
+                        rh.update_tech_specific_server_details(server,
+                                                               tech_dict, None)
+                        server.refresh_info()
+                    # Add server to the job.server_set, and set creation event
+                    job.server_set.add(server)
+                    job.save()
+                    msg = "Server created by ARM Template job"
+                    add_server_event("CREATION", server, msg,
+                                     profile=job.owner, job=job)
+                    api_version_key = get_api_version_key_from_id(disk_ids[0])
+                    api_key_name = f"{api_version_key.split('_')[1]} API Version"
+                    create_cf(api_version_key, api_key_name, (
+                        f'The API Version that Microsoft.Compute/disks '
+                        f'resources were provisioned with in this deployment')
+                              )
+                    # Write the api_version for Virtual Machine to the disk
+                    # value
+                    resource.set_value_for_custom_field(api_version_key,
+                                                        '2021-04-01')
+                    for disk_id in disk_ids:
+                        field_name_id = f'output_resource_{i}_id'
+                        resource = create_field_set_value(field_name_id,
+                                                          disk_id, i, resource)
+                        i += 1
+                        resource.save()
+            field_name_id = f'output_resource_{i}_id'
+            resource = create_field_set_value(field_name_id, id_value, i,
+                                              resource)
+            i += 1
+            resource.save()
+        return "SUCCESS", "ARM Template deployment complete", ""
+    else:
+        msg = f'Resource not found.'
+        set_progress(msg)
+        return "FAILURE", msg, ""
 
 
-def get_cluster_endpoint():
-    '''
-    Get kubernetes services and Load balancer endpoint from shell
-    '''
-    cluster = subprocess.check_output("kubectl get service -o json".split())
-    res = json.loads(cluster)
-    endpoint = res['items'][1]['status']['loadBalancer']['ingress'][0]['ip']
-    return endpoint
-
-
-def wait_for_endpoint(timeout=None):
-    '''
-    Wait for load balancer external IP to be created
-    '''
-    endpoint = None
-    start = time.time()
-    while not endpoint:
-        if timeout is not None and (time.time() - start > timeout):
-            break
-        endpoint = get_cluster_endpoint()
-    return endpoint
-
-
-def get_nodes():
-    node = subprocess.check_output("kubectl get nodes -o json".split())
-    res = json.loads(node)
-    result = res['items']
-    nodes = []
-    for item in result:
-        response = item["status"]["addresses"][1]["address"]
-        nodes.append(response)
-    return nodes
-
-
-def wait_for_nodes(node_count, timeout=None):
-    result = get_nodes()
-    nodes = []
-    start = time.time()
-    while len(nodes) < node_count:
-        if timeout is not None and (time.time() - start > timeout):
-            break
-        nodes = result or []
-    return nodes
-
-def wait_for_running_status(timeout=None):
-    # Check and wait for build status of cluster and work node builds
-    status = ''
-    start = time.time()
-    while status != "Succeeded":
-        set_progress("waiting for SUCCEED status of cluster build")
-        if status == 'Failed':
-            raise CloudBoltException("Deployment failed")
-        if timeout is not None and (time.time() - start > timeout):
-            break
-        cluster = subprocess.check_output(['az', 'aks', 'show', '-g', resource_group, '-n', CLUSTER_NAME, '-o', 'json'])
-        res = json.loads(cluster)
-        status = res['provisioningState']
-    return status
-
-def generate_options_for_cloudbolt_environment(group=None, **kwargs):
-    # List all Azure environments that are orderable by the current group
-    envs = Environment.objects.filter(
-        resource_handler__resource_technology__name='Azure') \
-        .select_related('resource_handler')
-    if group:
-        group_env_ids = [env.id for env in group.get_available_environments()]
-        envs = envs.filter(id__in=group_env_ids)
-    return [
-        (env.id, u'{env} ({region})'.format(
-            env=env, region=env.resource_handler.cast()))
-        for env in envs
-    ]
-
-
-def create_custom_fields():
-    CustomField.objects.get_or_create(
-        name='azure_rh_id', type='STR',
-        defaults={'label': 'Azure RH ID',
-                  'description': 'Used by the Azure blueprints', 'show_as_attribute': True}
-    )
-
-    CustomField.objects.get_or_create(
-        name='aks_cluster_env', type='INT',
-        defaults={'label': 'AKS Cluster: Environment',
-                  'description': 'Used by the AKS Cluster blueprint', 'show_as_attribute': True}
-    )
-
-    CustomField.objects.get_or_create(
-        name='aks_cluster_name', type='STR',
-        defaults={'label': 'AKS Cluster: Cluster Name',
-                  'description': 'Used by the AKS Cluster blueprint', 'show_as_attribute': True}
-    )
-
-    CustomField.objects.get_or_create(
-        name='aks_cluster_id',
-        defaults=dict(
-            label="AKS Cluster: Cluster ID",
-            description="Used by the AKS Cluster blueprint",
-            type="INT",
-        ))
-    CustomField.objects.get_or_create(
-        name='azure_location', type='STR',
-        defaults={'label': 'Azure Location',
-                  'description': 'Used by the Azure blueprints', 'show_as_attribute': True}
-    )
-
-    CustomField.objects.get_or_create(
-        name='resource_group_name', type='STR',
-        defaults={'label': 'Azure Resource Group',
-                  'description': 'Used by the Azure blueprints', 'show_as_attribute': True}
-    )
-
-
-def run(job=None, logger=None, **kwargs):
-    """
-    Create a cluster, poll until the IP address becomes available, and import
-    the cluster into CloudBolt.
-    """
-    cluster_env = AzureARMHandler.objects.first()
-    # Save cluster data on the resource so teardown works later
-    create_custom_fields()
-    resource = kwargs['resource']
-
-    resource.name = CLUSTER_NAME
-    resource.aks_cluster_env = cluster_env.id
-    resource.resource_group_name = resource_group
-    resource.aks_cluster_name = CLUSTER_NAME
-    resource.save()
-
-    get_credentials()
-    get_service_profile()
-    get_resource_client()
-    get_container_client()
-    get_service_profile()
-
-    # Clusters can be created in existing resource groups.
-    job.set_progress("Checking if Resource Group Exists {}".format(resource_group))
-    rg_client = get_resource_client()
-    response = rg_client.resource_groups.check_existence(resource_group)
-    if response == True:
-        job.set_progress("Resource Group: {} already exits. Cluster {} will be created in {}".format(resource_group, CLUSTER_NAME, resource_group))
-
-    job.set_progress("Creating Resource Group {}".format(resource_group))
-    create_resource_group()
-
-    # Checks for existing cluster in the Resource Group and fails if exists
-    job.set_progress("Creating Cluster {}".format(CLUSTER_NAME))
-    try:
-        create_cluster(NODE_COUNT)
-    except CloudError as e:
-        if e.status_code == 409:
-            return ("FAILURE", "Cluster: {} conflicts with existing cluster ".format(CLUSTER_NAME), "")
-
-        raise
-
-    start = time.time()
-    remaining_time = TIMEOUT - (time.time() - start)
-
-    status = wait_for_running_status()
-    job.set_progress('Waiting up to {} seconds for provisioning to complete.'
-                         .format(remaining_time))
-    job.set_progress("Configuring kubectl to connect to kubernetes cluster")
-
-    # configure kubectl to connect to kubernetes cluster
-    subprocess.run(['az', 'aks', 'get-credentials', '-g', resource_group, '-n', CLUSTER_NAME])
-    start = time.time()
-
-    config.load_kube_config()
-
-    job.set_progress("Creating pod template container")
-    api_instance = client.ExtensionsV1beta1Api()
-
-    deployment = create_deployment_object()
-
-    job.set_progress("Creating Deployment")
-    create_deployment(api_instance, deployment)
-
-    job.set_progress("Creating Service {}".format(service))
-    create_service()
-
-    job.set_progress("Waiting for cluster IP address...")
-    endpoint = wait_for_endpoint()
-    if not endpoint:
-        return ("FAILURE", "No IP address returned",
-                "")
-    remaining_time = TIMEOUT - (time.time() - start)
-    job.set_progress('Waiting for nodes to report hostnames...')
-
-    nodes = wait_for_nodes(NODE_COUNT)
-    if len(nodes) < NODE_COUNT:
-        return ("FAILURE",
-                "Nodes are not ready after {} seconds",
-                "")
-
-    job.set_progress('Importing cluster...')
-
-    get_cluster()
-    tech = ContainerOrchestratorTechnology.objects.get(name='Kubernetes')
-    kubernetes = Kubernetes.objects.create(
-        name=CLUSTER_NAME,
-        ip=endpoint,
-        port=443,
-        protocol='https',
-        serviceaccount=handler.serviceaccount,
-        servicepasswd=handler.secret,
-        container_technology=tech,
-    )
-
-    resource.aks_cluster_id = kubernetes.id
-    resource.save()
-    url = 'https://{}{}'.format(
-        PortalConfig.get_current_portal().domain,
-        reverse('container_orchestrator_detail', args=[kubernetes.id])
-    )
-    job.set_progress("Cluster URL: {}".format(url))
-
-    job.set_progress('Importing nodes...')
-
-    job.set_progress('Waiting for cluster to report as running...')
-    remaining_time = TIMEOUT - (time.time() - start)
-
-    return ("SUCCESS","Cluster is ready and can be accessed at {}".format(url), "")
+if __name__ == "__main__":
+    job_id = sys.argv[1]
+    j = Job.objects.get(id=job_id)
+    run = run(j)
+    if run[0] == "FAILURE":
+        set_progress(run[1])
