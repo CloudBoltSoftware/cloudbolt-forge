@@ -13,6 +13,7 @@ import azure.mgmt.storage as storage
 from azure.storage.file import FileService
 from django.conf import settings
 from pathlib import Path
+import azure.mgmt.resource.resources as resources
 
 def get_tenant_id_for_azure(handler):
     '''
@@ -22,20 +23,43 @@ def get_tenant_id_for_azure(handler):
         return handler.azure_tenant_id
 
     return handler.tenant_id
-    
-def generate_options_for_storage_account(server=None, **kwargs):
+
+def get_storage_client_details(account_flag = False):
+    keys = None
     discovered_az_stores = []
     for handler in AzureARMHandler.objects.all():
-        set_progress('Connecting to Azure Storage for handler: {}'.format(handler))
+        set_progress('Connecting to Azure storage \
+        files for handler: {}'.format(handler))
         credentials = ServicePrincipalCredentials(
             client_id=handler.client_id,
             secret=handler.secret,
             tenant=get_tenant_id_for_azure(handler)
         )
-        azure_client = storage.StorageManagementClient(credentials, handler.serviceaccount)
-        set_progress("Connection to Azure established")
-        for st in azure_client.storage_accounts.list():
-            discovered_az_stores.append(st.name)
+        azure_client = storage.StorageManagementClient(
+            credentials, handler.serviceaccount)
+        azure_resources_client = resources.ResourceManagementClient(credentials, handler.serviceaccount)
+
+        if account_flag:
+            set_progress("Connection to Azure established")
+            for st in azure_client.storage_accounts.list():
+                discovered_az_stores.append(st.name)
+            discovered_az_stores = sorted(discovered_az_stores)
+            return discovered_az_stores
+
+        for resource_group in azure_resources_client.resource_groups.list():
+            try:
+                for st in azure_client.storage_accounts.list_by_resource_group(resource_group.name)._get_next().json()['value']:
+                    if st['name'] == "{{ storage_account }}":
+                        res = azure_client.storage_accounts.list_keys(
+                        resource_group.name, st['name'])
+                        keys = res.keys
+                        break
+            except Exception as e:
+                raise e
+        return keys
+
+def generate_options_for_storage_account(server=None, **kwargs):
+    discovered_az_stores = get_storage_client_details(True)
     return discovered_az_stores
 
 def create_custom_fields_as_needed():
@@ -76,9 +100,9 @@ def run(job, **kwargs):
         set_progress("Converting relative URL to filesystem path")
         file = file.replace(settings.MEDIA_URL, settings.MEDIA_ROOT)
 
-    st_account = Resource.objects.get(name__iexact="{{ storage_account }}")
-    account_key, fallback_account_key = st_account.azure_account_key, st_account.azure_account_key_fallback
-    
+    keys = get_storage_client_details()
+    account_key, fallback_account_key = keys[0].value, keys[1].value
+
     set_progress("Connecting To Azure...")
     file_service = FileService(account_name=storage_account, account_key=account_key)
 
