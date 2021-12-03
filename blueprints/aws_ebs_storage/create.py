@@ -38,7 +38,7 @@ def run(job, logger=None, **kwargs):
     volume_size_gb = int('{{ volume_size_gb }}')
 
     CustomField.objects.get_or_create(
-        name='aws_rh_id', type='STR',
+        name='aws_rh_id', type='INT',
         defaults={'label':'AWS RH ID', 'description':'Used by the AWS blueprints'}
     )
     CustomField.objects.get_or_create(
