@@ -1,1 +1,49 @@
+""" 
+1) This script runs as a server action and removes 'sysprep-specialize-script-ps1' key from a server that lives in GCP.
+2) Before running this script, learn about startup-scripts and 'sysprep-specialize-script-ps1' at
+   https://cloud.google.com/compute/docs/instances/startup-scripts 
+   https://docs.cloudbolt.io/articles/#!cloudbolt-latest-docs/google-cloud-platform/a/h3_1032975431
 
+
+Script Prerequisites:
+1. In CB server, install Gcloud from https://cloud.google.com/sdk/docs/install#linux
+2. Configure the gcloud for this path this path /root/google-cloud-sdk/bin/
+
+"""
+
+import re
+import sys
+
+from common.methods import set_progress
+from utilities.run_command import run_command
+
+
+def run(**kwargs):
+    """
+    Uses the gcloud CLI to remove startup script of Windows instance in GCP.
+    """
+    cmd = (
+        "/root/google-cloud-sdk/bin/gcloud compute instances remove-metadata  "
+        "{hostname} --keys={key} --zone={zone}"
+    )
+
+    server = kwargs["server"]
+    key = 'sysprep-specialize-script-ps1'
+    zone = s.gcp_zone
+
+    cmd = cmd.format(
+        hostname=server.hostname, key=key,zone = zone)
+
+    set_progress("Removing key {} on {}".format({key}, server.hostname))
+    output = run_command(cmd)
+  
+    return "", "", ""
+
+
+if __name__ == "__main__":
+    import django
+
+    django.setup()
+    from infrastructure.models import Server
+
+    run(server=Server.objects.get(id=sys.argv[1]))
