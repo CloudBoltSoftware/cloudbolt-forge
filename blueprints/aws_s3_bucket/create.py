@@ -4,15 +4,20 @@ Build service item action for AWS S3 Bucket blueprint.
 from common.methods import set_progress
 from infrastructure.models import CustomField
 from resourcehandlers.aws.models import AWSHandler
+from infrastructure.models import Environment
+from accounts.models import Group
 import boto3
 
 
-def generate_options_for_aws_rh(server=None, **kwargs):
+def generate_options_for_env(server=None, **kwargs):
     options = []
-    for rh in AWSHandler.objects.all():
-        options.append((rh.id, rh.name))
-    return sorted(options, key=lambda tup: tup[1].lower())
-
+    group_name=(kwargs['group']).name
+    gp=Group.objects.get(name=group_name)
+    options=[(env.id,env.name) for env in gp.environments.all() if env.resource_handler.resource_technology.type_slug.lower()=="aws"]
+    if len(options)!=0:
+        return sorted(options, key=lambda tup: tup[1].lower())
+    else:
+        raise Exception("group is not associated with any environment")
 
 def generate_options_for_s3_region(server=None, **kwargs):
     options = []
@@ -32,10 +37,11 @@ def create_custom_fields():
 
 
 def run(**kwargs):
-    rh_id = '{{ aws_rh }}'
+    env_id = '{{ env }}'
     region = '{{ s3_region }}'
     new_bucket_name = '{{ s3_bucket_name_input }}'
-    rh = AWSHandler.objects.get(id=rh_id)
+    env=Environment.objects.get(id=env_id)
+    rh = env.resource_handler
     wrapper = rh.get_api_wrapper()
     create_custom_fields()
 
