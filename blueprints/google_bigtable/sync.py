@@ -4,7 +4,7 @@ from google.oauth2.credentials import Credentials
 
 from infrastructure.models import Environment
 from common.methods import set_progress
-from resourcehandlers.gcp.models import GCPHandler
+from resourcehandlers.gcp.models import GCPHandler, GCPProject
 
 
 RESOURCE_IDENTIFIER = 'instance_name'
@@ -16,7 +16,7 @@ def discover_resources(**kwargs):
     #create a set of all projects
     gcp_envs = Environment.objects.filter(
         resource_handler__resource_technology__name="Google Cloud Platform")
-    projects = {env.GCP_project for env in gcp_envs}
+    projects = {env.gcp_project for env in gcp_envs}
 
     for handler in GCPHandler.objects.all():
         set_progress('Connecting to Google BigTable for \
@@ -24,7 +24,7 @@ def discover_resources(**kwargs):
         
         #only get bigtables of projects in the set
         for env in Environment.objects.filter(resource_handler_id=handler.id):
-            project = env.GCP_project
+            project = env.gcp_project
             if project not in projects:
                 continue
 
@@ -32,22 +32,22 @@ def discover_resources(**kwargs):
             if not wrapper:
                 set_progress("Could not connect to Google Cloud.  Skipping this resource handler.")
                 continue
-
+            gcp_project_name = GCPProject.objects.get(id=project).gcp_id
             set_progress("Connection to Google Cloud established")
-            instances = list_bigtables(wrapper, project).get("instances", None)
-
-            for bigtable in instances:
-                if bigtable.get("displayName"):
-                    discovered_google_bigtables.append(
-                        {
-                            'name': bigtable.get("displayName", "noName"),
-                            'instance_name': bigtable.get("displayName", "noName"),
-                            'google_rh_id': handler.id,
-                            'project_id': project,
-                        }
-                    )
-            #remove project from the set after getting its bigtables
-            projects.discard(project)
+            instances = list_bigtables(wrapper, gcp_project_name).get("instances", None)
+            if instances:
+                for bigtable in instances:
+                    if bigtable.get("displayName"):
+                        discovered_google_bigtables.append(
+                            {
+                                'name': bigtable.get("displayName", "noName"),
+                                'instance_name': bigtable.get("displayName", "noName"),
+                                'google_rh_id': handler.id,
+                                'project_id': gcp_project_name,
+                            }
+                        )
+                #remove project from the set after getting its bigtables
+                projects.discard(gcp_project_name)
 
     return discovered_google_bigtables
 

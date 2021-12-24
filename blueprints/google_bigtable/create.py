@@ -10,7 +10,7 @@ from google.oauth2.credentials import Credentials
 from common.methods import set_progress
 from infrastructure.models import CustomField, Environment
 from orders.models import CustomFieldValue
-from resourcehandlers.gcp.models import GCPHandler
+from resourcehandlers.gcp.models import GCPHandler, GCPProject
 
 INSTANCE_TYPE = "PRODUCTION"  # "DEVELOPMENT" is permitted, but deprecated
 
@@ -111,7 +111,8 @@ def run(job=None, logger=None, **kwargs):
     assert 6 <= len(instance_id) <= 33
 
     environment = Environment.objects.get(id='{{ env_id }}')
-    project_id = environment.GCP_project
+    project_id = environment.gcp_project
+    gcp_project_name = GCPProject.objects.get(id=project_id).gcp_id
     rh = environment.resource_handler.cast()
     set_progress("RH: %s" % rh)
     set_progress('location_id: %s' % location_id)
@@ -123,7 +124,7 @@ def run(job=None, logger=None, **kwargs):
     # knows which credentials to use.
     resource.google_rh_id = rh.id
     # store the GCP project_id on the resource for passing to the delete API
-    resource.project_id = project_id
+    resource.project_id = gcp_project_name
     resource.save()
 
     set_progress("instance type: %s" % INSTANCE_TYPE)
@@ -138,7 +139,7 @@ def run(job=None, logger=None, **kwargs):
 
     set_progress("\nCreating instance and cluster...")
 
-    operation = create_bigtable(wrapper, project_id, instance_id, cluster_id, INSTANCE_TYPE, location=location_id, serve_nodes=serve_nodes)  
+    operation = create_bigtable(wrapper, gcp_project_name, instance_id, cluster_id, INSTANCE_TYPE, location=location_id, serve_nodes=serve_nodes)  
 
     while not get_operation_status(wrapper, operation['name']):
         set_progress("Waiting for instance creation to finish...")

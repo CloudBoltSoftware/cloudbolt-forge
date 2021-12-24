@@ -39,8 +39,7 @@ def delete_bigtable(wrapper: Resource, project_id: str, instance_id: str):
 
 
 def run(job, logger=None, **kwargs):
-    resource = kwargs.pop('resources').first()
-
+    resource = kwargs.get("resource")
     instance_id = resource.attributes.get(field__name='instance_name').value
     project_id = resource.attributes.get(field__name='project_id').value
     rh_id = resource.attributes.get(field__name='google_rh_id').value
