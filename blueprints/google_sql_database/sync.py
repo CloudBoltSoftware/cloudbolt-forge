@@ -1,5 +1,5 @@
 """
-Discover Mysql records with some identifying attributes on GCP
+Discover SQL records with some identifying attributes on GCP
 return a list of dictionaries from the 'discover_resoures' function
 """
 import json
@@ -14,13 +14,12 @@ from resourcehandlers.gcp.models import GCPProject
 
 RESOURCE_IDENTIFIER = ["gcp_sql_instance_name", "gcp_sql_project"]
 
-
 def discover_resources(**kwargs):
     discovered_mysqldb = []
 
     existing_instances = set()
     existing_bps = ServiceBlueprint.objects.filter(
-        name__contains="Google MySQL Database"
+        name__contains="Google Cloud SQL Database"
     )
 
     for bp in existing_bps:
@@ -50,8 +49,9 @@ def discover_resources(**kwargs):
         client = build(service_name, version, credentials=credentials)
 
         try:
+            gcp_project = project.gcp_id
             instances = (
-                client.instances().list(project=project.id).execute().get("items", None)
+                client.instances().list(project=gcp_project).execute().get("items", None)
             )
             if instances:
                 for instance in instances:
@@ -63,7 +63,7 @@ def discover_resources(**kwargs):
                     if (instance["name"], project.name) not in existing_instances:
                         discovered_mysqldb.append(
                             {
-                                "name": instance["name"],
+                                "name": "Google Cloud SQL - " + instance["name"],
                                 "gcp_sql_instance_name": instance["name"],
                                 "gcp_sql_rh_id": resource_handler.id,
                                 "gcp_sql_project": project.name,
