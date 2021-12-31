@@ -4,25 +4,18 @@ Teardown service item action for Google Cloud function
 
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
-from resourcehandlers.gce.models import GCEHandler
+from resourcehandlers.gcp.models import GCPHandler
 from common.methods import set_progress
-
+import json
+from google.oauth2.credentials import Credentials
 
 def run(resource, logger=None, **kwargs):
-    rh = GCEHandler.objects.get(id=resource.google_rh_id)
+    rh = GCPHandler.objects.get(id=resource.google_rh_id)
 
     set_progress('Connecting to Google Cloud')
 
-    project = rh.project
-
-    credentials = ServiceAccountCredentials.from_json_keyfile_dict({
-        'client_email': rh.serviceaccount,
-        'private_key': rh.servicepasswd,
-        'type': 'service_account',
-        'project_id': project,
-        'client_id': None,
-        'private_key_id': None,
-    })
+    credentials_dict = json.loads(rh.gcp_api_credentials)
+    credentials = Credentials(**credentials_dict)
 
     service_name = 'cloudfunctions'
     version = 'v1'
@@ -37,4 +30,3 @@ def run(resource, logger=None, **kwargs):
         return "SUCCESS", "", ""
 
     return "FAILURE", "", ""
-
