@@ -2,17 +2,20 @@
 Plug-in for creating a Google cloud firewall.
 """
 from __future__ import unicode_literals
+
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 from infrastructure.models import CustomField, Environment
+from resourcehandlers.gcp.models import GCPProject
 from common.methods import set_progress
-import time, json
+import time, json 
 
 def generate_options_for_env_id(server=None, **kwargs):
-    gce_envs = Environment.objects.filter(
-        resource_handler__resource_technology__name="Google Compute Engine")
+    gcp_envs = Environment.objects.filter(
+        resource_handler__resource_technology__name="Google Cloud Platform")
     options = []
-    for env in gce_envs:
+    for env in gcp_envs:
         options.append((env.id, env.name))
     if not options:
         raise RuntimeError("No valid Google Compute Engine resource handlers in CloudBolt")
@@ -69,7 +72,6 @@ def generate_options_for_direction(server=None, **kwargs):
 def run(job=None, logger=None, **kwargs):
     environment = Environment.objects.get(id='{{ env_id }}')
     rh = environment.resource_handler.cast()
-    region = str(environment.name[:-2])
 
     firewall_name = "{{ firewall_name }}"
     priority = "{{ priority }}"
@@ -82,21 +84,27 @@ def run(job=None, logger=None, **kwargs):
 
     set_progress("RH: %s" % rh)
 
-    project = rh.project
+    project_id = environment.gcp_project
+    gcp_project = GCPProject.objects.get(id=project_id).gcp_id
+    
+    try:
+        account_info = json.loads(rh.gcp_projects.get(id=project_id).service_account_info)
+    except Exception:
+        account_info = json.loads(rh.gcp_projects.get(id=project_id).service_account_key)
 
-    credentials = ServiceAccountCredentials.from_json_keyfile_dict({
-        'client_email': rh.serviceaccount,
-        'private_key': rh.servicepasswd,
-        'type': 'service_account',
-        'project_id': project,
-        'client_id': None,
-        'private_key_id': None,
-    })
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict(account_info)
 
-    client = build('compute', 'v1', credentials=credentials)
+    job.set_progress(
+        "Connecting to Google Cloud through service account email {}".format(
+            account_info["client_email"]
+        )
+    )
+    set_progress("RH: %s" % rh)
+
+    service_name = "compute"
+    version = "v1"
+    client = build(service_name, version, credentials=credentials, cache_discovery = False)
     set_progress("Connection to google cloud established")
-    set_progress(json.dumps(allowed_ports.split(',')))
-    set_progress(type(allowed_ports.split(',')))
 
     firewall_body = {
         "name": firewall_name,
@@ -105,28 +113,32 @@ def run(job=None, logger=None, **kwargs):
         "allowed": [
             {
             "IPProtocol": allowed_protocol,
-            "ports": json.dumps(allowed_ports.split(','))
+            "ports": allowed_ports.split(','),
             }
         ],
     }
-
-    client.firewalls().insert(project=project, body=firewall_body).execute()
-
+    set_progress('Creating firewall - {} '.format(firewall_name))
+    
+    try:
+        resp = client.firewalls().insert(project=gcp_project, body=firewall_body).execute()
+    except Exception as e:
+        set_progress("Exception occured while creating the firewall rule in GCP: {}".format(e))
+    
     #wait for the firewall to be created
     time.sleep(10)
-
-    created_firewall = client.firewalls().get(project=project, firewall=firewall_name).execute()
+    
+    created_firewall = client.firewalls().get(project=gcp_project, firewall=firewall_name).execute()
     assert created_firewall['name'] == firewall_name
 
     #save the resource
     resource = kwargs.pop('resources').first()
     resource.google_rh_id = rh.id
-    resource.google_region = region
     resource.name = firewall_name
     resource.google_firewall_name = firewall_name
     resource.google_firewall_priority = priority
     resource.google_firewall_direction = direction
-    resource.google_cloud_project = project
+    resource.google_cloud_project = gcp_project
     resource.save()
 
     set_progress('Firewall rule has been created')
+    return "SUCCESS", "", ""
