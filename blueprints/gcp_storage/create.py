@@ -12,7 +12,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import Resource as GCPResource, build
 from infrastructure.models import CustomField, Environment
 from resources.models import Resource
-from resourcehandlers.gcp.models import GCPHandler
+from resourcehandlers.gcp.models import GCPHandler, GCPProject
 
 # Get templated information
 STORAGE_TYPE = "{{ storage_type }}"
@@ -126,7 +126,9 @@ def create_bucket(
 def run(job=None, logger=None, **kwargs):
     # Get system information
     environment = Environment.objects.get(id=ENVIRONMENT_ID)
-    project_id = environment.GCP_project
+    gcp_project = GCPProject.objects.get(id=environment.gcp_project)
+    project_id = gcp_project.gcp_id
+    # project_id = environment.GCP_project
     resource_handler = environment.resource_handler.cast()
 
     set_progress(f"Resource Handler: {resource_handler}")

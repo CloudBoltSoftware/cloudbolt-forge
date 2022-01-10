@@ -104,7 +104,7 @@ def get_buckets_in_handler(handler: GCPHandler, wrapper: GCPResource) -> List[ap
     buckets_in_handler = []
 
     for project in imported_projects:
-        buckets_in_project = get_buckets_in_project(wrapper, project.id)
+        buckets_in_project = get_buckets_in_project(wrapper, project.gcp_id)
         buckets_in_handler.extend(buckets_in_project)
 
     return buckets_in_handler
@@ -166,9 +166,13 @@ def discover_resources(**kwargs) -> List[Dict]:
     discovered_google_storage = []
 
     # Gather system information
+    # gcp_storage_blueprint = ServiceBlueprint.objects.filter(
+    #     name__iexact="GCP Storage"
+    # ).first()
     gcp_storage_blueprint = ServiceBlueprint.objects.filter(
-        name__iexact="GCP Storage"
+        name__icontains="Google Storage"
     ).first()
+    
     group = Group.objects.first()
     storage_resource_type = ResourceType.objects.filter(name__iexact="Storage").first()
 
