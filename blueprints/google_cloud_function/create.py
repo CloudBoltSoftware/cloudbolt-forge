@@ -1,14 +1,16 @@
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
-
+from google.oauth2 import service_account
 from common.methods import set_progress
 from infrastructure.models import CustomField, Environment
-
+from pathlib import Path
 import json, tempfile
-from google.cloud import storage
 import os
 import zipfile
 import time
+import io
+from django.conf import settings
+from googleapiclient.http import MediaIoBaseUpload
 
 
 def generate_custom_fields():
@@ -60,19 +62,13 @@ FUNCTIONS_VALID_REGIONS = ['us-central1', 'us-east1',
 
 
 def generate_options_for_env_id(server=None, **kwargs):
-    gce_envs = Environment.objects.filter(
-        resource_handler__resource_technology__name="Google Compute Engine")
+    gcp_envs = Environment.objects.filter(
+        resource_handler__resource_technology__name="Google Cloud Platform")
     options = []
-    regions_added = []
-    for env in gce_envs:
-        region = env.name[:-2]
-        if region not in regions_added:
-            if region in FUNCTIONS_VALID_REGIONS:
-                regions_added.append(region)
-                options.append((env.id, region))
-
+    for env in gcp_envs:
+        options.append((env.id, env.name))
     if not options:
-        raise RuntimeError("No valid Google Compute Engine resource handlers in CloudBolt")
+        raise RuntimeError("No valid Google Cloud Platform resource handlers in CloudBolt")
     return options
 
 
@@ -87,9 +83,12 @@ def generate_options_for_bucket_to_store_sourcecode(control_value=None, **kwargs
     buckets = []
     if control_value:
         environment = Environment.objects.get(id=control_value)
+        project_id=environment.gcp_project
         rh = environment.resource_handler.cast()
-        storage_client = create_storage_client(rh)
-        buckets = [bucket.name for bucket in storage_client.list_buckets()]
+        project=rh.gcp_projects.get(id=project_id).name
+        storage_client = create_build_client(rh,project_id,'storage')
+        list_bucket=storage_client.buckets().list(project=project).execute()
+        buckets = [bucket.get('name') for bucket in list_bucket.get('items')]
 
     return buckets
 
@@ -107,26 +106,27 @@ def generate_options_for_available_memory_mb(**kwargs):
         (2048, '2 GB'),
     ]
 
+def generate_options_for_gcp_region(control_value=None,**kwargs):
+    if control_value is None:
+        return []
+    environment = Environment.objects.get(id=control_value)
+    project_id=environment.gcp_project
+    rh = environment.resource_handler.cast()
+    project=rh.gcp_projects.get(id=environment.gcp_project).name
+    client = create_build_client(rh,project_id,'cloudfunctions')
+    locations=client.projects().locations().list(name=f'projects/{project}').execute()
+    return [region.get('locationId') for region in locations['locations']]
 
-def create_storage_client(rh):
-    json_fd, json_path = tempfile.mkstemp()
-
-    json_dict = {'client_email': rh.serviceaccount,
-                 'token_uri': 'https://www.googleapis.com/oauth2/v4/token',
-                 'private_key': rh.servicepasswd
-                 }
-
-    with open(json_path, 'w') as fh:
-        json.dump(json_dict, fh)
-
-    client = storage.client.Client.from_service_account_json(json_path,
-                                                             project=rh.project)
-
-    os.close(json_fd)
+def create_build_client(rh,project_id,servicename):
+    '''method to create cloud build client for given service''' 
+    account_info = json.loads(rh.gcp_projects.get(id=project_id).service_account_info)
+    credentials=service_account.Credentials.from_service_account_info(account_info)
+    client=build(servicename, "v1", credentials=credentials, cache_discovery=False)
     return client
 
 
-def generate_file_name(runtime):
+
+def validate_file_name(runtime,filename):
     """
     Every runtime has
         -specific file that is expected by google cloud functions
@@ -137,36 +137,33 @@ def generate_file_name(runtime):
         'nodejs10': 'index.js',
         'go111': 'function.go'
     }
-    return runtimes.get(runtime)
+    return (runtimes.get(runtime)==filename)
 
 
-def create_file_with_sourcecode(sourcecode, folder, filename):
+def create_file_with_sourcecode(sourcecode):
     # Creates a temporary file containing the sourcecode passed.
-    try:
-        os.mkdir(f'/tmp/{folder}')
-    except Exception as e:
-        pass
-
-    with open(f'/tmp/{folder}/{filename}', 'w') as file:
-        file.write(sourcecode)
-
-    # Zip the file
-    zip_filename = filename.split('.')[0] + '.zip'
-    zip_file_location = f'/tmp/{folder}/{zip_filename}'
-
-    zip_ = zipfile.ZipFile(zip_file_location, 'w', zipfile.ZIP_DEFLATED)
-    zip_.write(f'/tmp/{folder}/{filename}', arcname=filename)
-
-    return zip_file_location
+    path=sourcecode
+    filename=Path(sourcecode).name
+    if path.startswith(settings.MEDIA_URL):
+        set_progress("Converting relative URL to filesystem path")
+        path = path.replace(settings.MEDIA_URL, settings.MEDIA_ROOT)
+    path = os.path.join(settings.MEDIA_ROOT, path)
+    archive=io.BytesIO()
+    with zipfile.ZipFile(archive, 'w') as zip_archive:
+        with open(path, 'r') as file:
+            zip_file = zipfile.ZipInfo(filename)
+            zip_archive.writestr(zip_file, file.read())
+    archive.seek(0)
+    media=MediaIoBaseUpload(archive, mimetype='application/zip')
+    return media
 
 
-def upload_file_to_s3(client, bucket_name, file_location):
-    bucket = client.get_bucket(bucket_name)
-    blob_location = 'functions/' + file_location.split('/')[-2] + file_location.split('/')[-1]
-    blob = bucket.blob(blob_location)
-    blob.upload_from_filename(file_location)
-
-    return blob_location
+def upload_file_to_s3(storage_client, bucket_name, file,func_name):
+    '''method to upload file in bucket'''
+    body={'name': func_name}
+    object=storage_client.objects()
+    obj_insert=object.insert(bucket=bucket_name,body=body,media_body=file).execute()
+    return bucket_name+'/'+func_name
 
 
 def run(resource, logger=None, **kwargs):
@@ -179,37 +176,32 @@ def run(resource, logger=None, **kwargs):
     bucket = '{{ bucket_to_store_sourcecode }}'
     cloud_storage_location = '{{ cloud_storage_location }}'
     enter_sourcecode_or_bucket_url = "{{enter_sourcecode_or_bucket_url}}"
+    region = "{{gcp_region}}"
     rh = environment.resource_handler.cast()
-
-    project = rh.project
-    region = environment.name[:-2]
-
-    credentials = ServiceAccountCredentials.from_json_keyfile_dict({
-        'client_email': rh.serviceaccount,
-        'private_key': rh.servicepasswd,
-        'type': 'service_account',
-        'project_id': project,
-        'client_id': None,
-        'private_key_id': None,
-    })
+    
+    
+    project = environment.gcp_project
+    account_info = json.loads(rh.gcp_projects.get(id=project).service_account_info)
+    project_name=account_info['project_id']
 
     service_name = 'cloudfunctions'
-    version = 'v1'
-    client = build(service_name, version, credentials=credentials, cache_discovery=False)
+    
+    client = create_build_client(rh,project,service_name)
 
     set_progress("Connection to google cloud established")
 
-    # Create a file with an extension corresponding to the runtime selected
-    filename = generate_file_name(runtime)
-    # We will use seconds as the folder name just to make it unique
-
-    folder = str(time.time()).split('.')[0]
-
-    sourcecode_location = create_file_with_sourcecode(source_code, folder, filename)
-    storage_client = create_storage_client(rh)
+    # validate a file with an extension corresponding to the runtime selected
+    
+    
+    storage_client = create_build_client(rh,project,'storage')
 
     if not cloud_storage_location:
-        file_location = upload_file_to_s3(storage_client, bucket, sourcecode_location)
+        filename=Path(source_code).name
+        if validate_file_name(runtime,filename):
+            sourcecode_location = create_file_with_sourcecode(source_code)
+        else:
+            return "FAILURE","Please provide valid file.",""
+        file_location = upload_file_to_s3(storage_client, bucket, sourcecode_location,function_name)
     else:
         file_location = cloud_storage_location
 
@@ -217,27 +209,27 @@ def run(resource, logger=None, **kwargs):
     time.sleep(5)
 
     body = {
-        "name": f"projects/{project}/locations/{region}/functions/{function_name}",
+        "name": f"projects/{project_name}/locations/{region}/functions/{function_name}",
         "httpsTrigger": {
-            "url": f"https://{region}-{project}.cloudfunctions.net/{function_name}"
+            "url": f"https://{region}-{project_name}.cloudfunctions.net/{function_name}"
         },
         "status": "ACTIVE",
         "entryPoint": f"{entry_point}",
         "timeout": "60s",
         "availableMemoryMb": int(available_memory_mb),
-        "serviceAccountEmail": f"{rh.serviceaccount}",
+        "serviceAccountEmail": account_info.get('client_email'),
         "runtime": f"{runtime}",
-        "sourceArchiveUrl": f"gs://{bucket}/{file_location}",
+        "sourceArchiveUrl": f"gs://{file_location}",
     }
-
+    set_progress("Writing file to google cloud function")
     result = client.projects().locations().functions().create(
-        location=f"projects/{project}/locations/{region}", body=body).execute()
+        location=f"projects/{project_name}/locations/{region}", body=body).execute()
 
     if result.get('name'):
         generate_custom_fields()
         resource.name = function_name
         resource.google_rh_id = rh.id
-        resource.function_name = f"projects/{project}/locations/{region}/functions/{function_name}"
+        resource.function_name = f"projects/{project_name}/locations/{region}/functions/{function_name}"
         resource.available_memory_mb = available_memory_mb
         resource.entry_point = entry_point
         resource.runtime = runtime
