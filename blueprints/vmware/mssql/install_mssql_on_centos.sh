@@ -61,6 +61,14 @@ then
     sudo yum install -y mssql-server-fts
 fi
 
+
+#installing firewalld
+echo installing firewalld
+sudo yum install -y firewalld
+echo starting firewalld
+sudo systemctl start firewalld
+sudo systemctl enable firewalld
+
 # Configure firewall to allow TCP port 1433:
 echo Configuring firewall to allow traffic on port 1433...
 sudo firewall-cmd --zone=public --add-port=1433/tcp --permanent
