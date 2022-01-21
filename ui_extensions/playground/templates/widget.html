@@ -1,0 +1,25 @@
+{% extends "dashboard/card.html" %}
+{% load static %}
+{% block card_id %}playground-widget{% endblock %}
+{% block heading %}Playground{% endblock %}
+
+{% block card_body %}
+<user-card></user-card>
+<script type="module" src="{% static 'playground/js/user.js' %}"></script>
+<script>
+    {% comment %}
+    You can locate your dashboard extension panel using Javascript.  Find an
+    existing panel P that will be either the predecessor or successor of this
+    panel.  Then use jQuery to insert your panel before or after P.
+
+    Examples:
+        $('#hello-world').insertBefore('#servers-by-env-card');
+        or
+        $('#hello-world').insertAfter('#servers-by-env-card');
+
+    {% endcomment %}
+    $('#playground-widget').insertBefore('#servers-by-env');
+</script>
+
+{% endblock card_body %}
+
