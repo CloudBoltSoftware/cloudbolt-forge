@@ -9,6 +9,11 @@ logger = ThreadLogger(__name__)
 
 
 class ResourceHandlerTabDelegate(TabExtensionDelegate):
+    # We want this tab to display for all resource handlers, so we return
+    # True regardless of what Resource Handler is being displayed.
+    # If the goal is to target a specific Resource
+    # Handler, say AWSHandler, the body of this method would be:
+    # return if isinstance(self.instance.cast(), AWSHandler) else False
     def should_display(self):
         return True
 
@@ -20,9 +25,6 @@ def show_admin_extension(request, **kwargs):
     return render(request, template_name='playground/templates/admin.html')
 
 
-# We want this tab to display for all resource handlers, so we set the model
-# to the ResourceHandler object. If we wanted to target a specific resource
-# handler, we could get more specific, e.g. AWSHandler
 @tab_extension(
     model=ResourceHandler,
     title="Playground",
