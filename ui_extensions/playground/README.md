@@ -14,3 +14,13 @@ part of same-site-origin security policies that are common with modern Web apps.
 Calling the API provided by our service provider, in this case RandomUser.me, from the server-side script avoids the
 restrictions against calling external APIs from Javascript and dramatically simplifies authentication. 
 
+## Setup
+For the time being, add the following to customer_settings.py to have CloudBolt pick-up static files. NOTE: An improved
+method for handling static assets in XUIs is coming in the near future.
+
+```
+from settings import STATICFILES_DIRS, PROSERV_DIR
+STATICFILES_DIRS += PROSERV_DIR + "/xui/playground/static",
+```
+
+Once this is in-place, restart CloudBolt and then run `/opt/cloudbolt/manage.py collectstatic --noinput`.
