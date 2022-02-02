@@ -5,6 +5,7 @@ more info and the CloudBolt forge for more examples:
 https://github.com/CloudBoltSoftware/cloudbolt-forge/tree/master/actions/cloudbolt_plugins
 """
 import sys
+import time
 from resourcehandlers.azure_arm.models import AzureARMHandler
 from common.methods import set_progress
 from utilities.logger import ThreadLogger
@@ -17,6 +18,9 @@ def get_api_version(id_value):
     return '2018-04-01'
  
 def delete_resource(resource_client, api_version, resource_id, wrapper):
+    """
+    Delete databricks workspace
+    """
     try:
         response = resource_client.resources.delete_by_id(resource_id, api_version)
         # Need to wait for each delete to complete in case there are
@@ -29,6 +33,9 @@ def delete_resource(resource_client, api_version, resource_id, wrapper):
 
 
 def verify_resource(resource_client, resource_id, api_version, not_verified=0):
+    """
+    Verify databricks workspace
+    """
     try:
         resource_client.resources.get_by_id(resource_id, api_version)
     except CloudError as ce:
@@ -50,7 +57,9 @@ def verify_resource(resource_client, resource_id, api_version, not_verified=0):
             return False
         
         not_verified+=1
-         
+        time.sleep(10)
+        
+        # retry to verify databricks workspace
         verify_resource(resource_client, resource_id, api_version, not_verified)
         
     return True
@@ -120,6 +129,4 @@ def run(job, *args, **kwargs):
         return "WARNING", "Some resources failed deletion", ""
     
 
-    logger.info(f"Databricks {resource.name} deleted successfully.")
-
-    return "SUCCESS", f"Databricks {resource.name} deleted successfully.", ""
+    return "SUCCESS", "Resources deleted successfully", ""
