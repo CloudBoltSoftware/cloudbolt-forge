@@ -23,6 +23,7 @@ Todo - Pending feature
 API reference - https://docs.microsoft.com/en-gb/azure/databricks/dev-tools/api/latest/
 """
 
+
 def get_or_create_custom_fields():
     """ 
     Get or create a new custom fields
@@ -94,10 +95,10 @@ def get_token(rs, client_id, client_secret, tenantId):
     
     # get token
     resp = requests.get(f'https://login.microsoftonline.com/{tenantId}/oauth2/token', headers= as_header, data=data)
-
+    
     if resp.status_code != 200:
         raise RuntimeError("Unable to get AD or Management access token")
-
+        
     return resp.json()['access_token']
 
 def create_databricks_cluster(rh, resource_group, dbricks_workspace, dbricks_location, cluster_kwargs, count=0):
@@ -146,6 +147,9 @@ def create_databricks_cluster(rh, resource_group, dbricks_workspace, dbricks_loc
 
 
 def generate_options_for_dbs_runtime_version(field, **kwargs):
+    """
+    Return databricks runtime version
+    """
     return [ ('10.3.x-scala2.12', '10.3 Beta (Apache Spark 3.2.0, Scala 2.12)'),
         ('10.2.x-scala2.12', '10.2 (Apache Spark 3.2.0, Scala 2.12)'),
         ('10.1.x-scala2.12', '10.1 (Apache Spark 3.2.0, Scala 2.12)'),
@@ -157,23 +161,26 @@ def generate_options_for_dbs_runtime_version(field, **kwargs):
     
 
 def generate_options_for_dbs_worker_type(field, **kwargs):
-   return  [('Standard_DS3_v2', 'Standard_DS3_v2 (14 GB Memory, 4 Cores)'), 
-    ('Standard_DS4_v2', 'Standard_DS4_v2 (28 GB Memory, 8 Cores)'), 
-    ('Standard_DS5_v2', 'Standard_DS5_v2 (56 GB Memory, 16 Cores)'), 
-    ('Standard_D3_v2', 'Standard_D3_v2 (14 GB Memory, 4 Cores)'), 
-    ('Standard_D4_v2', 'Standard_D4_v2 (28 GB Memory, 8 Cores)'), 
-    ('Standard_D5_v2', 'Standard_D5_v2 (56 GB Memory, 16 Cores)'), 
-    ('Standard_D12_v2', 'Standard_D12_v2 (28 GB Memory, 4 Cores)'), 
-    ('Standard_D13_v2', 'Standard_D13_v2 (56 GB Memory, 8 Cores)'), 
-    ('Standard_DS12_v2', 'Standard_DS12_v2 (28 GB Memory, 4 Cores)'), 
-    ('Standard_DS13_v2', 'Standard_DS13_v2 (56 GB Memory, 8 Cores)'), 
-    ('Standard_H8', 'Standard_H8 (56 GB Memory, 8 Cores)'),
-    ('Standard_NC4as_T4_v3', 'Standard_NC4as_T4_v3 (28 GB Memory, 4 Cores)'),
-    ('Standard_NC8as_T4_v3', 'Standard_NC8as_T4_v3 (56 GB Memory, 8 Cores)')]
+    """
+    Return node type
+    """
+    return  [('Standard_DS3_v2', 'Standard_DS3_v2 (14 GB Memory, 4 Cores)'), 
+            ('Standard_DS4_v2', 'Standard_DS4_v2 (28 GB Memory, 8 Cores)'), 
+            ('Standard_DS5_v2', 'Standard_DS5_v2 (56 GB Memory, 16 Cores)'), 
+            ('Standard_D3_v2', 'Standard_D3_v2 (14 GB Memory, 4 Cores)'), 
+            ('Standard_D4_v2', 'Standard_D4_v2 (28 GB Memory, 8 Cores)'), 
+            ('Standard_D5_v2', 'Standard_D5_v2 (56 GB Memory, 16 Cores)'), 
+            ('Standard_D12_v2', 'Standard_D12_v2 (28 GB Memory, 4 Cores)'), 
+            ('Standard_D13_v2', 'Standard_D13_v2 (56 GB Memory, 8 Cores)'), 
+            ('Standard_DS12_v2', 'Standard_DS12_v2 (28 GB Memory, 4 Cores)'), 
+            ('Standard_DS13_v2', 'Standard_DS13_v2 (56 GB Memory, 8 Cores)'), 
+            ('Standard_H8', 'Standard_H8 (56 GB Memory, 8 Cores)'),
+            ('Standard_NC4as_T4_v3', 'Standard_NC4as_T4_v3 (28 GB Memory, 4 Cores)'),
+            ('Standard_NC8as_T4_v3', 'Standard_NC8as_T4_v3 (56 GB Memory, 8 Cores)')]
 
 
 def run(job, *args, **kwargs):
-    cluster_name =  '{{dbs_cluster_name}}'
+    cluster_name =  '{{dbs_cluster_name}}' # free text
     
     if cluster_name.strip() == "":
         return "", "", ""
@@ -188,10 +195,13 @@ def run(job, *args, **kwargs):
     
     create_cluster_params = {
         'cluster_name': cluster_name,
-        'spark_version': '{{dbs_runtime_version}}',
-        'node_type_id': '{{dbs_worker_type}}',
-        'num_workers': '{{dbs_num_workers}}',
-        'autotermination_minutes':  '{{autotermination_minutes}}'
+        'spark_version': '{{dbs_runtime_version}}', # drop down, show/hide based on cluster_name field value
+        'node_type_id': '{{dbs_worker_type}}', # drop down, show/hide based on cluster_name field value
+        'num_workers': '{{dbs_num_workers}}', # int, show/hide based on cluster_name field value, min=2
+        'autotermination_minutes':  '{{autotermination_minutes}}', # int, show/hide based on cluster_name field value, min=10 and max=10000
+        "spark_conf": {
+            "spark.speculation": True
+        }
     }
     
     logger.info("Databricks worspace cluster params : %s", create_cluster_params)

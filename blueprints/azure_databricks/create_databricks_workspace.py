@@ -153,7 +153,8 @@ def get_arm_template():
           "defaultValue": "premium",
           "allowedValues": [
             "standard",
-            "premium"
+            "premium",
+            "trial"
           ],
           "metadata": {
             "description": "The pricing tier of workspace."
@@ -237,6 +238,10 @@ def generate_options_for_azure_region(**kwargs):
 
 
 def generate_options_for_resource_group(field, control_value=None, **kwargs):
+    """
+    Generate resource group options
+    Dependency - azure region
+    """
     options = []
     
     if not control_value:
@@ -264,10 +269,9 @@ def generate_options_for_resource_group(field, control_value=None, **kwargs):
     
 
 def generate_options_for_pricing_tier(field, **kwargs):
-    # ("trial", "Trial (Premium - 14 Days Free DBUs)")
-    
     return [("standard", "Standard (Apache Spark, Secure with Azure AD)"), 
-                ("premium", "Premium (+ Role base access controls)")]
+                ("premium", "Premium (+ Role base access controls)"),
+                ("trial", "Trial (Premium - 14 Days Free DBUs)")]
 
 
 def run(job, *args, **kwargs):
@@ -275,11 +279,11 @@ def run(job, *args, **kwargs):
     
     resource = kwargs.get('resource')
     
-    region = "{{azure_region}}"
-    resource_group = "{{resource_group}}"
-    workspace_name = "{{workspace_name}}"
-    pricing_tier = "{{pricing_tier}}"
-    disable_public_ip = "{{ disable_public_ip }}"
+    region = "{{azure_region}}"  # drop down
+    resource_group = "{{resource_group}}" # drop down
+    workspace_name = "{{workspace_name}}" # free text
+    pricing_tier = "{{pricing_tier}}" # drop down
+    disable_public_ip = "{{ disable_public_ip }}" # boolean true/false
     
     # get or create custom fields
     get_or_create_custom_fields()
