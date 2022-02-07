@@ -26,7 +26,7 @@ def run(job, *args, **kwargs):
     if  cb_server.maas_machine_type:
         set_progress("Provisioning a RAID is not valid for the virtual machine on a MAAS LXD host")
         return "SUCCESS", "The MaaS during-provisioning plugin has completed.", ""
-    
+
     if machine:
         maas_id = machine['system_id']
         set_progress("Configuring RAID on MAAS machine {}".format(maas_id))
@@ -44,9 +44,9 @@ def run(job, *args, **kwargs):
     # remove any existing RAID configurations
     raids = wrapper.maas_api_request("GET", "nodes/{}/raids/".format(maas_id))
     
+    # We need to move to machine in ready state to delete the existig raid, you can't delete raid if machine in allocated state
+    rel = wrapper.maas_api_request("POST", "machines/{}/?op=release".format(maas_id), data = {"comment" : "making in ready state" })
     if raids:
-        # We need to move to machine in ready state to delete the existig raid, you can't delete raid if machine in allocated state
-        rel = wrapper.maas_api_request("POST", "machines/{}/?op=release".format(maas_id), data = {"comment" : "making in ready state" })
         for raid in raids:
             set_progress("Deleting RAID volume: {}".format(raid['name']))
             wrapper.maas_api_request("DELETE", "nodes/{}/raid/{}/".format(maas_id, raid['id']))
@@ -67,7 +67,7 @@ def run(job, *args, **kwargs):
             "spare_devices": [],
             "spare_partitions": [],
             }
-        
+
         resp = wrapper.maas_api_request("POST", "nodes/{}/raids/".format(maas_id), data= data)
         block_device_id = resp["virtual_device"]["id"]
         
@@ -84,6 +84,8 @@ def run(job, *args, **kwargs):
             "mount_options": "",
         }
         mountres = wrapper.maas_api_request("POST", 'nodes/{}/blockdevices/{}/?op=mount'.format(maas_id, block_device_id), data = mountdata)
+        allocated_machines = wrapper.maas_api_request("POST", "machines/?op=allocate", data = {'system_id' : maas_id})
+        set_progress('Reallocation of MaaS Machine: {}'.format(maas_id))
 
         return "SUCCESS", "Finished configuring RAID for MaaS machine", ""
     else:
