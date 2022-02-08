@@ -51,7 +51,6 @@ class GKEClusterBuilder(object):
         self.zone = zone
         gcp_project = GCPProject.objects.get(id=self.environment.gcp_project)
         self.project_name = gcp_project.gcp_id
-        set_progress('Project - Name - {}'.format(self.project_name))
         
         api_key = getattr(self.handler, "gcp_api_credentials", None)
         
@@ -122,8 +121,6 @@ class GKEClusterBuilder(object):
     def wait_for_nodes(self, node_count, timeout=None):
         nodes = []
         start = time.time()
-        set_progress('Time --- {}'.format(timeout))
-        set_progress('self.cluster_name --- {}'.format(self.cluster_name))
         while len(nodes) < node_count:
             if timeout is not None and (time.time() - start > timeout):
                 break
