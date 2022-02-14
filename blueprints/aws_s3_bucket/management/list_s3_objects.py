@@ -54,7 +54,7 @@ def run(job, resource, **kwargs):
         if not res:
             set_progress("Found new cloud file object '{}', creating sub-resource...".format(name))
             res = Resource.objects.create(
-                group=resource.group, parent_resource=resource, resource_type=rt, name=name)
+                group=resource.group, parent_resource=resource, resource_type=rt, name=name, blueprint=resource.blueprint)
             added.append(name)
             is_new = True
         res.lifecycle = "ACTIVE"
@@ -65,7 +65,7 @@ def run(job, resource, **kwargs):
             refreshed.append(name)
 
     processed = [] + added + refreshed
-    for f_obj in current_objects.exclude(name__in=[processed]):
+    for f_obj in current_objects.exclude(name__in=processed):
         set_progress("Coudn't find file '{}' in bucket '{}', deleting it from CloudBolt...".format(
             f_obj.name, resource.name))
         f_obj.delete()
