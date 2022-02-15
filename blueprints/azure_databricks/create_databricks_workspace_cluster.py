@@ -136,7 +136,7 @@ def create_databricks_cluster(rh, resource_group, dbricks_workspace, dbricks_loc
         
         # system got UnknownWorkerEnvironmentException when creating a cluster after creating a workspace
         # https://github.com/databrickslabs/terraform-provider-databricks/issues/33
-        time.sleep(60)
+        time.sleep(600)
         
         logger.info("retry to create cluster after 60 seconds sleep")
         
