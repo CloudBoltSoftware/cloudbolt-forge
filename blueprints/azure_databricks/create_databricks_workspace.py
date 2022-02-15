@@ -261,6 +261,7 @@ def generate_options_for_resource_group(field, control_value=None, **kwargs):
             options.append((rgs.name, rgs.name))
     
     if options:
+        options = sorted(options, key=lambda tup: tup[1].lower())
         options.insert(0, ('', '--- Select a Resource Group ---'))
     else:
         options.insert(0, ('', '--- No Resource Groups found in this Environment ---'))
