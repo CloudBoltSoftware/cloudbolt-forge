@@ -50,8 +50,7 @@ class GKEClusterBuilder(object):
         self.handler = environment.resource_handler.cast()
         self.zone = zone
         gcp_project = GCPProject.objects.get(id=self.environment.gcp_project)
-        self.project_name = self.environment.gcp_project
-        
+        self.project_name = gcp_project.gcp_id
         
         api_key = getattr(self.handler, "gcp_api_credentials", None)
         
@@ -83,7 +82,7 @@ class GKEClusterBuilder(object):
         self.compute_client = self.get_client('compute')
 
     def get_client(self, serviceName, version='v1'):
-        return build(serviceName, version, credentials=self.credentials)
+        return build(serviceName, version, credentials=self.credentials, cache_discovery=False)
 
     def create_cluster(self, node_count):
         cluster_resource = self.container_client.projects().zones().clusters()
@@ -272,7 +271,7 @@ def run(job=None, logger=None, **kwargs):
     # create a new Environment for the new container orchestrator, and attach it
     # to the selected GCP Project 
     env = Environment.objects.create(name="Resource-{} Environment".format(resource.id), container_orchestrator=kubernetes)
-    env.gcp_project = builder.project_name
+    env.gcp_id = builder.project_name
     env.save()
     
     url = 'https://{}{}'.format(
