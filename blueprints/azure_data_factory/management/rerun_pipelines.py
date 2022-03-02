@@ -5,6 +5,7 @@ more info and the CloudBolt forge for more examples:
 https://github.com/CloudBoltSoftware/cloudbolt-forge/tree/master/actions/cloudbolt_plugins
 """
 import requests
+import time 
 from resources.models import Resource, ResourceType
 from common.methods import set_progress
 from resourcehandlers.azure_arm.models import AzureARMHandler
@@ -17,15 +18,7 @@ API_VERSION = "2018-06-01"
 
 
 def get_or_create_custom_fields():
-    CustomField.objects.get_or_create(
-        name='re_run_id',
-        defaults={
-            'label': 'Rerun ID', 'type': 'STR',
-            'description': 'Used by the Azure data factory blueprints',
-            'required': False, 'show_on_servers': True
-        }
-    )
-
+    
     CustomField.objects.get_or_create(
         name='azure_resource_type',
         defaults={
@@ -108,24 +101,21 @@ def _get_rest_api_header(azure_rh):
     return headers
 
 
-def create_pipeline_cb_subresource(pipeline, resource, resource_type, job):
+def create_pipeline_cb_subresource(fs_obj, resource, resource_type, job):
     """
     Create pipeline cb sub resource
     params: resource : resource object
     params: resource : resource_type object
-    params: azure_pipeline : azure pipeline object
+    params: fs_obj : fetched pipelineruns object for updated status 
     """
-    reference_pipeline_cf = pipeline.get_cf_values_as_dict()
-
     # create pipeline as a sub resource of blueprint
     res = Resource.objects.create(
-        group=resource.group, parent_resource=resource, resource_type=resource_type, name=pipeline.name,
+        group=resource.group, parent_resource=resource, resource_type=resource_type, name=fs_obj.get("pipelineName",""),
         blueprint=resource.blueprint, lifecycle="ACTIVE", owner=job.owner)
 
     # assign customfield attribute
-    res.re_run_id = reference_pipeline_cf["run_id"]
+    res.azure_resource_status = fs_obj.get("status")
     res.azure_resource_type = "Re-Run Pipeline"
-    res.azure_resource_status = reference_pipeline_cf["azure_resource_status"]
     res.save()
 
     logger.info(f'Sub Resource {res} created successfully.')
@@ -141,12 +131,6 @@ def create_pipeline_rerun(pipeline, resource, resource_type, job):
     # custom field of pipeline object to fetch run id
     reference_pipeline_cf = pipeline.get_cf_values_as_dict()
 
-    # reference run id which is run id of run pipeline
-    reference_pipeline_run_id = reference_pipeline_cf['run_id']
-
-    # Recovery mode flag the specified referenced pipeline run and the new run will be grouped under the same groupId.
-    is_recovery = True
-
     base_url = f"https://management.azure.com/"
 
     factory_endpoint_path = f"subscriptions/{azure_rh.serviceaccount}/resourceGroups/{resource.resource_group}/providers/Microsoft.DataFactory/factories/"
@@ -155,21 +139,40 @@ def create_pipeline_rerun(pipeline, resource, resource_type, job):
 
     payload = {
         "api-version": API_VERSION,
-        "referencePipelineRunId": reference_pipeline_run_id,
-        "isRecovery": is_recovery
+        "referencePipelineRunId": reference_pipeline_cf['run_id'], # reference run id which is run id of run pipeline
+        "isRecovery": True  #referenced pipeline run and the new run will be grouped under the same groupId.
     }
 
     api_url = f"{base_url}{factory_endpoint_path}{pipeline_endpoint_path}"
+    
+    # rerun pipeline
+    rr_rsp = requests.request("POST", api_url, headers=headers, params=payload)
 
-    rr = requests.request("POST", api_url, headers=headers, params=payload)
+    if rr_rsp.status_code not in range(200, 299):
+        raise RuntimeError(f"Unexpected error occurred: {rr_rsp.json()}")
 
-    if rr.status_code not in range(200, 299):
-        raise RuntimeError(f"Unexpected error occurred: {rr.json()}")
+    logger.info(f"pipeline Re-Run {rr_rsp.json()} created successfully!")
+    
+    #runid of corresponding pipeline to fetch updated status 
+    fs_runid=rr_rsp.json().get("runId")
+    
+    time.sleep(30)
 
-    logger.info(f"pipeline Re-Run {rr.json()} created successfully!")
+    params = {
+        "api-version": API_VERSION
+    }
 
-    create_pipeline_cb_subresource(pipeline, resource, resource_type, job)
+    api_url = f"{base_url}{factory_endpoint_path}{resource.data_factory_name}/pipelineruns/{fs_runid}?"
 
+    #fetching updated resource status of rerun pipeline 
+    fs_rsp = requests.request("GET",api_url, headers=headers, params=params)
+    
+    #fetched pipelineruns object
+    fs_obj = fs_rsp.json()
+
+    # create rerun pipeline cb sub resource
+    create_pipeline_cb_subresource(fs_obj, resource, resource_type, job)
+    
 
 def run(job, resource, **kwargs):
     set_progress(f"Starting Provision of {resource} rerun pipeline.")
@@ -182,7 +185,6 @@ def run(job, resource, **kwargs):
 
     # get pipeline model object
     pipeline = Resource.objects.get(id=rerun_pipeline_id)
-
 
     logger.info(f"pipeline : {pipeline}")
 
