@@ -148,13 +148,8 @@ def generate_options_for_azure_region(**kwargs):
     
     # fetch all group environment
     envs = group.get_available_environments()
-    options=[]
 
-    for env in envs:
-        if env.resource_handler:
-            if env.resource_handler.resource_technology:
-                if env.resource_handler.resource_technology.name == "Azure":
-                    options.append((env.id, env.name))
+    options = [(env.id, env.name) for env in envs if env.resource_handler.resource_technology.name=="Azure"]
                     
     if not options:
         raise RuntimeError("No valid Environments on Azure resource handlers in CloudBolt")
@@ -176,14 +171,8 @@ def generate_options_for_resource_group(field, control_value=None, **kwargs):
     # get env object by id
     env = Environment.objects.get(id=control_value)
     
-    wrapper = env.resource_handler.cast().get_api_wrapper()
-    
     # fetch all resource groups
-    resource_groups = wrapper.resource_client.client.resource_groups.list(location=env.node_location)
-
-    for rgs in resource_groups:
-        if env.node_location == rgs.location and rgs.managed_by is None:
-            options.append((rgs.name, rgs.name))
+    options = [(group.str_value, group.str_value) for group in  env.custom_field_options.filter(field__name='resource_group_arm')]
 
     if options:
         options = sorted(options, key=lambda tup: tup[1].lower())
