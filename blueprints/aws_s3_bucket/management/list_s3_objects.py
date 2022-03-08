@@ -19,7 +19,14 @@ def create_resource_type_if_needed():
 
     CustomField.objects.get_or_create(
         name='s3_file_url', defaults={
-            'label': 'File URL', 'type': 'STR', "show_on_servers": True,
+            'label': 'Object URL', 'type': 'STR', "show_on_servers": True,
+            'description': 'Used by Public Cloud File Container BPs'
+        }
+    )
+
+    CustomField.objects.get_or_create(
+        name='s3_file_uri', defaults={
+            'label': 'S3 URI', 'type': 'STR', "show_on_servers": True,
             'description': 'Used by Public Cloud File Container BPs'
         }
     )
@@ -81,8 +88,9 @@ def run(job, resource, **kwargs):
         
         sub_resource.lifecycle = "ACTIVE"
         sub_resource.s3_file_size = b_obj['Size']
-        sub_resource.s3_file_url = "https://{0}.s3.amazonaws.com/{1}".format(bucket_name, name)
+        sub_resource.s3_file_url = "https://{0}.s3.amazonaws.com/{1}".format(bucket_name, name.replace(" ", "+"))
         sub_resource.s3_file_last_modified = b_obj['LastModified'].strftime("%B %d, %Y, %H:%M:%S(%Z)")
+        sub_resource.s3_file_uri = "s3://{0}/{1}".format(bucket_name, name)
         sub_resource.save()
         
         if not is_new:
@@ -94,7 +102,7 @@ def run(job, resource, **kwargs):
     for f_obj in sub_resources.exclude(name__in=processed):
         
         set_progress("Coudn't find file '{0}' in bucket '{1}', deleting it from CloudBolt...".format(f_obj.name, resource.name))
-        deleted.append(f_obj.name)
+
         f_obj.delete()
 
     set_progress("Added {} objects, refreshed {} and deleted {}".format(len(added), len(refreshed), len(deleted)))
