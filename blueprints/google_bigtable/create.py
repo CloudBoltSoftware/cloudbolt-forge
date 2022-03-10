@@ -104,7 +104,7 @@ def run(job=None, logger=None, **kwargs):
     create_custom_fields_as_needed()
     instance_id = '{{ db_identifier }}'
     serve_nodes = 3
-    zone_cfv_id = {{ zone }}
+    zone_cfv_id = '{{ zone }}'
     zone_cfv = CustomFieldValue.objects.get(id=zone_cfv_id)
     location_id = zone_cfv.str_value
     set_progress("Instance ID will be: %s" % instance_id)

@@ -11,8 +11,10 @@ call with a Javascript WebComponent that executes in the browser to fetch the da
 the Javascript WebComponent _could_ call the API directly, more often than not, these calls are not permitted as
 part of same-site-origin security policies that are common with modern Web apps.
 
-Calling the API provided by our service provider, in this case RandomUser.me, from the server-side script avoids the
+Calling the API provided by our Service Provider, in this case RandomUser.me, from the server-side script avoids the
 restrictions against calling external APIs from Javascript and dramatically simplifies authentication. 
+
+![](docs/image003.png)
 
 ## Setup
 For the time being, add the following to customer_settings.py to have CloudBolt pick-up static files. NOTE: An improved
