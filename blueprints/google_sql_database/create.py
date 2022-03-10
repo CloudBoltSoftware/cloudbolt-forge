@@ -279,14 +279,14 @@ def run(job=None, logger=None, **kwargs):
             instance_names = [inst["name"] for inst in inst_data["items"]]
             if instance_name in instance_names:
                 return (
-                    "ERROR",
+                    "FAILURE",
                     'Server instance "%s" already exists' % instance_name,
                     "",
                 )
     except HttpError as e:
         client_username = gcp_admin.client_email.split("@")[0]
         return (
-            "ERROR",
+            "FAILURE",
             "Server instance {instance_name} could not be created ({reason}), "
             "make sure that this ResourceHandler's service account "
             "({service_account_name}) is given the Cloud SQL Admin "
@@ -326,7 +326,6 @@ def run(job=None, logger=None, **kwargs):
     result = client.databases().insert(project=gcp_admin.project_name,
                                        instance=instance_name,
                                        body=body).execute()
-    set_progress(f'Database create result: {result}')
     operation_id = result["name"]
     wait_for_operation(client, gcp_admin, operation_id)
 
