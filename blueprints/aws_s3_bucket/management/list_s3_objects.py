@@ -102,7 +102,7 @@ def run(job, resource, **kwargs):
     for f_obj in sub_resources.exclude(name__in=processed):
         
         set_progress("Coudn't find file '{0}' in bucket '{1}', deleting it from CloudBolt...".format(f_obj.name, resource.name))
-
+        deleted.append(f_obj.name)
         f_obj.delete()
 
     set_progress("Added {} objects, refreshed {} and deleted {}".format(len(added), len(refreshed), len(deleted)))
