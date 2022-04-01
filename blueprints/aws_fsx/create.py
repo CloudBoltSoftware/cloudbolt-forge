@@ -61,7 +61,6 @@ def generate_options_for_env_id(server=None, **kwargs):
 def generate_options_for_file_system_type(**kwargs):
     return ['LUSTRE', 'WINDOWS']
 
-
 def generate_options_for_subnet_ids(control_value=None, **kwargs):
     if not control_value:
         return []
@@ -73,7 +72,7 @@ def generate_options_for_subnet_ids(control_value=None, **kwargs):
                        aws_secret_access_key=rh.servicepasswd)
     subnets = ec2.describe_subnets().get('Subnets')
 
-    result = [((subnet.get('SubnetId'), control_value), subnet.get('SubnetId')) for subnet in subnets]
+    result = [(subnet.get('SubnetId') +','+ control_value,  subnet.get('SubnetId')) for subnet in subnets]
 
     return result
 
@@ -81,8 +80,7 @@ def generate_options_for_subnet_ids(control_value=None, **kwargs):
 def generate_options_for_active_directory_id(control_value=None, **kwargs):
     if not control_value:
         return []
-    control_value = make_tuple(control_value)
-
+    control_value = control_value.split(',')
     env = Environment.objects.get(id=control_value[1])
     rh = env.resource_handler.cast()
 
@@ -95,7 +93,7 @@ def generate_options_for_active_directory_id(control_value=None, **kwargs):
     result = []
     for directory in directories.get('DirectoryDescriptions'):
         if control_value[0] in directory.get('VpcSettings').get('SubnetIds'):
-            result.append(directory.get('DirectoryId'))
+            result.append((directory.get('DirectoryId'), directory.get('DirectoryId')))
 
     return result
 
@@ -108,7 +106,7 @@ def run(resource, logger=None, **kwargs):
     file_system_type = "{{ file_system_type }}"
     storage_capacity = "{{ storage_capacity }}"
     subnet_ids = "{{ subnet_ids }}"
-    subnet_ids = make_tuple(subnet_ids)
+    subnet_ids = subnet_ids.split(',')
     # Configuration for Microsoft Windows file system.
     ActiveDirectoryId = "{{ active_directory_id }}"  # Optional
     ThroughputCapacity = "{{ ThroughputCapacity }}"
@@ -133,6 +131,7 @@ def run(resource, logger=None, **kwargs):
         configurations = {}
 
         if file_system_type == 'WINDOWS':
+            set_progress(f"File system is is {file_system_type}")
             if ActiveDirectoryId != "":
                 configurations['ActiveDirectoryId'] = ActiveDirectoryId
             if ThroughputCapacity:
@@ -142,7 +141,7 @@ def run(resource, logger=None, **kwargs):
                 configurations['DailyAutomaticBackupStartTime'] = DailyAutomaticBackupStartTime
 
             if AutomaticBackupRetentionDays:
-                configurations['AutomaticBackupRetentionDays'] = AutomaticBackupRetentionDays
+                configurations['AutomaticBackupRetentionDays'] = int(AutomaticBackupRetentionDays)
 
             res = fsx.create_file_system(
                 FileSystemType=file_system_type,
