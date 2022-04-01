@@ -5,21 +5,38 @@ from infrastructure.models import CustomField
 
 
 def create_resource_type_if_needed():
-    rt, created = ResourceType.objects.get_or_create(
+    rt, _ = ResourceType.objects.get_or_create(
         name="cloud_file_object",
         defaults={"label": "Cloud File Object", "icon": "far fa-file"}
     )
 
-    cf, _ = CustomField.objects.get_or_create(
-        name='cloud_file_obj_size', defaults={
-            'label': 'File Size', 'type': 'INT',
+    CustomField.objects.get_or_create(
+        name='s3_file_size', defaults={
+            'label': 'File Size', 'type': 'INT', "show_on_servers": True,
             'description': 'Used by Public Cloud File Container BPs'
         }
     )
 
-    if created:
-        set_progress("Created Cloud File Object Type")
-        rt.list_view_columns.add(cf)
+    CustomField.objects.get_or_create(
+        name='s3_file_url', defaults={
+            'label': 'Object URL', 'type': 'STR', "show_on_servers": True,
+            'description': 'Used by Public Cloud File Container BPs'
+        }
+    )
+
+    CustomField.objects.get_or_create(
+        name='s3_file_uri', defaults={
+            'label': 'S3 URI', 'type': 'STR', "show_on_servers": True,
+            'description': 'Used by Public Cloud File Container BPs'
+        }
+    )
+
+    CustomField.objects.get_or_create(
+        name='s3_file_last_modified', defaults={
+            'label': 'Last Modified', 'type': 'STR', "show_on_servers": True,
+            'description': 'Used by Public Cloud File Container BPs'
+        }
+    )
 
     return rt
 
@@ -35,6 +52,7 @@ def run(job, resource, **kwargs):
     
     bucket_name = resource.s3_bucket_name
     
+    # get boto3 s3 client object
     client = wrapper.get_boto3_client(
         's3',
         aws.serviceaccount,
@@ -42,33 +60,51 @@ def run(job, resource, **kwargs):
         wrapper.region_name
     )
 
+    # get or create resource type
     rt = create_resource_type_if_needed()
-    current_objects = Resource.objects.filter(parent_resource=resource, resource_type=rt)
+    
+    # fetch all sub resources
+    sub_resources = Resource.objects.filter(parent_resource=resource, resource_type=rt)
+    
     added = []
     refreshed = []
     deleted = []
+    
     for b_obj in client.list_objects(Bucket=bucket_name).get('Contents', []):
         is_new = False
         name = b_obj['Key']
-        res = current_objects.filter(name=name).first()
-        if not res:
+        
+        # filter sub resource by name
+        sub_resource = sub_resources.filter(name=name).first()
+        
+        if sub_resource is None:
             set_progress("Found new cloud file object '{}', creating sub-resource...".format(name))
-            res = Resource.objects.create(
-                group=resource.group, parent_resource=resource, resource_type=rt, name=name, blueprint=resource.blueprint)
+            
+            # create new sub resource
+            sub_resource = Resource.objects.create(group=resource.group, parent_resource=resource, resource_type=rt, name=name, 
+                            blueprint=resource.blueprint)
             added.append(name)
             is_new = True
-        res.lifecycle = "ACTIVE"
-        res.cloud_file_obj_size = b_obj['Size']
-        res.save()
+        
+        sub_resource.lifecycle = "ACTIVE"
+        sub_resource.s3_file_size = b_obj['Size']
+        sub_resource.s3_file_url = "https://{0}.s3.amazonaws.com/{1}".format(bucket_name, name.replace(" ", "+"))
+        sub_resource.s3_file_last_modified = b_obj['LastModified'].strftime("%B %d, %Y, %H:%M:%S(%Z)")
+        sub_resource.s3_file_uri = "s3://{0}/{1}".format(bucket_name, name)
+        sub_resource.save()
+        
         if not is_new:
             set_progress("Refreshing info for '{}'".format(name))
             refreshed.append(name)
 
     processed = [] + added + refreshed
-    for f_obj in current_objects.exclude(name__in=processed):
-        set_progress("Coudn't find file '{}' in bucket '{}', deleting it from CloudBolt...".format(
-            f_obj.name, resource.name))
+    
+    for f_obj in sub_resources.exclude(name__in=processed):
+        
+        set_progress("Coudn't find file '{0}' in bucket '{1}', deleting it from CloudBolt...".format(f_obj.name, resource.name))
+        deleted.append(f_obj.name)
         f_obj.delete()
+
     set_progress("Added {} objects, refreshed {} and deleted {}".format(len(added), len(refreshed), len(deleted)))
 
     return "SUCCESS", "", ""
