@@ -1,0 +1,14 @@
+{
+    "description": "",
+    "id": "OHK-zterrb3t",
+    "last_updated": "2022-06-21",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Run Specific Remote Script in Parallel",
+    "resource_technologies": [],
+    "script_filename": "cb_plugin_1655833638927886_FCVCrRp.py",
+    "shared": false,
+    "target_os_families": [],
+    "type": "CloudBolt Plug-in"
+}
