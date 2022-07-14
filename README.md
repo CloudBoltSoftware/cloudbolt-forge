@@ -1,5 +1,5 @@
 <div>
-<img src="http://www.cloudbolt.io/wp-content/uploads/cloudbolt-hlogo@3x.png" width="250">
+![cb_logo](https://user-images.githubusercontent.com/1979246/178788740-95e6ec2f-c632-4486-890a-0971bd745f80.png)
 </div>
 <br/>
 <br/>
