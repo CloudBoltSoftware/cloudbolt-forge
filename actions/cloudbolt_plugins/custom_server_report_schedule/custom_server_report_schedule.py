@@ -9,15 +9,15 @@ CUSTOM_SERVER_REPORT_FILTERS_FORMSET_PREFIX = "filter_formset"
 logger = ThreadLogger(__name__)
 
 
-def run(jobs=None, **kwargs):
+def run(job=None, **kwargs):
     # The current time, used to build date strings
     now = datetime.datetime.now()
     one_week_ago = now - datetime.timedelta(days=7)
 
     start_str = '{}-{:02d}-{}'.format(one_week_ago.year, one_week_ago.month, one_week_ago.day)
     end_str = '{}-{:02d}-{}'.format(now.year, now.month, now.day)
-
-    profile_id = 35 # Please change accordingly 
+    profile_id = "{{ profile_id }}"
+    requestor_email = "{{ email_recipient }}"
     profile = UserProfile.objects.get(id=profile_id)
     columns = ['Server', 'IP', 'Status', 'Owner', 'Group', 'Environment', 'Added']
     servers = Server.objects_for_profile(profile)
@@ -42,7 +42,7 @@ def run(jobs=None, **kwargs):
         email_attachments = [('{}_{}_{}.csv'.format('CustomServerReport', start_str, end_str), f.read(), 'text/csv')]
 
     email_context = {'subject': 'Custom Server Report',}
-    recipients=['avishvakarma@cloudbolt.io'] # Please change this mail according to your mail.
+    recipients = requestor_email
 
     email(
         recipients=recipients,
