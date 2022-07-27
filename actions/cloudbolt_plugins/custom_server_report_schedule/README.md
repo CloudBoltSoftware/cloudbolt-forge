@@ -1,6 +1,6 @@
 1. Needs to add this script inside Recurring Job
 2. Needs to set schedule time along with profile id and recipient email.
-Follow the screenshots-
+<br /> Follow the screenshots-
 
     ![Getting Started](./images/1.png)
 
