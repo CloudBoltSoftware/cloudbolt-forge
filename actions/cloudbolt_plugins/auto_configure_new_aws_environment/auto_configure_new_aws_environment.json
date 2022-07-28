@@ -1,0 +1,18 @@
+{
+    "description": "Post Environment Creation Orchestration Action that configures various settings on newly created AWS environments, including the AMIs, instance type options, the keypair, and the group association.",
+    "id": "OHK-hvgecbyb",
+    "last_updated": "2022-07-28",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Auto-configure new AWS Environment",
+    "resource_technologies": [
+        "Amazon Web Services",
+        "AWS GovCloud (US)",
+        " AWS China - \u4e9a\u9a6c\u900a"
+    ],
+    "script_filename": "auto_setup_aws_env.py",
+    "shared": true,
+    "target_os_families": [],
+    "type": "CloudBolt Plug-in"
+}
