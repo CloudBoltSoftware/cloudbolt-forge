@@ -27,7 +27,7 @@ def show_admin_extension(request, **kwargs):
 
 @tab_extension(
     model=ResourceHandler,
-    title="Playground",
+    title="Playground__",
     description="Entrypoint for Playground Resource Handler Tab Extension",
     delegate=ResourceHandlerTabDelegate
 )
@@ -36,7 +36,7 @@ def show_rh_tab_extension(request, model_id, **kwargs):
 
 
 @dashboard_extension(
-    title="Playground",
+    title="Playground_",
     description='Playground widget')
 def show_playground_widget(request):
     return render(request, template_name='playground/templates/widget.html')
