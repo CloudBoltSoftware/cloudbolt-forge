@@ -1,0 +1,118 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Cloudformation Template to allow your AWS Account(s) to access Cloudbolt Application",
+    "Parameters": {
+        "RoleName": {
+            "Description": "Name of the Roles Anywhere to be created",
+            "Type": "String",
+            "Default": "Cloudbolt-RolesAnywhereRole"
+        },
+        "ManagedPolicyName": {
+            "Description": "Name of the Policy to be created",
+            "Type": "String",
+            "Default": "Cloudbolt-CustomAdministratorAccess"
+        },
+        "ProfileName": {
+            "Description": "Name of the Roles Anywhere Profile to be created",
+            "Type": "String",
+            "Default": "Cloudbolt-RolesAnywhereProfile"
+        }
+    },
+    "Resources": {
+        "CloudboltRolesAnywhereRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "rolesanywhere.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole",
+                                "sts:SetSourceIdentity",
+                                "sts:TagSession"
+                            ]
+                        }
+                    ]
+                },
+                "Description": "Roles Anywhere Role for Cloudbolt Application Access",
+                "RoleName":  {
+                    "Ref": "RoleName"
+                }
+            }
+        },
+        "CloudboltCustomAdministratorAccess": {
+            "Type": "AWS::IAM::ManagedPolicy",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "*",
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "ManagedPolicyName": {
+                    "Ref": "ManagedPolicyName"
+                },
+                "Description": "Managed Policy to attach to CloudboltRolesAnywhereRole Role",
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "CloudboltRolesAnywhereRole"
+                    }
+                ]
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "4c9bca48-dbdd-46ba-87f8-797fe9c21474"
+                }
+            }
+        },
+        "CloudboltRolesAnywhereProfile": {
+            "Type": "AWS::RolesAnywhere::Profile",
+            "Properties": {
+                "DurationSeconds": 3600,
+                "Enabled": true,
+                "Name": {
+                    "Ref": "ProfileName"
+                },
+                "RoleArns": [
+                    {
+                        "Fn::GetAtt": [
+                            "CloudboltRolesAnywhereRole",
+                            "Arn"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "RolesAnywhereArn": {
+            "Description": "Role Arn for Cloudbolt Resource Handler Configuration",
+            "Value": {
+                "Fn::GetAtt": [
+                    "CloudboltRolesAnywhereRole",
+                    "Arn"
+                ]
+            }
+        },
+        "ProfileArn": {
+            "Description": "Profile Arn for Cloudbolt Resource Handler Configuration",
+            "Value": {
+                "Fn::GetAtt": [
+                    "CloudboltRolesAnywhereProfile",
+                    "ProfileArn"
+                ]
+            }
+        }
+    }
+}
