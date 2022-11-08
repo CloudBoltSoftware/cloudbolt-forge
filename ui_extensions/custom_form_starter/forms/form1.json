@@ -1,0 +1,129 @@
+{
+  "title": "Form 1",
+  "logoPosition": "right",
+  "focusFirstQuestionAutomatic": false,
+  "pages": [
+    {
+      "name": "GENERAL",
+      "elements": [
+        {
+          "type": "panel",
+          "name": "identification panel",
+          "elements": [
+            {
+              "type": "text",
+              "name": "extra_var_tfe_workspace_name",
+              "title": "Workspace Name",
+              "description": "Name of the Workspace that should be used",
+              "isRequired": true
+            },
+            {
+              "type": "text",
+              "name": "extra_var",
+              "visible": false,
+              "title": "Extra Variable ",
+              "isRequired": true
+            },
+            {
+              "type": "dropdown",
+              "name": "cloud",
+              "title": "Cloud",
+              "defaultValue": "aws",
+              "isRequired": true,
+              "choices": [
+                {
+                  "value": "aws",
+                  "text": "AWS"
+                },
+                {
+                  "value": "azure",
+                  "text": "Azure"
+                }
+              ]
+            },
+            {
+              "type": "dropdown",
+              "name": "os",
+              "title": "Operating System",
+              "defaultValue": "linux",
+              "isRequired": true,
+              "choices": [
+                {
+                  "value": "linux",
+                  "text": "Linux"
+                },
+                {
+                  "value": "windows",
+                  "text": "Windows"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "name": "extra_var_postprovisioning_workflow_name",
+              "visible": false,
+              "title": "Post Provisioning Workflow Name",
+              "defaultValueExpression": "'013-L2-provision-'+{cloud}+'-'+{os}",
+              "clearIfInvisible": "none",
+              "placeholder": "Select..."
+            },
+            {
+              "type": "text",
+              "name": "extra_var_predestroy_workflow_name",
+              "visible": false,
+              "title": "Pre Destroy Workflow Name",
+              "defaultValueExpression": "'013-wflaunch-wf-predestroy-base-'+{cloud}+'-'+{os}",
+              "clearIfInvisible": "none",
+              "placeholder": "Select..."
+            },
+            {
+              "type": "dropdown",
+              "name": "extra_var_aws_account_id",
+              "visible": false,
+              "title": "AWS Account ID",
+              "isRequired": true,
+              "choicesByUrl": {
+                "url": "https://cb-mb-01.cblabsales.net/api/v3/cmp/inboundWebHooks/IWH-gcqfwsxk/run/?token=hE8DHZ2HBMpxOzZjuqRRWaZzJU-NwASZegEdcyL4pEQ&envId={environment}&field=aws_account_id"
+              }
+            },
+            {
+              "type": "dropdown",
+              "name": "aws_region",
+              "visible": false,
+              "title": "AWS Region",
+              "isRequired": true,
+              "choicesByUrl": {
+                "url": "https://cb-mb-01.cblabsales.net/api/v3/cmp/inboundWebHooks/IWH-gcqfwsxk/run/?token=hE8DHZ2HBMpxOzZjuqRRWaZzJU-NwASZegEdcyL4pEQ&envId={environment}&field=aws_region"
+              }
+            },
+            {
+              "type": "text",
+              "name": "extra_var_tags_environment",
+              "title": "Environment Tag",
+              "isRequired": true
+            },
+            {
+              "type": "text",
+              "name": "extra_var_tags_dud",
+              "title": "DUD Tag",
+              "isRequired": true
+            },
+            {
+              "type": "text",
+              "name": "extra_var_nolog",
+              "visible": false,
+              "title": "No Log",
+              "defaultValue": "yes",
+              "isRequired": true
+            }
+          ],
+          "title": "Identification"
+        }
+      ]
+    }
+  ],
+  "showQuestionNumbers": "off",
+  "questionTitleLocation": "left",
+  "storeOthersAsComment": false,
+  "completeText": "Submit"
+}
