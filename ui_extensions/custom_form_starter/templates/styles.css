@@ -1,0 +1,75 @@
+<style type="text/css">
+  .flag-form {
+    border-radius: 4px;
+    margin-bottom: 2em;
+    padding-bottom: 2em;
+  }
+
+  .sv-container-modern__title {
+    padding-top: 2em !important;
+  }
+
+  #sp_101.sv_p_container .sv_qstn .title-left {
+    width: 217.500px;
+    text-align: right;
+  }
+
+  .sv_matrix_cell_detail_button {
+    background-color: #888888;
+    height: 32px;
+    width: 45px;
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+  }
+
+  .button {
+    background-color: #1ab394;
+    color: white;
+    height: 32px;
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+  }
+
+  #remove-row .button {
+    background-color: #dc3545 !important;
+  }
+
+  .btn.sv_complete_btn {
+    color: white !important;
+    background-color: #335B83 !important;
+  }
+</style>

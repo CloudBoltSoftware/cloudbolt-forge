@@ -1,0 +1,67 @@
+{
+  "title": "Form 2",
+  "logoPosition": "right",
+  "focusFirstQuestionAutomatic": false,
+  "pages": [
+    {
+      "name": "page1",
+      "elements": [
+        {
+          "type": "panel",
+          "name": "panel2",
+          "elements": [
+            {
+              "type": "matrixdynamic",
+              "name": "machine_sets",
+              "titleLocation": "hidden",
+              "isRequired": true,
+              "columns": [
+                {
+                  "name": "extra_var_aws_instanceNname",
+                  "title": "Instance Name",
+                  "cellType": "text",
+                  "isRequired": true
+                },
+                {
+                  "name": "extra_var_aws_instanceNcount",
+                  "title": "Instance Count",
+                  "cellType": "text",
+                  "isRequired": true,
+                  "inputType": "number",
+                  "min": 1
+                },
+                {
+                  "name": "extra_var_aws_instanceNinstance_type",
+                  "title": "Instance Type",
+                  "cellType": "dropdown",
+                  "isRequired": true
+
+                },
+                {
+                  "name": "extra_var_aws_instanceNsubnet_id",
+                  "title": "Subnet ID",
+                  "cellType": "dropdown",
+                  "isRequired": true
+
+                }
+              ],
+              "detailPanelMode": "underRowSingle",
+              "placeholder": "Select",
+              "rowCount": 1,
+              "minRowCount": 1,
+              "maxRowCount": 10,
+              "addRowText": "Add",
+              "removeRowText": "Remove",
+              "detailPanelShowOnAdding": true
+            }
+          ],
+          "title": "Machine Sets"
+        }
+      ]
+    }
+  ],
+  "showQuestionNumbers": "off",
+  "questionTitleLocation": "left",
+  "storeOthersAsComment": false,
+  "completeText": "Submit"
+}
