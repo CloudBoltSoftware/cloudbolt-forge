@@ -1,0 +1,68 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Cloudformation Template to allow your AWS Account(s) to access Cloudbolt Application",
+    "Parameters": {
+        "RoleName": {
+            "Description": "Name of the Role to be created",
+            "Type": "String",
+            "Default": "Cloudbolt-CrossAccountAccessRole-Child"
+        }
+    },
+    "Resources": {
+        "CloudboltCrossAcctRole": {
+            "Type": "AWS::IAM::Role",
+            "Description": "Cross Account Role for Cloudbolt Application Access",
+            "Properties": {
+                "RoleName": {
+                    "Ref": "RoleName"
+                },
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:iam::235609055117:root"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "Action": ["sts:AssumeRole", "sts:SetSourceIdentity", "sts:TagSession"]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "Cloudbolt-CrossAccountAccessRolePolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                  "Effect": "Allow",
+                                  "Action": "*",
+                                  "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "CloudboltRoleARN": {
+            "Description": "Role ARN for Cloudbolt Resource Handler Configuration",
+            "Value": {
+                "Fn::GetAtt": [
+                    "CloudboltCrossAcctRole",
+                    "Arn"
+                ]
+            }
+        }
+    }
+}
