@@ -6,6 +6,11 @@
             "Description": "Name of the Role to be created",
             "Type": "String",
             "Default": "Cloudbolt-CrossAccountAccessRole-Child"
+        },
+        "AccountId": {
+            "Description": "Management Account ID (Parent)",
+            "Type": "String",
+            "Default": "XXXXXXXXXXXX"
         }
     },
     "Resources": {
@@ -26,7 +31,7 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "arn:aws:iam::235609055117:root"
+                                            "arn:aws:iam::",{"Ref": "AccountId"},":root"
                                         ]
                                     ]
                                 }
