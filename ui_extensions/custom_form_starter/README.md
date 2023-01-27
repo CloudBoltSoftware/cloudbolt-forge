@@ -17,8 +17,9 @@ When this form is ordered, it will submit a job to the custom_form_starter plugi
 1. From the quickstart folder, download the custom_form_starter.zip and custom_form_blueprint.zip.
 2. Navigate to admin > ui extensions
 3. Upload UI extension and select the [custom_form_starter.zip](packages/custom_form_starter.zip) file
-4. Navigate to catalog 
-5. Select upload blueprint and upload the [custom_form_blueprint.zip](packages/custom_form_blueprint.zip) custom_form_blueprint.zip file
+4. Restart your web server so it loads the new URL(s) in the UI extension
+5. Navigate to catalog 
+6. Select upload blueprint and upload the [custom_form_blueprint.zip](packages/custom_form_blueprint.zip) custom_form_blueprint.zip file
 
 ## Structure
 A custom form consists of several elements:
