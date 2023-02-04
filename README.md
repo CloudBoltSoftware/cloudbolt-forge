@@ -1,3 +1,5 @@
+Testing WorkingDirectory.refresh_from_remote updates with this line
+
 ![cb_logo](https://user-images.githubusercontent.com/1979246/178788740-95e6ec2f-c632-4486-890a-0971bd745f80.png)
 
 Welcome to the CloudBolt Forge, a public github repository used for sharing powerful content in CloudBolt.  This repository holds CloudBolt actions (AKA hooks), Blueprints, UI extensions, webhooks and other content.
