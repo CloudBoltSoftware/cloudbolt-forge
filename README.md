@@ -41,3 +41,6 @@ We'd love to hear from you if you have any questions or ideas you'd like to disc
 support@cloudbolt.io
 
 http://cloudbolt.io/
+
+but what if i edit the bottom of the file
+
