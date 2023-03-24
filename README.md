@@ -15,8 +15,6 @@ If you have interesting customizations that you have developed, please share the
  * Each importable piece of content should have its own directory.
  * Use no spaces or special characters in file & directory names other than underscores.
 
-
-
 ## Coding Conventions
  * Please comment your code well, with a docstring at the top of each Python module and on most methods.
  * Configure your editor to help keep your code [PEP8 compliant](https://www.python.org/dev/peps/pep-0008/).
@@ -36,6 +34,8 @@ For a _very_ brief primer on Python as a programming language and common methods
 The CloudBolt appliance is served from Linux, to CLI reference for those new to Linux [linux cheatsheet](linux_cheatsheet.md)
 
 The CloudBolt CMP is built on the Django framework. As such, it is helpful to understand the basics of Django, primarily the syntax in templates and how to use the ORM.
+
+For general CloudBolt development, reference the [cheatsheet](cheatsheet.md)
 
 For a _very_ brief primer on Django (which CMP is based), reference the [django crashcourse](django_crashcourse.md)
 
