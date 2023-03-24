@@ -15,6 +15,8 @@ If you have interesting customizations that you have developed, please share the
  * Each importable piece of content should have its own directory.
  * Use no spaces or special characters in file & directory names other than underscores.
 
+
+
 ## Coding Conventions
  * Please comment your code well, with a docstring at the top of each Python module and on most methods.
  * Configure your editor to help keep your code [PEP8 compliant](https://www.python.org/dev/peps/pep-0008/).
@@ -29,6 +31,10 @@ If you have interesting customizations that you have developed, please share the
 The CloudBolt CMP utilizes Python as it's primary language.   
 
 For a _very_ brief primer on Python as a programming language and common methods for development, reference the [python primer](python_primer.md)
+## Reference Sheets
+
+CloudBolt appliance is served from Linux, to CLI reference for those new to Linux [linux cheatsheet](linux_cheatsheet.md)
+
 
 ## License
 Contributions to this project are governed by the CONTRIBUTING file and the Apache License.
