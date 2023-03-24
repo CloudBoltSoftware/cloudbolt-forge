@@ -51,4 +51,4 @@ To customize:
 
 Installed extension packages are located in /var/opt/cloudbolt/proserv/xui/<package_name>.  Any changes to those files take effect in the UI after Apache is restarted.
 
-For a visual representation and logic flow-chart of a UI extensions, view the [XUI Architecture](xui_architecture.pdf) PDF.
+For a visual representation and logic flow-chart of a UI extensions, view the [XUI Architecture](XUI_architecture.pdf) PDF.
