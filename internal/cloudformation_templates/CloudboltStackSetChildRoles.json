@@ -48,9 +48,160 @@
                             "Version": "2012-10-17",
                             "Statement": [
                                 {
-                                  "Effect": "Allow",
-                                  "Action": "*",
-                                  "Resource": "*"
+                                    "Action": [
+                                        "s3:*"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ecs:CreateCluster",
+                                        "ecs:DeleteCluster",
+                                        "ecs:ListClusters",
+                                        "ecs:ListServices",
+                                        "ecs:ListTasks",
+                                        "ecs:ListTaskDefinitions",
+                                        "ecs:ListContainerInstances",
+                                        "ecs:DescribeTaskDefinition",
+                                        "ecs:DescribeTasks",
+                                        "ecs:DescribeClusters",
+                                        "ecs:DescribeServices",
+                                        "ecs:DescribeContainerInstances",
+                                        "ecs:ListTagsForResource"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "iam:CreateServiceLinkedRole",
+                                        "iam:CreateRole",
+                                        "iam:GetRole",
+                                        "iam:PassRole",
+                                        "iam:AttachRolePolicy",
+                                        "iam:listAttachedRolePolicies",
+                                        "iam:UntagPolicy",
+                                        "iam:PutRolePolicy",
+                                        "iam:UpdateRole",
+                                        "iam:ListRoles",
+                                        "iam:DeleteRolePolicy",
+                                        "iam:AddRoleToInstanceProfile",
+                                        "iam:GetPolicy",
+                                        "iam:ListRolePolicies",
+                                        "iam:ListPolicies",
+                                        "iam:DeleteRole",
+                                        "iam:GetRolePolicy",
+                                        "iam:CreatePolicy"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ec2:*",
+                                        "autoscaling:*",
+                                        "ec2-instance-connect:*"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "resource-groups:ListGroups"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "pricing:GetProducts"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "rds:CreateDBInstance",
+                                        "rds:DeleteDBInstance",
+                                        "rds:DescribeSourceRegions",
+                                        "rds:DescribeDBEngineVersions",
+                                        "rds:DescribeOrderableDBInstanceOptions",
+                                        "rds:DescribeDBInstances",
+                                        "rds:DescribeDBSubnetGroups",
+                                        "rds:DescribeDBSnapshots",
+                                        "rds:DescribeDBSecurityGroups",
+                                        "rds:ListTagsForResource",
+                                        "rds:DescribeDBParameterGroups",
+                                        "rds:DescribeDBParameters",
+                                        "rds:DescribeReservedDBInstances",
+                                        "rds:StartDBInstance",
+                                        "rds:StopDBInstance"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ds:CreateComputer",
+                                        "ds:CreateSnapshot",
+                                        "ds:DescribeDirectories",
+                                        "ds:DescribeSnapshots"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "fsx:CreateFileSystem",
+                                        "fsx:TagResource",
+                                        "fsx:DeleteFileSystem",
+                                        "fsx:DescribeFileSystems",
+                                        "fsx:UpdateFileSystem"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:CreateFunction",
+                                        "lambda:DeleteFunction",
+                                        "lambda:GetFunction",
+                                        "lambda:ListFunctions"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "elasticfilesystem:CreateFileSystem",
+                                        "elasticfilesystem:DescribeFileSystems",
+                                        "elasticfilesystem:DeleteFileSystem",
+                                        "elasticfilesystem:CreateMountTarget",
+                                        "elasticfilesystem:DeleteMountTarget",
+                                        "elasticfilesystem:DescribeMountTargets"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "eks:CreateCluster",
+                                        "eks:DeleteCluster",
+                                        "eks:UpdateClusterVersion",
+                                        "eks:DescribeCluster",
+                                        "eks:ListClusters",
+                                        "eks:CreateNodegroup",
+                                        "eks:DeleteNodegroup",
+                                        "eks:DescribeNodegroup",
+                                        "eks:ListNodegroups"
+                                    ],
+                                    "Resource": "*"
                                 }
                             ]
                         }
