@@ -1,0 +1,63 @@
+{
+    "action_inputs": [
+        {
+            "allow_multiple": false,
+            "available_all_servers": false,
+            "description": null,
+            "field_dependency_controlling_set": [],
+            "field_dependency_dependent_set": [],
+            "global_options": [],
+            "has_generated_options_support": false,
+            "hide_if_default_value": false,
+            "id": "CF-ok75dlxk",
+            "label": "SCCM Server",
+            "name": "sccm_server",
+            "placeholder": null,
+            "relevant_osfamilies": [],
+            "required": true,
+            "show_as_attribute": false,
+            "show_on_servers": false,
+            "type": "STR",
+            "value_pattern_string": null
+        },
+        {
+            "allow_multiple": false,
+            "available_all_servers": false,
+            "description": null,
+            "field_dependency_controlling_set": [],
+            "field_dependency_dependent_set": [],
+            "global_options": [],
+            "has_generated_options_support": false,
+            "hide_if_default_value": false,
+            "id": "CF-70flb4kc",
+            "label": "Site Code",
+            "name": "site_code",
+            "placeholder": null,
+            "relevant_osfamilies": [],
+            "required": true,
+            "show_as_attribute": false,
+            "show_on_servers": false,
+            "type": "STR",
+            "value_pattern_string": null
+        }
+    ],
+    "commandline_args": null,
+    "credentials": "YOUR_CREDENTIALS",
+    "description": "",
+    "execution_timeout": 3600,
+    "id": "OHK-i91hv22v",
+    "last_updated": "2023-04-18",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Patch Windows Server from SCCM",
+    "remove_after_run": true,
+    "resource_technologies": [],
+    "run_with_sudo": false,
+    "script_filename": "patch_windows_server_from_sccm.ps1",
+    "shared": true,
+    "target_os_families": [
+        "Windows"
+    ],
+    "type": "Remote Script"
+}
