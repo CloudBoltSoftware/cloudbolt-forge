@@ -1,0 +1,211 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Cloudformation Template to allow your AWS Account(s) to access Cloudbolt Application",
+    "Parameters": {
+        "RoleName": {
+            "Description": "Name of the Role to be created",
+            "Type": "String",
+            "Default": "Cloudbolt-CrossAccountAccessRole-Child"
+        },
+        "AccountId": {
+            "Description": "Management Account ID (Parent)",
+            "Type": "String",
+            "Default": "XXXXXXXXXXXX"
+        }
+    },
+    "Resources": {
+        "CloudboltCrossAcctRole": {
+            "Type": "AWS::IAM::Role",
+            "Description": "Cross Account Role for Cloudbolt Application Access",
+            "Properties": {
+                "RoleName": {
+                    "Ref": "RoleName"
+                },
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:iam::",{"Ref": "AccountId"},":root"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "Action": ["sts:AssumeRole", "sts:SetSourceIdentity", "sts:TagSession"]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "Cloudbolt-CrossAccountAccessRolePolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Action": [
+                                       "s3:*"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Action": [
+                                       "cloudformation:*"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Action": [
+                                       "elasticache:*"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ecs:*"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "iam:CreateServiceLinkedRole",
+                                        "iam:CreateRole",
+                                        "iam:GetRole",
+                                        "iam:PassRole",
+                                        "iam:AttachRolePolicy",
+                                        "iam:listAttachedRolePolicies",
+                                        "iam:UntagPolicy",
+                                        "iam:PutRolePolicy",
+                                        "iam:UpdateRole",
+                                        "iam:ListRoles",
+                                        "iam:DeleteRolePolicy",
+                                        "iam:AddRoleToInstanceProfile",
+                                        "iam:GetPolicy",
+                                        "iam:ListRolePolicies",
+                                        "iam:ListPolicies",
+                                        "iam:DeleteRole",
+                                        "iam:GetRolePolicy",
+                                        "iam:CreatePolicy"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ec2:*",
+                                        "autoscaling:*",
+                                        "ec2-instance-connect:*"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "resource-groups:ListGroups"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "pricing:GetProducts"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "rds:*"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ds:CreateComputer",
+                                        "ds:CreateSnapshot",
+                                        "ds:DescribeDirectories",
+                                        "ds:DescribeSnapshots"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "fsx:*"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "elasticfilesystem:CreateFileSystem",
+                                        "elasticfilesystem:DescribeFileSystems",
+                                        "elasticfilesystem:DeleteFileSystem",
+                                        "elasticfilesystem:CreateMountTarget",
+                                        "elasticfilesystem:DeleteMountTarget",
+                                        "elasticfilesystem:DescribeMountTargets"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "eks:*"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                       "route53:*"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                       "redshift:*"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                       "lambda:*"
+                                    ],
+                                    "Resource": "*"
+                                } 
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "CloudboltRoleARN": {
+            "Description": "Role ARN for Cloudbolt Resource Handler Configuration",
+            "Value": {
+                "Fn::GetAtt": [
+                    "CloudboltCrossAcctRole",
+                    "Arn"
+                ]
+            }
+        }
+    }
+}

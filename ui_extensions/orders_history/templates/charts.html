@@ -1,0 +1,106 @@
+{% extends "reports/simple_base.html" %}
+{% load helper_tags %}
+{% load i18n %}
+
+{% block content %}
+
+<!--{# Keep buttons at top because graph can be quite tall #}-->
+<div class="clearfix"></div>
+<div style="float:left;" class="btn-toolbar">
+    <div class="btn-group">
+        {% for name, label in periods.items %}
+            <a class="btn btn-default period-{{ name }} {% if name == current_period %}active{% endif %}"
+                href="?period={{ name }}">
+                {{ label }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!--<div>{{ current_period }}</div>-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>highcharts test</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div id="mychart"></div>
+
+    <script>
+        var myChart;
+
+        function setupmychart() {
+            var options = {
+                chart: {
+                    renderTo: 'mychart',
+                    type: 'column',
+                    zoomType: 'x',
+                    style: {
+                        fontFamily: "'Roboto Condensed', sans-serif"
+                    },
+                    borderColor: '#ccc',
+                    borderWidth: 1,
+                },
+                title: {
+                    text: 'Orders'
+                },
+                yAxis: {
+                    title: {
+                        text: 'Order Count'
+                    },
+                },
+                xAxis: {
+                    type: 'datetime',
+                    tickInterval: 24 * 3600 * 1000,
+                    units: [
+
+                    [
+                        'day', [1]],
+                    [
+                        'week', [1]],
+                    ],
+                },
+                plotOptions: {
+                    series: {
+                        stacking: 'normal',
+                    },
+                },
+                series: [
+                {
+                    name: "Success",
+                    data: {{ data_info | to_json }},
+                    color: "#6FD497",
+                },
+                {
+                    name: "Unsubmitted",
+                    data: {{ data_warning | to_json }},
+                    color: "#B0E0E6"
+                },
+                {
+                    name: "Failure",
+                    data: {{ data_error | to_json }},
+                    color: "#FF530D"
+                }],
+            }
+            myChart = new Highcharts.Chart(options);
+        }
+
+
+        $(function() {
+            setupmychart();
+        })
+    </script>
+</body>
+</html>
+
+{% endblock %}
+
+

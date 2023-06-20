@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% load helper_tags %}
+{% load tab_tags %}
+{% block topnav %}Office365 admin page {% endblock %}
+
+{% block title %} Office365 admin {% endblock %}
+
+{% block content %}
+<span class="uplink"><a href="{% url 'admin_home' %}">Admin</a></span>
+{% draw_tabs tabs %}
+{% endblock content %}

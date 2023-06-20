@@ -1,0 +1,346 @@
+{% load helper_tags %}
+
+{% load i18n %}
+
+{% if not new_relic_agent_installed %}
+        {% if install_job_running %}
+            <p>Agent Installation in progress...</p>
+            <a href="{{ job_url }}">Link to Job</a>
+        {% else %}
+                New Relic Agent is not installed in this server. <br />
+                <a href="{% url 'install_new_relic_agent' server_id=server.id %}" class="btn btn-default open-dialog">
+                    {% trans "Install New Relic Agent" %}
+                </a>
+        {% endif %}
+{% else %}
+        {% if uninstall_job_running %}
+             <p>Agent UnInstallation in progress...</p>
+                <a href="{{ uninstall_job_url }}">Link to Job</a>
+        {% elif not processor_count %}
+            <p>The Installation completed successfully. The metrics will take a few minutes before they start showing.</p>
+        {% else %}
+        <div class="row">
+            <div class="col-md-3">
+            <a href="https://newrelic.com/" target="_blank">
+                <img src="https://newrelic.com/assets/newrelic/source/NewRelic-logo-bug-w.png"
+                    alt="New Relic Logo" style="text-align:center;" />
+            </a>
+            <div style="margin-top:10px">
+                <div class="btn-group btn-wrapper">
+                    <button type="button" data-toggle="dropdown"
+                            class="edit-action btn btn-default dropdown-toggle selection-action">
+                        New Relic Actions&nbsp;&nbsp;<span class="caret"></span>
+                    </button>
+                    <br>
+                    <br>
+                    <ul class="dropdown-menu" role="menu">
+                        {% for action in new_relic_actions %}
+                            <li role="presentation">
+                                <a role="menuitem"
+                                    class="default open-dialog"
+                                    tabindex="-1"
+                                    data-href="{% url 'uninstall_new_relic_agent' server.id %}">
+                                    <span class="fa fa-trash"
+                                        style="font-size:20px;color:#5A7FAB;"></span>
+                                    {{ action }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-heading" style="font-weight:bold; text-align:center; background:#468875; color:white">Processor Count</div>
+                <div class="panel-body" style="text-align:center">
+                    <h4>{{ processor_count|title }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-heading" style="font-weight:bold; text-align:center; background:#468875; color:white">Total Memory</div>
+                <div class="panel-body" style="text-align:center">
+                    <h4>{{ total_memory|title }} GB</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-heading" style="font-weight:bold; text-align:center; background:#468875; color:white">Disk Size</div>
+                <div class="panel-body" style="text-align:center">
+                    <h4>{{ disk_size|title }} GB</h4>
+                </div>
+            </div>
+        </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="chart_cpu_percent"></div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="chart_cpu_idle_percentage"></div>
+                </div>
+            </div>
+        </div>
+            <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="chart_load_average"></div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="chart_memory_used"></div>
+                </div>
+            </div>
+        </div>
+        </div>
+        {% endif %}
+{% endif %}
+<script type="text/javascript">
+    $(function () {
+        $('#chart_cpu_percent').highcharts({
+            title: {
+                text: 'CPU Percent Usage'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Percentage'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' %</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ cpu_percent| to_json }}
+        });
+
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        $('#chart_cpu_idle_percentage').highcharts({
+            title: {
+                text: 'CPU Idle Percentage'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Percentage'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' %</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ cpu_idle_percent| to_json }}
+        });
+
+    });
+</script>
+<script type="text/javascript">
+    $(function () {
+        $('#chart_load_average').highcharts({
+            title: {
+                text: 'Load Average'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Load Average'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' </b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ load_average| to_json }}
+        });
+
+    });
+</script>
+<script type="text/javascript">
+    $(function () {
+        $('#chart_memory_used').highcharts({
+            title: {
+                text: 'Memory Used'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Memory (GB)'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' GB</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ memory_used| to_json }}
+        });
+
+    });
+</script>

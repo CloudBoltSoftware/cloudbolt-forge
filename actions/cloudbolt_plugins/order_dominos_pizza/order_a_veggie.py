@@ -4,7 +4,7 @@
 To set this up, on your CB server:
  * `pip install usaddress`
  * `cd /var/opt/cloudbolt/proserv/`
- * `git clone https://github.com/gamagori/pizzapi.git`
+ * `git clone https://github.com/gamagori/pizzapi.git pizzapi-repo`
  * `ln -s pizzapi-repo/pizzapi .`
  * possibly replace the tab characters on lines 107 and 130 of order.py with 8 spaces.
 

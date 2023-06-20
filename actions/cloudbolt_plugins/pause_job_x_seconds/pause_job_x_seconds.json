@@ -1,0 +1,27 @@
+{
+    "action-inputs": [
+        {
+            "available-all-servers": false,
+            "description": null,
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": false,
+            "label": "Seconds To Wait",
+            "name": "SECONDS_TO_WAIT",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        }
+    ],
+    "description": "",
+    "max-retries": 0,
+    "name": "Pause Job X Seconds",
+    "resource-technologies": [],
+    "script-filename": "pause_job_x_seconds.py",
+    "shared": "True",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}

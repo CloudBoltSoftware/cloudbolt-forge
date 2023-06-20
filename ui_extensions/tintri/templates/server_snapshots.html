@@ -1,0 +1,50 @@
+{% load helper_tags %}
+{% if no_vm_message %}
+    {{ no_vm_message}}
+{% else %}
+<div class="panel panel-default">
+    <div class="panel panel-default">
+        <div class="panel-heading">Tintri Snapshots</div>
+        <div class="panel-body">
+            <div class="btn-toolbar">
+                <a class="btn btn-default open-dialog"
+                    href="{% url 'create_tintri_snapshot' server.id %}"
+                    id="create-tintri-snapshot">
+                    <i class="fas fa-camera"></i>
+                    <span class="action-label">Take Snapshot</span>
+                </a>
+            </div>
+
+            <table width="100%" class="table table-striped table-hover">
+                <thead>
+                    <th>UUID</th>
+                    <th>Create Date</th>
+                    <th>Expiration Date</th>
+                    <th>Actions</th>
+                </thead>
+                <tbody>
+                    {% for snapshot in snapshots %}
+                    <tr>
+                        <td>{{ snapshot.uuid.uuid }}</td>
+                        <td>{{ snapshot.created_as_html }}</td>
+                        <td>{{ snapshot.expire_as_html }}</td>
+                        <td>
+                          <div>
+                            <a class="open-dialog" title="Clone new VM from Snapshot"
+                               href="{% url 'clone_from_tintri_snapshot' server.id snapshot.uuid.uuid %}">
+                                <i class="far fa-clone"></i></a>
+                            <a class="open-dialog" title="Delete this Snapshot"
+                               href="{% url 'delete_tintri_snapshot' server.id snapshot.uuid.uuid %}">
+                                <i class="far fa-trash"></i></a>
+                          </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}

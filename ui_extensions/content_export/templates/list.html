@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% load helper_tags %}
+{% load tab_tags %}
+{% block topnav %}content_export{% endblock %}
+
+{% block title %} Exportable contents admin {% endblock %}
+
+{% block content %}
+    <span class="uplink"><a href="{% url 'admin_home' %}">Admin</a></span>
+    <h1>Exportable Contents</h1>
+    <div class="row">
+        <table id="content_export-table" data-table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>MVR</th>
+                <th>Library Image</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        
+        {% for c in exportable_contents %}
+            <tr>
+                <td class="content_export-name">
+                    {{ c.display_name }}
+                </td>
+                <td>
+                    {{  c.minimum_version_required }}
+                </td>
+                <td>
+                    {% if c.library_image_url %}
+                    <img src="{{ c.library_image_url }}" width="32" height="32" />
+                    {%  endif %}
+                </td>
+                <td>
+                    {{  c.last_updated }}
+                </td>
+                <td class="shrink">
+                    <div class="btn-group">
+                        <a class="icon-edit btn btn-default btn-sm open-dialog"
+                            href="/content_export/export_content_edit/{{ c.id }}/{{ c.collections }}/" title='Edit {{ c.collections }} with id {{c.id }}'></a>
+                    </div>
+                </td>
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}

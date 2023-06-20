@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load helper_tags %}
+{% load static %}
+{% block topnav %}Playground{% endblock %}
+{% block title %}Playground Admin{% endblock %}
+
+{% block content %}
+    <span class="uplink"><a href="{% url 'admin_home' %}">Admin</a></span>
+    <h1>Playground Admin</h1>
+
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3>Playground Usage</h3></div>
+        <div class="panel-body">
+            <user-card></user-card>
+        </div>
+    </div>
+
+    <script type="module" src="{% static 'playground/js/user.js' %}"></script>
+
+{% endblock content %}
+
+

@@ -1,0 +1,26 @@
+{% load i18n %}
+<p></p>
+<div class="panel panel-default">
+    <div class="panel panel-default">
+        <div class="panel-heading">Jobs</div>
+        <div class="panel-body">
+            <table width="100%" class="table table-striped table-hover">
+                <thead>
+                    <th>Job Name</th>
+                    <th>Job ID</th>
+                    
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td>{{ job.name }}</td>
+                        <td>{{ job.id }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

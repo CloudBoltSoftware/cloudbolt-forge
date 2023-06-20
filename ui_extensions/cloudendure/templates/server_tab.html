@@ -1,0 +1,58 @@
+{% load helper_tags %}
+{% load i18n %}
+{% if server_credentials.0 and power_on.0 and not install_ready %}
+    {% if job_running %}
+        <p>Agent Installation in progress...</p>
+            <a href="{{ job_url }}">Link to Job</a>
+    {%else%}
+        <a href="{% url 'install_cloudendure_agent' server_id=server.id %}" class="btn btn-default open-dialog">
+            {% trans "Install CloudEndure Agent" %}
+        </a>
+    {% endif %}
+{% else %}
+    {% if server_credentials.0 and not install_ready %}
+        {{ power_on.1 }}
+    {% elif power_on.0 and not install_ready %}
+        {{ server_credentials.1}}
+    {% elif not power_on.0 and not server_credentials.0  %}
+        {{ server_credentials.1 }}
+        <p></p>
+        {{ power_on.1 }}
+    {% endif %}
+{% endif %}
+
+{% if install_ready %}
+    <div class="row">
+        <div class="col-md-3">
+            <a href="https://www.cloudendure.com">
+                <img
+                src="https://www.cloudendure.com/wp-content/uploads/2019/07/ce-logo.svg"
+                alt="CloudEndure Logo"></img>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <div class="btn-toolbar">
+                <div class="btn-group btn-wrapper">
+                    <button type="button" data-toggle="dropdown"
+                            class="edit-action btn btn-default dropdown-toggle selection-action">
+                        CloudEndure Machine Actions&nbsp;&nbsp;<span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        {% for action in machine_actions %}
+                            <li role="presentation">
+                                <a role="menuitem"
+                                    class="default open-dialog"
+                                    tabindex="-1"
+                                    data-href="/cloudendure/cloudendure_machine_actions/{{server.id}}/{{action.0}}/"
+                                    <span class="fa fa-cloud"
+                                        style="font-size:20px;color:#5A7FAB;"></span>
+                                    {{ action.1 }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}

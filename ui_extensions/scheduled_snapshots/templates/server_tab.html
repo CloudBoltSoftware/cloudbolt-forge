@@ -1,0 +1,90 @@
+{% load helper_tags %}
+
+{% if not rec_job.enabled %}
+<div class="alert alert-warning">
+    The "{{ rec_job|link_or_label:profile }}" Recurring Job is disabled. Please enable it or ask your Administrator
+    to do so.
+</div>
+{% endif %}
+<div class="help-block">
+    Scheduled Snapshots are implemented by the "{{ rec_job|link_or_label:profile }}" Recurring Job. In order for a snapshot to be
+    taken on the schedule designated here, that Recurring Job must be enabled and set to run every hour on the hour.
+    {% portal_label %} will use its own server time to judge whether it is the right time to take a scheduled snapshot,
+    so make sure you know what the time is on the {% portal_label %} instance and that the timezone ({% cb_timezone_info %}) is correct.
+</div>
+
+<dl>
+    <dt>Schedule:</dt>
+    <dd>
+        {% if server.scheduled_snapshot_schedule %}
+            {{ server.scheduled_snapshot_schedule }}
+        {% else %}
+            No schedule is set, so no snapshots will be automatically taken for this Server.
+            Use the Edit icon to configure a snapshot schedule.
+        {% endif %}
+        <a href="/snapshots/configure_schedule/{{ server.id }}/" class="open-dialog revealable"><i class="icon-edit"></i></a>
+    </dd>
+    {% if next_snapshot %}
+        <dt>Next Expected Snapshot:</dt>
+        <dd>{{ next_snapshot }}</dd>
+    {% endif %}
+
+    <dt>
+        Maximum # of Snapshots: {% infotip max_tip %}
+    </dt>
+    <dd>
+        {# Setting it to 0 would be an odd choice, but we should respect it and not treat it like being unset #}
+        {% if server.scheduled_snapshot_maximum is not None %}
+            {{ server.scheduled_snapshot_maximum }}
+        {% else %}
+            No maximum number of snapshots is configured for this Server, so the default on the
+            Recurring Job will be used.
+        {% endif %}
+        <a href="/snapshots/configure_max/{{ server.id }}/" class="open-dialog revealable"><i class="icon-edit"></i></a>
+    </dd>
+</dl>
+
+<div class="row">
+    <div class="col-lg-6">
+        <h2>Snapshots {% infotip infotip_text %}</h2>
+    </div>
+    <div class="col-lg-6 text-right">
+        <a class="btn btn-default open-dialog"
+           href="/snapshots/create/{{ server.id }}/"
+            ><span class="icon-add"></span>
+            Create Manual Snapshot
+        </a>
+    </div>
+</div>
+<div id="snapshots" class="panel panel-default">
+    <table id="snapshots-table" width="100%" class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Snapshot</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for snapshot in details.snapshots.all %}
+            <tr>
+                <td>
+                    {{ snapshot.get_name_with_date_created }}
+                </td>
+                <td>
+                    <a class="open-dialog" title="Revert to"
+                       href="/snapshots/revert/{{ server.id }}/{{ snapshot.id }}/">
+                        <i class="fas fa-undo"></i>
+                    </a>
+                    <a class="open-dialog" title="Delete"
+                       href="{% url 'server_delete_snapshot' server.id snapshot.id %}">
+                        <span class="icon-delete"></span>
+                    </a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td>There are no snapshots yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>

@@ -1,0 +1,75 @@
+{% load i18n %}
+
+<div class="btn-toolbar">
+    <b>SolarWinds Rest credentials</b>
+    <p></p>
+    {% if solar_winds_ci %}
+    <a class="open-dialog btn btn-default" href="{% url 'edit_credentials' %}">
+        <span class="icon-edit"></span>
+        Edit Credentials
+    </a>
+    <a class="btn btn-default open-dialog" href="{% url 'verify_credentials' %}">
+        <span class="icon-verify-connection"></span>
+        Verify Connection
+    </a>
+    <a class="btn btn-default open-dialog" href="{% url 'delete_credentials' %}">
+        <span class="icon-delete"></span>
+        Delete Credentials
+    </a>
+    {% else %}
+    <a class="open-dialog btn btn-default" href="{% url 'add_credentials' %}">
+        <span class="icon-add"></span>
+        Add Credentials
+    </a>
+    {% endif %}
+</div>
+
+{% if solar_winds_ci %}
+<div class="panel">
+    <dl class="vertical">
+        <dt>URL:</dt>
+        <dd>{{ solar_winds_ci.protocol }}://{{ solar_winds_ci.ip }}:{{ solar_winds_ci.port }}</dd>
+    </dl>
+</div>
+
+{% else %}
+<p><i>No SolarWinds credentials configured.</i></p>
+{% endif %}
+
+<div class="btn-toolbar">
+    <b>SolarWinds Server credentials</b>
+    <p></p>
+    {% if solar_winds_server_ci %}
+    <a class="open-dialog btn btn-default" href="{% url 'edit_server_credentials' %}">
+        <span class="icon-edit"></span>
+        Edit Credentials
+    </a>
+    <a class="btn btn-default open-dialog" href="{% url 'verify_server_credentials' %}">
+        <span class="icon-verify-connection"></span>
+        Verify Connection
+    </a>
+    <a class="btn btn-default open-dialog" href="{% url 'delete_server_credentials' %}">
+        <span class="icon-delete"></span>
+        Delete Credentials
+    </a>
+    {% else %}
+    <a class="open-dialog btn btn-default" href="{% url 'add_server_credentials' %}">
+        <span class="icon-add"></span>
+        Add Credentials
+    </a>
+    {% endif %}
+</div>
+
+{% if solar_winds_server_ci %}
+<div class="panel">
+    <dl class="vertical">
+        <dt>IP:</dt>
+        <dd>{{ solar_winds_server_ci.ip }}</dd>
+        <dt>Username:</dt>
+        <dd>{{ solar_winds_server_ci.username }}</dd>
+    </dl>
+</div>
+
+{% else %}
+<p><i>No SolarWinds Server credentials configured.</i></p>
+{% endif %}

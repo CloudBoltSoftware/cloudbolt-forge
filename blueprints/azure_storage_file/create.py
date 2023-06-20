@@ -1,6 +1,7 @@
 """
 Upload a file to azure storage
 """
+import os
 from common.methods import set_progress
 from infrastructure.models import CustomField
 from resources.models import Resource
@@ -12,23 +13,53 @@ import azure.mgmt.storage as storage
 from azure.storage.file import FileService
 from django.conf import settings
 from pathlib import Path
-import os
-from utilities.exceptions import CloudBoltException
+import azure.mgmt.resource.resources as resources
 
-def generate_options_for_storage_account(server=None, **kwargs):
+def get_tenant_id_for_azure(handler):
+    '''
+        Handling Azure RH table changes for older and newer versions (> 9.4.5)
+    '''
+    if hasattr(handler,"azure_tenant_id"):
+        return handler.azure_tenant_id
+
+    return handler.tenant_id
+
+def get_storage_client_details(account_flag = False):
+    keys = None
     discovered_az_stores = []
     for handler in AzureARMHandler.objects.all():
-        set_progress('Connecting to Azure Storage \
-        for handler: {}'.format(handler))
+        set_progress('Connecting to Azure storage \
+        files for handler: {}'.format(handler))
         credentials = ServicePrincipalCredentials(
             client_id=handler.client_id,
             secret=handler.secret,
-            tenant=handler.tenant_id
+            tenant=get_tenant_id_for_azure(handler)
         )
-        azure_client = storage.StorageManagementClient(credentials, handler.serviceaccount)
-        set_progress("Connection to Azure established")
-        for st in azure_client.storage_accounts.list():
-            discovered_az_stores.append(st.name)
+        azure_client = storage.StorageManagementClient(
+            credentials, handler.serviceaccount)
+        azure_resources_client = resources.ResourceManagementClient(credentials, handler.serviceaccount)
+
+        if account_flag:
+            set_progress("Connection to Azure established")
+            for st in azure_client.storage_accounts.list():
+                discovered_az_stores.append(st.name)
+            discovered_az_stores = sorted(discovered_az_stores)
+            return discovered_az_stores
+
+        for resource_group in azure_resources_client.resource_groups.list():
+            try:
+                for st in azure_client.storage_accounts.list_by_resource_group(resource_group.name)._get_next().json()['value']:
+                    if st['name'] == "{{ storage_account }}":
+                        res = azure_client.storage_accounts.list_keys(
+                        resource_group.name, st['name'])
+                        keys = res.keys
+                        break
+            except Exception as e:
+                raise e
+        return keys
+
+def generate_options_for_storage_account(server=None, **kwargs):
+    discovered_az_stores = get_storage_client_details(True)
     return discovered_az_stores
 
 def create_custom_fields_as_needed():
@@ -62,70 +93,35 @@ def run(job, **kwargs):
     create_custom_fields_as_needed()
 
     storage_account = '{{ storage_account }}'
-    file_path = "{{ file }}"
+    file = "{{ file }}"
     azure_storage_file_share_name = '{{ azure_storage_file_share_name }}'
-    overwrite_files = {{ overwrite_files }}
-    file_name = Path(file_path).name
-
-    if file_path.startswith(settings.MEDIA_URL):
+    file_name = Path(file).name
+    if file.startswith(settings.MEDIA_URL):
         set_progress("Converting relative URL to filesystem path")
-        file_path = file_path.replace(settings.MEDIA_URL, settings.MEDIA_ROOT)
+        file = file.replace(settings.MEDIA_URL, settings.MEDIA_ROOT)
 
-    if not file_path.startswith(settings.MEDIA_ROOT):
-        file_path = os.path.join(settings.MEDIA_ROOT, file_path)
+    keys = get_storage_client_details()
+    account_key, fallback_account_key = keys[0].value, keys[1].value
 
+    set_progress("Connecting To Azure...")
+    file_service = FileService(account_name=storage_account, account_key=account_key)
 
-    try:
-        set_progress("Connecting To Azure...")
-        account_key = Resource.objects.filter(name__icontains=storage_account)[0].azure_account_key
-        fallback_account_key = Resource.objects.filter(name__icontains=storage_account)[0].azure_account_key_fallback
-        file_service = FileService(account_name=storage_account, account_key=account_key)
-
-
-
-        set_progress('Creating file share {file_share_name} if it doesn\'t already exist...'.format(file_share_name=azure_storage_file_share_name))
-        file_service.create_share(share_name=azure_storage_file_share_name, quota=1)
-
-
-
-        set_progress('Connecting to file share')
-        file_name_on_azure = file_name
-        count = 0
-        while (not overwrite_files) and file_service.exists(share_name=azure_storage_file_share_name, file_name=file_name_on_azure, directory_name=''):
-            count+=1
-            file_name_on_azure = '{file_name}({duplicate_number})'.format(file_name=file_name, duplicate_number=count)
-            set_progress('File with name already exists on given file share, testing new name: {new_name}'.format(new_name=file_name_on_azure))
-            
-        
-        local_resource_name = azure_storage_file_share_name + '-' + file_name_on_azure
-        if overwrite_files and file_service.exists(share_name=azure_storage_file_share_name, file_name=file_name_on_azure, directory_name=''):
-            set_progress('File with name already exists on given file share, overwriting')
-            old_resource_to_overwite = Resource.objects.filter(name=local_resource_name, lifecycle='ACTIVE').first()
-            
-            if old_resource_to_overwite:
-                old_resource_to_overwite.delete()
-
-
-        set_progress('Creating the file with name {file_name} on the Storage Account {storage_account} using the share named {share_name}'.format(file_name=file_name_on_azure,storage_account=storage_account,share_name=azure_storage_file_share_name))
-        file_service.create_file_from_path(share_name=azure_storage_file_share_name, file_name=file_name_on_azure, directory_name='', local_file_path=file_path)
-        os.remove(file_path)
-
-
-        set_progress('Creating local storage resource named {resource_name}'.format(resource_name=local_resource_name))
-        resource.name = local_resource_name
+    set_progress('Creating a file share...')
+    file_service.create_share(share_name=azure_storage_file_share_name, quota=1)
+    
+    file = os.path.join(settings.MEDIA_ROOT, file)
+    set_progress('Creating a file...')
+    if file_service.exists(share_name=azure_storage_file_share_name, file_name=file_name, directory_name=''):
+        file_service.create_file_from_path(share_name=azure_storage_file_share_name, file_name=file_name, directory_name='', local_file_path=file)
+        return "WARNING", "File with this name already exists", "The file will be updated."
+    else:
+        file_service.create_file_from_path(share_name=azure_storage_file_share_name, file_name=file_name, directory_name='', local_file_path=file)
+        resource.name = azure_storage_file_share_name + '-' + file_name
+        resource.azure_file_identifier = azure_storage_file_share_name + '-' + file_name
         resource.azure_storage_account_name = storage_account
         resource.azure_account_key = account_key
         resource.azure_account_key_fallback = fallback_account_key
         resource.azure_storage_file_share_name = azure_storage_file_share_name
-        resource.azure_storage_file_name = file_name_on_azure
+        resource.azure_storage_file_name = file_name
         resource.save()
-
-        return "Success", "The File has succesfully been uploaded", ""
-    except Exception as e:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-
-        if resource:
-            resource.delete()
-        
-        raise CloudBoltException("File could not be uploaded because of the following error: {error}".format(error=e))
+    return "Success", "The File has succesfully been uploaded", ""

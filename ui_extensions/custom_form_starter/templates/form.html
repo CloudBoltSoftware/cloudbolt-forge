@@ -1,0 +1,85 @@
+{% load i18n %}
+{% load form_render %}
+
+<script src="/static/js/survey.jquery.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+
+  {% include "custom_form_starter/templates/styles.html"%}
+
+<div class="panel panel-primary">
+  <div class="input-group"><span class="input-group-addon" id="basic-addon1">FORM:</span>
+    <div>
+      <select name="file-names" class="selectize">
+        <option value="-">Select a Form</option>
+        {% for file_name in file_names %}
+        <option value="{{file_name}}.json">{{ file_name }}</option>
+        {% endfor %}
+      </select>
+      <script>
+        // When a selection is made in the drop-down, re-render the form
+        $('select[name="file-names"]').change(function() {
+          var data = {
+            'file_name': $('select[name="file-names"]').val()
+          };
+
+        // Trigger an ajax call to POST the drop-down selection to our URLS endpoint and retrieve the form data from the file
+          $.ajax({
+            url: "{% url 'get_custom_form_from_file' %}",
+            type: "POST",
+            data: data,
+            success: function(data) {
+              renderSurvey(data);
+
+            },
+            error: function(err) {
+              console.log('error');
+            }
+          });
+        });
+      </script>
+    </div>
+  </div>
+  <form id="custom-form" class="flag-form" method="post" action="/ansible_tower_custom_form/deploy/">
+    <input type='hidden' name='csrfmiddlewaretoken' value='{{ csrf_token_value }}' />
+    <input type="hidden" id="group_id" name="group_id" value="{{ group_id }}" />
+    <input type="hidden" id="blueprint_id" name="blueprint_id" value="{{ blueprint_id }}" />
+    <input type="hidden" id="action_payload" name="action_payload" value="" />
+    <div id="surveyContainer"></div>
+    <script type="text/javascript">
+      
+
+      function sendDataToServer(survey) {
+        //send Ajax request to your web server
+        $("#action_payload").val(JSON.stringify(survey.data));
+        $.ajax({
+          url: "{% url 'deploy_custom_form' %}",
+          type: 'post',
+          dataType: 'json',
+          data: $('form#custom-form').serialize(),
+          async: false,
+          cache: false,
+          success: function(response) {
+            if (response.redirectURL) {
+              window.location.href = response.redirectURL;
+            }
+          }
+        });
+      }
+
+      function renderSurvey(data) {
+        Survey.StylesManager.applyTheme("bootstrap");
+        var survey = new Survey.Model(data['survey_json']);
+        survey.onLoadChoicesFromServer.add(function(sender, options) {
+          var choices = options.choices;
+          if (Array.isArray(choices) && choices.length == 1) {
+            options.question.value = choices[0].value;
+          }
+        });
+        $("#surveyContainer").Survey({
+          model: survey,
+          onComplete: sendDataToServer
+        });
+      }
+    </script>
+  </form>
+</div>

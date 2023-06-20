@@ -1,0 +1,254 @@
+{% load helper_tags %}
+
+{% load i18n %}
+
+{% if not is_agent_installed %}
+{% if job_running %}
+    <p>Agent Installation in progress...</p>
+            <a href="{{ job_url }}">Link to Job</a>
+{% elif is_license_valid %}
+<a href="{% url 'install_sam_agent' server_id=server.id %}" class="btn btn-default open-dialog">
+    {% trans "Install SAM Agent" %}
+</a>
+{% else %}
+    <p>Your SolarWinds License has expired. Please renew the license in order to be able to install an agent on this server.</p>
+{% endif %}
+{% else %}
+<p></p>
+<div class="row">
+    <div class="col-md-3">
+        <a href="https://www.solarwinds.com">
+            <img
+            src="https://png.pngtree.com/template/20190224/ourlarge/pngtree-solar-wind--abstract-illustration-solar-wind-icon-logo-concept-image_60945.jpg"
+            alt="SolarWinds Logo"
+            class="img-responsive">
+        </a><br><br>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="font-weight:bold; text-align:center; background:#468875; color:white">CPU Count</div>
+            <div class="panel-body" style="text-align:center">
+                <h4>{{ server_stats.CpuCount | title}}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="font-weight:bold; text-align:center; background:#828282; color:white">Total Memory</div>
+            <div class="panel-body" style="text-align:center">
+                <h4>{{ server_stats.TotalMemory |title }} GB</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="font-weight:bold; text-align:center; background:#5A7FAB; color:white">Memory Used</div>
+            <div class="panel-body" style="text-align:center">
+                <h4>{{ server_stats.MemoryUsed | title }} GB</h4></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_cpu_load"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_memory_used"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="chart_network_latency_used"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script type="text/javascript">
+    $(function () {
+        $('#chart_cpu_load').highcharts({
+            title: {
+                text: 'Average CPU Load'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Percentage'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' %</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ server_stats.cpu_load| to_json }}
+        });
+
+    });
+    $(function () {
+        $('#chart_memory_used').highcharts({
+            title: {
+                text: 'Average Memory Used'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Percentage'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' %</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ server_stats.memory_used_metrics| to_json }}
+        });
+
+    });
+    $(function () {
+        $('#chart_network_latency_used').highcharts({
+            title: {
+                text: 'Average Network latency'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                    '' :
+                    ''
+            },
+            chart: {
+                type: 'area',
+                zoomType: 'x',
+                backgroundColor: "#e5e5e5"
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: 'Milliseconds'
+                }
+            },
+            tooltip: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%b %e %Y %H:%M:%S', this.x) + '<br/>'
+                        + this.series.name + ': <b>' + this.y + ' ms</b>';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    marker: {
+                        radius: 2,
+                        lineColor: 'black',
+                        fillColor: 'black',
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1,
+                            marker: {
+                                radius: 2,
+                            },
+                        }
+                    },
+                    threshold: 0
+                }
+            },
+            series: {{ server_stats.network_latency_metrics| to_json }}
+        });
+
+    });
+</script>

@@ -1,0 +1,41 @@
+{% load i18n %}
+
+<div class="btn-toolbar">
+            {% if data_dog_ci %}
+                <a class="open-dialog btn btn-default"
+                   href="/datadog/edit_credentials/">
+                    <span class="icon-edit"></span>
+                    Edit
+                </a>
+                <a class="btn btn-default open-dialog"
+                    href="/datadog/verify_credentials/">
+                    <span class="icon-verify-connection"></span>
+                    Verify Connection
+                </a>
+                <a class="btn btn-default open-dialog"
+                    href="/datadog/delete_credentials/">
+                    <span class="icon-delete"></span>
+                    Delete
+                </a>
+            {% else %}
+                <a class="open-dialog btn btn-default"
+                    href="/datadog/add_credentials/">
+                    <span class="icon-add"></span>
+                    Add Credentials
+                </a>
+            {% endif %}
+</div>
+
+        {% if data_dog_ci %}
+<div class="panel">
+     <dl class="vertical">
+         <dt>URL:</dt>
+         <dd>{{ data_dog_ci.protocol }}://{{ data_dog_ci.ip }}</dd>
+         <dt>Headers:</dt>
+         <dd>{{ data_dog_ci.headers }} </dd>
+     </dl>
+</div>
+
+{% else %}
+    <p><i>No Data Dog credentials configured.</i></p>
+{% endif %}

@@ -1,0 +1,36 @@
+{% load i18n %}
+
+<div class="btn-toolbar">
+    {% if new_relic_ci %}
+        <a class="open-dialog btn btn-default" href="{% url 'edit_new_relic_credentials' %}">
+            <span class="icon-edit"></span>
+            Edit Credentials
+        </a>
+        <a class="btn btn-default open-dialog" href="{% url 'verify_new_relic_credentials' %}">
+            <span class="icon-verify-connection"></span>
+            Verify Connection
+        </a>
+        <a class="btn btn-default open-dialog" href="{% url 'delete_new_relic_credentials' %}">
+            <span class="icon-delete"></span>
+            Delete Credentials
+        </a>
+    {% else %}
+         <a class="open-dialog btn btn-default" href="{% url 'add_new_relic_credentials' %}">
+                <span class="icon-add"></span>
+                Add Credentials
+        </a>
+    {% endif %}
+</div>
+{% if new_relic_ci %}
+<div class="panel">
+    <dl class="vertical">
+        <dt>URL:</dt>
+        <dd>{{ new_relic_ci.protocol }}://{{ new_relic_ci.ip }}:{{ new_relic_ci.port }}</dd>
+        <dt>HEADERS: </dt>
+        <dd>{{ new_relic_ci.headers }}</dd>
+    </dl>
+</div>
+
+{% else %}
+<p><i>No New Relic credentials configured.</i></p>
+{% endif %}

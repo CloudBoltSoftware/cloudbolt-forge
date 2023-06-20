@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% load helper_tags %}
+{% load tab_tags %}
+{% block topnav %}New Relic admin page {% endblock %}
+
+{% block title %} New Relic admin {% endblock %}
+
+{% block content %}
+<span class="uplink"><a href="{% url 'admin_home' %}">Admin</a></span>
+<h1>New Relic Admin Page</h1>
+{% draw_tabs tabs %}
+{% endblock content %}

@@ -1,0 +1,30 @@
+<div class="container-fluid">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <table class="dataTable no-footer table table-hover">
+                <thead>
+                    <tr>
+                        <th>Group Name</th>
+                        <th>CPU / Limit</th>
+                        <th>Mem / Limit</th>
+                        <th>Disk / Limit</th>
+                        <th>Servers / Limit</th>
+                        <th>Rate / Limit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group_quota in group_quotas %}
+                    <tr>
+                        <td><a href = {% url 'group_detail' group_quota.id  %}>{{ group_quota.name }}</a></td>
+                        <td>{{ group_quota.cpu_cnt }}</td>
+                        <td>{{ group_quota.mem_size }}</td>
+                        <td>{{ group_quota.disk_size }}</td>
+                        <td>{{ group_quota.vm_cnt }}</td>
+                        <td>{{ group_quota.rate }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

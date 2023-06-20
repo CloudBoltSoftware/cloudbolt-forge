@@ -1,8 +1,4 @@
-<div>
-<img src="http://www.cloudbolt.io/wp-content/uploads/cloudbolt-hlogo@3x.png" width="250">
-</div>
-<br/>
-<br/>
+![cb_logo](https://user-images.githubusercontent.com/1979246/178788740-95e6ec2f-c632-4486-890a-0971bd745f80.png)
 
 Welcome to the CloudBolt Forge, a public github repository used for sharing powerful content in CloudBolt.  This repository holds CloudBolt actions (AKA hooks), Blueprints, UI extensions, webhooks and other content.
 

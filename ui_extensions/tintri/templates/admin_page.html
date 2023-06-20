@@ -1,0 +1,14 @@
+
+{% extends "base.html" %}
+
+{% load helper_tags %}
+{% load tab_tags %}
+{% block topnav %}Tintri Appliance Admin Page {% endblock %}
+
+{% block title %}  Tintri Appliance {% endblock %}
+
+{% block content %}
+    <span class="uplink"><a href="{% url 'admin_home' %}">Admin</a></span>
+    <h1>Tintri Appliance Admin Page</h1>
+    {% draw_tabs tabs %}
+{% endblock content %}
