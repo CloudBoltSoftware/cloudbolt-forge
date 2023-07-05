@@ -1,0 +1,4 @@
+{
+    "TF_VAR_owner": "{{bia.boi.order.owner.full_name}}",
+    "TF_VAR_group": "{{group.name}}"
+}
