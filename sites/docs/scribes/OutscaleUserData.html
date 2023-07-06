@@ -17,7 +17,7 @@
         margin: 0 auto;
         padding: 20px;
         font-size: 2.5em;
-          font-weight:bolder;
+        font-weight:bolder;
         background: linear-gradient(90deg,  #7C7CAF, #0072FF);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -47,7 +47,10 @@
         display: flex;
         color: #001B66;
         border: 1px solid  #CACAFF;
+          {#override green to yellow background for now#}
+        background: linear-gradient(135deg, #F0FDF0, #FFFAE5);
         background: linear-gradient(135deg, #CACAFF, #FFFAE5);
+
         padding: 10px;
         margin-top: 10px;
         margin-bottom: 10px;
@@ -57,7 +60,7 @@
       .scribe-screenshot-container {
         max-width: 800px;
         margin: 0 auto;
-        background: linear-gradient(135deg, #F0FDF0, #FFFAE5);
+          background: linear-gradient(135deg, #CACAFF, #FFFAE5);
         border: 1px solid #F0FDF0;
         padding: 10px;
         box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
@@ -126,7 +129,11 @@
 <p class="scribe-step">In the Environment Parameters tab, add &quot;Outscale User Data&quot;</p>
 <p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: In the Environment Parameters tab, add &quot;Outscale User Data&quot;" src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-07-06/9bde4e09-4416-4960-9eec-f1de168b90a9/user_cropped_screenshot.jpeg?tl_px=0,62&br_px=1007,628&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=218,252"/></p>
 <p class="scribe-step">In the Environment &quot;OS Builds&quot; tab, add  &quot;Ubuntu-22.04-2023.02.21-0&quot; or any other image that supports User Data.</p>
-<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: In the Environment &quot;OS Builds&quot; tab, add  &quot;Ubuntu-22.04-2023.02.21-0&quot; or any other image that supports User Data." src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-08/5ca6ecbf-0a0b-48a9-9dbe-ca920c3938b4/ascreenshot.jpeg?tl_px=0,187&br_px=1007,753&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=268,188"/></p>
+
+<p class="scribe-screenshot-container">
+    <img class="scribe-screenshot" width="560" alt="Screenshot of: In the Environment &quot;OS Builds&quot; tab, add  &quot;Ubuntu-22.04-2023.02.21-0&quot; or any other image that supports User Data."
+         src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-07-06/22eb3332-59ba-437d-a3b5-26b0673ae06d/user_cropped_screenshot.jpeg?tl_px=0,80&br_px=1007,646&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=234,269"/>
+</p>
 <div class="alert alert-danger d-flex align-items-center" role="alert">
     <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
     &nbsp&nbsp&nbsp&nbsp
@@ -234,7 +241,8 @@
             </a>
         </li>
         <li>
-            Inside the instance, the user data is copied and executed from the /var/lib/cloud/instances/&lt;instance id&gt;/ directory. Logs are stored in the /var/log/cloud-init-output.log.
+            Inside instances, the user data script is copied and executed from the /var/lib/cloud/instances/&lt;instance id&gt;/
+            directory. The log is stored in the /var/log/cloud-init-output.log.
         </li>
         <li>
             One type of script used for user data is cloud-config, which is processed by cloud-init.
