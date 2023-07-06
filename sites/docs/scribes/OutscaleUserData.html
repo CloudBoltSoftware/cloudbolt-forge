@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink">
+<head>
+   <!-- Include Bootstrap CSS and JavaScript -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
+
+    <style>
+      * {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .scribe-title {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-size: 2.5em;
+          font-weight:bolder;
+        background: linear-gradient(90deg,  #7C7CAF, #0072FF);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .scribe-description {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .scribe-section {
+        max-width: 800px;
+        margin: 0 auto;
+        font-size: 1.5em;
+        text-align: center;
+        background: linear-gradient(135deg, #0072FF, #003E8D, #008000);
+        margin-top: 50px;
+        margin-bottom: 20px;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .scribe-step {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        color: #001B66;
+        border: 1px solid  #CACAFF;
+        background: linear-gradient(135deg, #CACAFF, #FFFAE5);
+        padding: 10px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+      }
+
+      .scribe-screenshot-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, #F0FDF0, #FFFAE5);
+        border: 1px solid #F0FDF0;
+        padding: 10px;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        margin-bottom: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da, #FFFAE5)
+}
+
+.alert-primary {
+    background: linear-gradient(135deg, #cfe2ff, #FFFAE5)
+}
+      .blue-gradient-text {
+        background: linear-gradient(135deg, #00C6FF, #0072FF, #003E8D);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      li {
+          margin-bottom: 1em; /* Adjust the value as needed */
+      }
+      body {
+          {#background-color: #ffffe6;#}
+      }
+
+    </style>
+</head>
+
+<body>
+<!-- svg definitions to use with bootstrap alerts, see
+  https://getbootstrap.com/docs/5.0/components/alerts/#icons
+  colors: alert-primary (blue), alert-success (green), alert-warning (yellow), alert-danger (red)-->
+<svg xmlns style="display: none;">
+  <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+  </symbol>
+  <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+  </symbol>
+  <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+  </symbol>
+  <symbol id="light-bulb-fill" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13h-5a.5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm3 8.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1-.5-.5z"/>
+  </symbol>
+</svg>
+
+<h1 class="scribe-title">How to enable Outscale User Data in CloudBolt</h1>
+<br/>
+<div class="alert alert-primary d-flex align-items-center" role="alert">
+  <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
+    &nbsp&nbsp&nbsp&nbsp
+  <div>
+    User Data is a  feature that enables the addition of scripts or data to your instances during launch.
+      The scripts can be used to automate tasks, install software, or customize settings.
+      <br/><br/>
+   This tutorial provides a step-by-step walkthrough on how to create a VM with User Data in Outscale
+      using CloudBolt Cloud Management Platform.
+  </div>
+</div>
+
+<h3 class="scribe-section">Set Parameters</h3>
+<p class="scribe-step">In the Environment Parameters tab, add &quot;Outscale User Data&quot;</p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: In the Environment Parameters tab, add &quot;Outscale User Data&quot;" src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-07-06/9bde4e09-4416-4960-9eec-f1de168b90a9/user_cropped_screenshot.jpeg?tl_px=0,62&br_px=1007,628&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=218,252"/></p>
+<p class="scribe-step">In the Environment &quot;OS Builds&quot; tab, add  &quot;Ubuntu-22.04-2023.02.21-0&quot; or any other image that supports User Data.</p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: In the Environment &quot;OS Builds&quot; tab, add  &quot;Ubuntu-22.04-2023.02.21-0&quot; or any other image that supports User Data." src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-08/5ca6ecbf-0a0b-48a9-9dbe-ca920c3938b4/ascreenshot.jpeg?tl_px=0,187&br_px=1007,753&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=268,188"/></p>
+<div class="alert alert-danger d-flex align-items-center" role="alert">
+    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+    &nbsp&nbsp&nbsp&nbsp
+    <div>
+       Not all OS Builds support User Data.
+       From AWS documentation, the image must be Amazon Linux 2 AMI.
+        User Data may not work for other Linux distributions.
+        Amazon recommends reviewing the specific distribution specs to determine if user data is supported.
+       <br/><br/>
+        In this example we use Ubuntu-22.04-2023.02.21-0.
+   </div>
+</div>
+<h3 class="scribe-section">Add User Data and submit blueprint order</h3>
+<p class="scribe-step">In the Server Blueprint select Outscale environment and the supported OS Build.
+   Enter User Data script and submit order.
+</p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: In the Server Blueprint select Outscale environment and the supported OS Build.
+   Enter User Data script and submit order." src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-08/1259864b-de71-4219-84da-4523ca24ed31/ascreenshot.jpeg?tl_px=285,213&br_px=1292,779&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,280"/></p>
+<div class="alert alert-primary d-flex align-items-center" role="alert">
+  <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#light-bulb-fill"/></svg>
+
+    <div>
+   Example script: <br/><br/>
+   #cloud-config <br/>
+   runcmd: <br/>
+   - echo &quot;==================== $(date) ======================&quot; <br/>
+   - echo &quot;Running user data cloud-config. CAT team was here =^..^=&quot; <br/>
+   - echo &quot;================================================&quot; <br/>
+
+  </div>
+</div>
+
+<h3 class="scribe-section">Access instance console output in the Outscale web portal</h3>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-21/78c17c87-5b1a-4f9d-9fff-b87736737cc4/user_cropped_screenshot.jpeg?tl_px=552,241&br_px=1392,713&force_format=png&width=630.0&wat_scale=56&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=294,157"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-21/ab7b88a8-b902-4c39-8a1d-26d77b0df665/user_cropped_screenshot.jpeg?tl_px=0,132&br_px=840,604&force_format=png&width=630.0&wat_scale=56&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=185,157"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-21/5b30d7f9-46e3-4de3-88b3-6c60b0b3eec2/user_cropped_screenshot.jpeg?tl_px=0,130&br_px=840,602&force_format=png&width=630.0&wat_scale=56&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=275,157"/></p>
+<p class="scribe-step">Click &quot;CONSOLE OUTPUT&quot;</p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: Click &quot;CONSOLE OUTPUT&quot;" src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-21/55e12782-7703-4e11-893e-8c3f4c0c22ea/user_cropped_screenshot.jpeg?tl_px=1080,0&br_px=1920,472&force_format=png&width=630.0&wat_scale=56&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=527,138"/></p>
+<p class="scribe-step">The console output will display boot process and initialization of the new instance. Refresh the console to monitor progress and wait for the cloud-init to execute.</p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: The console output will display boot process and initialization of the new instance. Refresh the console to monitor progress and wait for the cloud-init to execute." src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-21/6dcd76d9-ebf0-48f5-a5eb-650e5efb7a6f/user_cropped_screenshot.jpeg?tl_px=348,177&br_px=1188,649&force_format=png&width=630.0&wat_scale=56&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=513,285"/></p>
+
+<div class="alert alert-danger d-flex align-items-center" role="alert">
+    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+    It may take several minutes before the user data script output becomes visible in the console.
+</div>
+<h3 class="scribe-section">Verify the script output appears in the console</h3>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-21/2db91737-a58d-4aca-84db-3dceab674737/user_cropped_screenshot.jpeg?tl_px=129,0&br_px=969,472&force_format=png&width=630.0&wat_scale=56&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=294,52"/></p>
+<h3 class="scribe-section">Predefined Environment Parameter Option</h3>
+<div class="alert alert-primary d-flex align-items-center" role="alert">
+  <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#light-bulb-fill"/></svg>
+  &nbsp&nbsp&nbsp&nbsp
+    <div>
+        Instead of specifying user data at the time the order is placed, it can be predefined at the Environment level.
+    </div>
+</div>
+<p class="scribe-step">First, add the script as an Environment level parameter option.</p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: First, add the script as an Environment level parameter option." src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/8c9f9ce5-16e4-431a-9c2a-25ea01b7a68a/ascreenshot.jpeg?tl_px=0,0&br_px=1007,566&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=74,176"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/74ce62c5-7849-497d-ab82-3a4488e75f1c/ascreenshot.jpeg?tl_px=123,25&br_px=1130,591&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,188"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/ad6b9b8a-e594-492a-8b72-9a54ec6a343b/ascreenshot.jpeg?tl_px=890,299&br_px=1897,865&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,212"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/e61611c0-0416-4823-a18f-8b478a5e2b5f/ascreenshot.jpeg?tl_px=397,143&br_px=1404,709&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,188"/></p>
+<p class="scribe-step">Then enter the User Data script in the Options form that appears.</p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: Enter the User Data script in the Options form that appears." src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/4561d3a3-9b48-404b-be39-80c791c2448a/ascreenshot.jpeg?tl_px=0,0&br_px=1007,566&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=283,147"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/0a9826bc-3480-4308-969c-1106dd4b8b8b/ascreenshot.jpeg?tl_px=864,0&br_px=1871,566&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,181"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/21db995b-4f82-48f2-a841-372172ca87f5/ascreenshot.jpeg?tl_px=886,299&br_px=1893,865&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,332"/></p>
+<p class="scribe-step">Next, configure the blueprint to use the predefined &quot;Outscale User Data&quot; parameter.</p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: Next, configure the blueprint to use the predefined &quot;Outscale User Data&quot; parameter." src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/380b88e8-9918-48e8-a1fa-2f6cc787f9e1/ascreenshot.jpeg?tl_px=912,299&br_px=1919,865&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=623,272"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/a5d10909-0413-4cf7-bfc8-9277a602f8ea/ascreenshot.jpeg?tl_px=559,0&br_px=1566,566&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,101"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/8d811fd1-058e-45c1-897d-84c997f0f6cd/ascreenshot.jpeg?tl_px=593,228&br_px=1600,794&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,188"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/f6d4d2a0-b75a-4259-b157-b2c88158be39/ascreenshot.jpeg?tl_px=841,6&br_px=1848,572&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,188"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/65ea725f-fd6b-4368-a376-7e1369d9aa3c/ascreenshot.jpeg?tl_px=224,253&br_px=1231,819&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,188"/></p>
+<p class="scribe-step">Select the predefined user data script from the drop-down list.</p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: Select the predefined user data script from the drop-down list." src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/7e7b8c97-532c-4683-a90a-af21e68a7082/ascreenshot.jpeg?tl_px=504,299&br_px=1511,865&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,200"/></p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/90710e2c-dc6c-4768-a8f7-cea3df04a1c3/ascreenshot.jpeg?tl_px=887,299&br_px=1894,865&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=354,337"/></p>
+<p class="scribe-step">Create another blueprint order and note that the User Data field is now hidden from the blueprint. </p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: Create another blueprint order and note that the User Data field is now hidden from the blueprint. " src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-21/fef936ba-7fca-4f03-8424-d39325542e09/user_cropped_screenshot.jpeg?tl_px=254,137&br_px=1261,703&force_format=png&width=755.9999465942383&wat_scale=67&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=692,355"/></p>
+<p class="scribe-step">Submit the blueprint order and confirm script execution in the Outscale console:</p>
+<p class="scribe-screenshot-container"><img class="scribe-screenshot" width="560" alt="Screenshot of: Submit the blueprint order and confirm script execution in the Outscale console:" src="https://ajeuwbhvhr.cloudimg.io/colony-recorder.s3.amazonaws.com/files/2023-06-09/13299af6-75f6-42a7-aa03-d170a7a8e300/ascreenshot.jpeg?tl_px=436,83&br_px=1276,555&force_format=png&width=630.0&wat_scale=56&wat=1&wat_opacity=1&wat_gravity=northwest&wat_url=https://colony-recorder.s3.amazonaws.com/images/watermarks/EC4899_standard.png&wat_pad=294,157"/></p>
+<h3 class="scribe-section">Passing Server variables</h3>
+<div class="alert alert-primary d-flex align-items-center" role="alert">
+  <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#light-bulb-fill"/></svg>
+&nbsp&nbsp&nbsp&nbsp
+    <div>
+    Server variables can be included in the script.  CloudBolt will replace server variables inside the double
+        curly brackets with their values.<br/><br/>
+        For more information, see CloudBolt documentation on <a href="https://docs.cloudbolt.io/articles/#!cloudbolt-latest-docs/customize-vms-during-provisioning/a/h2_440506577"> Setting up User-Data Parameters. </a>
+        </p>
+    </div>
+</div>
+        <h3 class="scribe-section">Additional Information</h3>
+<div class="scribe-step">
+    <ul>
+        <li>
+            <a href="https://cloudinit.readthedocs.io/en/latest/explanation/format.html#cloud-config-data">
+                Cloud Init: https://cloudinit.readthedocs.io/en/latest/explanation/format.html#cloud-config-data.
+            </a>
+        </li>
+        <li>
+            <a href="https://docs.outscale.com/en/userguide/Configuring-an-Instance-with-User-Data-and-OUTSCALE-Tags.html">
+                Outscale User Data: https://docs.outscale.com/en/userguide/Configuring-an-Instance-with-User-Data-and-OUTSCALE-Tags.html.
+            </a>
+        </li>
+        <li>
+            <a href="https://docs.outscale.com/en/userguide/Using-cloud-init-with-User-Data.html">
+                Outscale Cloud Init: https://docs.outscale.com/en/userguide/Using-cloud-init-with-User-Data.html.
+            </a>
+        </li>
+        <li>
+            Inside the instance, the user data is copied and executed from the /var/lib/cloud/instances/&lt;instance id&gt;/ directory. Logs are stored in the /var/log/cloud-init-output.log.
+        </li>
+        <li>
+            One type of script used for user data is cloud-config, which is processed by cloud-init.
+            It must have the shebang #cloud-config on its first line.
+            It uses yaml format, and must be properly indented to avoid errors:
+            <a href = "https://docs.saltproject.io/en/latest/topics/troubleshooting/yaml_idiosyncrasies.html#spaces-vs-tabs.">
+                https://docs.saltproject.io/en/latest/topics/troubleshooting/yaml_idiosyncrasies.html#spaces-vs-tabs
+            </a>
+        </li>
+        <li>
+            Regular shell scripts can also be used.
+        </li>
+        <li>
+            The scripts are executed with root user privileges.
+        </li>
+        <li>
+            By default, the user data scripts run only on initial boot, not after a restart.
+        </li>
+    </ul>
+</div>
+<br/>
+</body>
+</html>
