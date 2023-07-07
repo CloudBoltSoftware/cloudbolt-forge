@@ -1,0 +1,21 @@
+- name: Machine Name
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: "Set fact test"
+      set_fact:
+        fact_1: '{{extravar1}}'
+        fact_list: ['item1, item2, item3']
+        fact_dict: {
+          'key1': 'value1',
+          'key2': 'value2',
+        }
+    - name: "Set stat test"
+      set_stats:
+        data:
+          stat_var: '{{extravar2}}'
+          stat_list: ['item1, item2, item3']
+          stat_dict: {
+            'key1': 'value1',
+            'key2': 'value2',
+          }
