@@ -1,0 +1,5 @@
+	
+{
+    "TF_VAR_instance_type": "{{instance_type}}",
+    "TF_VAR_ec2_name": "{{ec2_name}}"
+}
