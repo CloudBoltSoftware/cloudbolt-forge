@@ -1,89 +1,136 @@
 {
-    "properties": {
-        "roleName": "custom-role-ym",
-        "description": "It allows Read/Write permission for the all the azure services",
-        "assignableScopes": [
-            "/subscriptions/fecf2ac6-096b-47e2-bfe6-e4b2b379b3f8"
-        ],
-        "permissions": [
-            {
-                "actions": [
-                    "*/read",
-                    "Microsoft.Cache/redis/write",
-                    "Microsoft.Compute/*/delete",
-                    "Microsoft.Compute/*/write",
-                    "Microsoft.Compute/virtualMachines/*/action",
-                    "Microsoft.ContainerService/managedClusters/write",
-                    "Microsoft.DBforMariaDB/servers/*/action",
-                    "Microsoft.DBforMariaDB/servers/databases/write",
-                    "Microsoft.DBforMariaDB/servers/databases/delete",
-                    "Microsoft.DBforMariaDB/servers/delete",
-                    "Microsoft.DBforMariaDB/servers/write",
-                    "Microsoft.DBforMySQL/flexibleServers/delete",
-                    "Microsoft.DBforMySQL/flexibleServers/write",
-                    "Microsoft.DBforMySQL/servers/*/action",
-                    "Microsoft.DBforMySQL/servers/databases/write",
-                    "Microsoft.DBforMySQL/servers/databases/delete",
-                    "Microsoft.DBforMySQL/servers/delete",
-                    "Microsoft.DBforMySQL/servers/write",
-                    "Microsoft.DBforPostgreSQL/servers/*/action",
-                    "Microsoft.DBforPostgreSQL/servers/databases/write",
-                    "Microsoft.DBforPostgreSQL/servers/databases/delete",
-                    "Microsoft.DBforPostgreSQL/servers/delete",
-                    "Microsoft.DBforPostgreSQL/servers/write",
-                    "Microsoft.DataFactory/factories/write",
-                    "Microsoft.DataFactory/factories/delete",
-                    "Microsoft.Databricks/workspaces/write",
-                    "Microsoft.Databricks/workspaces/delete",
-                    "Microsoft.DocumentDB/databaseAccounts/write",
-                    "Microsoft.DocumentDB/databaseAccounts/delete",
-                    "Microsoft.Network/*/delete",
-                    "Microsoft.Network/*/write",
-                    "Microsoft.Network/networkInterfaces/write",
-                    "Microsoft.Network/networkInterfaces/delete",
-                    "Microsoft.Network/networkInterfaces/join/action",
-                    "Microsoft.Network/networkSecurityGroups/write",
-                    "Microsoft.Network/networkSecurityGroups/delete",
-                    "Microsoft.Network/networkSecurityGroups/*/action",
-                    "Microsoft.Network/virtualNetworks/subnets/write",
-                    "Microsoft.Network/virtualNetworks/write",
-                    "Microsoft.Network/virtualNetworks/delete",
-                    "Microsoft.Resources/deployments/write",
-                    "Microsoft.Resources/subscriptions/resourceGroups/write",
-                    "Microsoft.Resources/subscriptions/resourceGroups/delete",
-                    "Microsoft.Sql/servers/databases/*/action",
-                    "Microsoft.Sql/servers/databases/delete",
-                    "Microsoft.Sql/servers/databases/write",
-                    "Microsoft.Sql/servers/delete",
-                    "Microsoft.Sql/servers/write",
-                    "Microsoft.Storage/storageAccounts/delete",
-                    "Microsoft.Storage/storageAccounts/listkeys/action",
-                    "Microsoft.Storage/storageAccounts/write",
-                    "Microsoft.Web/serverfarms/Write",
-                    "Microsoft.Web/kubeEnvironments/read",
-                    "Microsoft.Kubernetes/connectedClusters/Read",
-                    "Microsoft.Kubernetes/RegisteredSubscriptions/read",
-                    "Microsoft.Kubernetes/connectedClusters/write",
-                    "Microsoft.Kubernetes/connectedClusters/delete",
-                    "Microsoft.Cache/redis/write",
-                    "Microsoft.Cache/redis/delete",
-                    "Microsoft.DesktopVirtualization/applicationgroups/read",
-                    "Microsoft.DesktopVirtualization/applicationgroups/read",
-                    "Microsoft.DesktopVirtualization/applicationgroups/*/read",
-                    "Microsoft.DesktopVirtualization/hostpools/read",
-                    "Microsoft.DesktopVirtualization/hostpools/*/read",
-                    "Microsoft.DesktopVirtualization/workspaces/read",
-                    "Microsoft.DesktopVirtualization/workspaces/*/read",
-                    "Microsoft.Advisor/recommendations/read",
-                    "Microsoft.Consumption/reservationRecommendations/read",
-                    "Microsoft.Consumption/reservationRecommendationDetails/read",
-                    "Microsoft.Network/virtualNetworks/subnets/*/action",
-                    "Microsoft.Compute/virtualMachines/write"
-                ],
-                "notActions": [],
-                "dataActions": [],
-                "notDataActions": []
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "actions": {
+            "type": "array",
+            "defaultValue": [
+                "*/read",
+                "Microsoft.Cache/redis/write",
+                "Microsoft.Compute/*/delete",
+                "Microsoft.Compute/*/write",
+                "Microsoft.Compute/virtualMachines/*/action",
+                "Microsoft.ContainerService/managedClusters/write",
+                "Microsoft.DBforMariaDB/servers/*/action",
+                "Microsoft.DBforMariaDB/servers/databases/write",
+                "Microsoft.DBforMariaDB/servers/databases/delete",
+                "Microsoft.DBforMariaDB/servers/delete",
+                "Microsoft.DBforMariaDB/servers/write",
+                "Microsoft.DBforMySQL/flexibleServers/delete",
+                "Microsoft.DBforMySQL/flexibleServers/write",
+                "Microsoft.DBforMySQL/servers/*/action",
+                "Microsoft.DBforMySQL/servers/databases/write",
+                "Microsoft.DBforMySQL/servers/databases/delete",
+                "Microsoft.DBforMySQL/servers/delete",
+                "Microsoft.DBforMySQL/servers/write",
+                "Microsoft.DBforPostgreSQL/servers/*/action",
+                "Microsoft.DBforPostgreSQL/servers/databases/write",
+                "Microsoft.DBforPostgreSQL/servers/databases/delete",
+                "Microsoft.DBforPostgreSQL/servers/delete",
+                "Microsoft.DBforPostgreSQL/servers/write",
+                "Microsoft.DataFactory/factories/write",
+                "Microsoft.DataFactory/factories/delete",
+                "Microsoft.Databricks/workspaces/write",
+                "Microsoft.Databricks/workspaces/delete",
+                "Microsoft.DocumentDB/databaseAccounts/write",
+                "Microsoft.DocumentDB/databaseAccounts/delete",
+                "Microsoft.Network/*/delete",
+                "Microsoft.Network/*/write",
+                "Microsoft.Network/networkInterfaces/write",
+                "Microsoft.Network/networkInterfaces/delete",
+                "Microsoft.Network/networkInterfaces/join/action",
+                "Microsoft.Network/networkSecurityGroups/write",
+                "Microsoft.Network/networkSecurityGroups/delete",
+                "Microsoft.Network/networkSecurityGroups/*/action",
+                "Microsoft.Network/virtualNetworks/subnets/write",
+                "Microsoft.Network/virtualNetworks/write",
+                "Microsoft.Network/virtualNetworks/delete",
+                "Microsoft.Resources/deployments/write",
+                "Microsoft.Resources/subscriptions/resourceGroups/write",
+                "Microsoft.Resources/subscriptions/resourceGroups/delete",
+                "Microsoft.Sql/servers/databases/*/action",
+                "Microsoft.Sql/servers/databases/delete",
+                "Microsoft.Sql/servers/databases/write",
+                "Microsoft.Sql/servers/delete",
+                "Microsoft.Sql/servers/write",
+                "Microsoft.Storage/storageAccounts/delete",
+                "Microsoft.Storage/storageAccounts/listkeys/action",
+                "Microsoft.Storage/storageAccounts/write",
+                "Microsoft.Web/serverfarms/Write",
+                "Microsoft.Web/kubeEnvironments/read",
+                "Microsoft.Kubernetes/connectedClusters/Read",
+                "Microsoft.Kubernetes/RegisteredSubscriptions/read",
+                "Microsoft.Kubernetes/connectedClusters/write",
+                "Microsoft.Kubernetes/connectedClusters/delete",
+                "Microsoft.Cache/redis/write",
+                "Microsoft.Cache/redis/delete",
+                "Microsoft.DesktopVirtualization/applicationgroups/read",
+                "Microsoft.DesktopVirtualization/applicationgroups/read",
+                "Microsoft.DesktopVirtualization/applicationgroups/*/read",
+                "Microsoft.DesktopVirtualization/hostpools/read",
+                "Microsoft.DesktopVirtualization/hostpools/*/read",
+                "Microsoft.DesktopVirtualization/workspaces/read",
+                "Microsoft.DesktopVirtualization/workspaces/*/read",
+                "Microsoft.Advisor/recommendations/read",
+                "Microsoft.Consumption/reservationRecommendations/read",
+                "Microsoft.Consumption/reservationRecommendationDetails/read",
+                "Microsoft.Network/virtualNetworks/subnets/*/action",
+                "Microsoft.Compute/virtualMachines/write"
+            ],
+            "metadata": {
+                "description": "Array of actions for the roleDefinition"
             }
-        ]
-    }
+        },
+        "notActions": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Array of notActions for the roleDefinition"
+            }
+        },
+        "roleName": {
+            "type": "string",
+            "defaultValue": "Custom Role",
+            "metadata": {
+                "description": "Friendly name of the role definition"
+            }
+        },
+        "roleDescription": {
+            "type": "string",
+            "defaultValue": "Subscription Level Deployment of a Role Definition",
+            "metadata": {
+                "description": "Detailed description of the role definition"
+            }
+        },
+        "scopes": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Array of notActions for the roleDefinition"
+            }
+        },
+    },
+    "variables": {
+        "roleDefName": "[guid(subscription().id, string(parameters('actions')), string(parameters('notActions')))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/roleDefinitions",
+            "apiVersion": "2018-07-01",
+            "name": "[variables('roleDefName')]",
+            "properties": {
+                "roleName": "[parameters('roleName')]",
+                "description": "[parameters('roleDescription')]",
+                "type": "customRole",
+                "isCustom": true,
+                "permissions": [
+                    {
+                        "actions": "[parameters('actions')]",
+                        "notActions": "[parameters('notActions')]"
+                    }
+                ],
+                "assignableScopes": "[parameters('scopes')]"
+            }
+        }
+    ]
 }
