@@ -1,14 +1,11 @@
 {
-    "properties": {
-        "roleName": "custom-role-ym",
-        "description": "It allows Read/Write permission for the all the azure services",
-        "assignableScopes": [
-            "/subscriptions/fecf2ac6-096b-47e2-bfe6-e4b2b379b3f8"
-        ],
-        "permissions": [
-            {
-                "actions": [
-                    "*/read",
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "actions": {
+            "type": "array",
+            "defaultValue": [
+                "*/read",
                     "Microsoft.Cache/redis/write",
                     "Microsoft.Compute/*/delete",
                     "Microsoft.Compute/*/write",
@@ -78,12 +75,72 @@
                     "Microsoft.Consumption/reservationRecommendations/read",
                     "Microsoft.Consumption/reservationRecommendationDetails/read",
                     "Microsoft.Network/virtualNetworks/subnets/*/action",
-                    "Microsoft.Compute/virtualMachines/write"
-                ],
-                "notActions": [],
-                "dataActions": [],
-                "notDataActions": []
+                    "Microsoft.Compute/virtualMachines/write",
+                    "Microsoft.DataFactory/locations/configureFactoryRepo/action",
+                    "Microsoft.Storage/storageAccounts/listKeys/action",
+                    "Microsoft.Web/serverfarms/write",
+                    "Microsoft.Web/sites/Write",
+                    "Microsoft.Storage/storageAccounts/blobServices/containers/write",
+                    "Microsoft.Storage/storageAccounts/blobServices/containers/delete",
+                    "Microsoft.Storage/storageAccounts/blobServices/containers/read",
+                    "Microsoft.ContainerService/managedClusters/listClusterAdminCredential/action",
+                    "Microsoft.ContainerService/managedClusters/delete",
+                    "Microsoft.ContainerService/managedClusters/read"
+            ],
+            "metadata": {
+                "description": "Array of actions for the roleDefinition"
             }
-        ]
-    }
+        },
+        "notActions": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Array of notActions for the roleDefinition"
+            }
+        },
+        "roleName": {
+            "type": "string",
+            "defaultValue": "Custom Role",
+            "metadata": {
+                "description": "Friendly name of the role definition"
+            }
+        },
+        "roleDescription": {
+            "type": "string",
+            "defaultValue": "Subscription Level Deployment of a Role Definition",
+            "metadata": {
+                "description": "Detailed description of the role definition"
+            }
+        },
+        "scopes": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Array of notActions for the roleDefinition"
+            }
+        },
+    }   ,
+    "variables": {
+        "roleDefName": "[guid(subscription().id, string(parameters('actions')), string(parameters('notActions')))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/roleDefinitions",
+            "apiVersion": "2018-07-01",
+            "name": "[variables('roleDefName')]",
+            "properties": {
+                "roleName": "[parameters('roleName')]",
+                "description": "[parameters('roleDescription')]",
+                "type": "customRole",
+                "isCustom": true,
+                "permissions": [
+                    {
+                        "actions": "[parameters('actions')]",
+                        "notActions": "[parameters('notActions')]"
+                    }
+                ],
+                "assignableScopes": "[parameters('scopes')]"
+            }
+        }
+    ]
 }
