@@ -1,0 +1,96 @@
+
+
+
+<div class="container-fluid">
+    {% if git_connections %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h2 class="panel-title">Git Configurations</h2>
+        </div>
+        <div class="panel-body">
+            <div class="btn-toolbar">
+                <a class="btn open-dialog cb-btn-primary" href="{% url 'git_config_create' 'git_config' %}"><span class="icon-add"></span> Create new Git Config</a>
+            </div>
+            <p>List of Git Configurations</p>
+            <table class="dataTable no-footer table table-hover">
+                <thead>
+                    <tr>
+                        <th>Config Name</th>
+                        <th>Git Connection</th>
+                        <th>Type</th>
+                        <th>Git Repository</th>
+                        <th>Git Branch</th>
+                        <th>Root Directory</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for config in git_configs %}
+                    <tr>
+                        <td>{{config.name}}</td>
+                        <td>{{config.git_auth_token_name}}</td>
+                        <td>{{config.config_type}}</td>
+                        <td>{{config.repo}}</td>
+                        <td>{{config.branch}}</td>
+                        <td>{{config.root_directory}}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a class="icon-edit btn btn-default btn-sm open-dialog"
+                                    href="{% url 'git_config_edit' 'git_config' config.name %}"></a>
+                                <a class="icon-delete btn btn-default btn-sm open-dialog"
+                                    href="{% url 'git_config_delete' 'git_config' config.name %}"></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {%  endif %}
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h2 class="panel-title">Git Connections List</h2>
+        </div>
+        <div class="panel-body">
+            <div class="btn-toolbar">
+                <a class="btn open-dialog cb-btn-primary" href="{% url 'git_config_create' 'git_tokens' %}"><span class="icon-add"></span> Create new Git Connection</a>
+            </div>
+            {% if git_connections %}
+                <p>List of Git Connections used for Git Source Control for the current user. These should be Personal Access Tokens with at least read and write access for the repositories targeted with the git configs.</p>
+                <table class="dataTable no-footer table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Git Type</th>
+                            <th>API URL</th>
+                            <th>Token</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for conn in git_connections %}
+                        <tr>
+                            <td>{{conn.name}}</td>
+                            <td>{{conn.git_type}}</td>
+                            <td>{{conn.api_url}}</td>
+                            <td>********************</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a class="icon-edit btn open-dialog cb-btn-primary"
+                                        title="Edit Git Connection"
+                                        href="{% url 'git_config_edit' 'git_tokens' conn.name %}"></a>
+                                    <a class="icon-delete btn open-dialog cb-btn-primary"
+                                        title="Delete Git Connection"
+                                        href="{% url 'git_config_delete' 'git_tokens' conn.name %}"></a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+</div>
