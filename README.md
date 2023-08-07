@@ -25,6 +25,21 @@ If you have interesting customizations that you have developed, please share the
  * Then, submit a pull request to merge your changes into the CloudBoltSoftware repository.
  * By submitting a pull request for this project, you agree to license your contribution under the Apache License to this project.
 
+## Development
+The CloudBolt CMP utilizes Python as it's primary language.   
+
+For a _very_ brief primer on Python as a programming language and common methods for development, reference the [python primer](python_primer.md)
+## Reference Sheets
+
+The CloudBolt appliance is served from Linux, to CLI reference for those new to Linux [linux cheatsheet](linux_cheatsheet.md)
+
+The CloudBolt CMP is built on the Django framework. As such, it is helpful to understand the basics of Django, primarily the syntax in templates and how to use the ORM.
+
+For general CloudBolt development, reference the [cheatsheet](cheatsheet.md)
+
+For a _very_ brief primer on Django (which CMP is based), reference the [django crashcourse](django_crashcourse.md)
+
+
 ## License
 Contributions to this project are governed by the CONTRIBUTING file and the Apache License.
 
