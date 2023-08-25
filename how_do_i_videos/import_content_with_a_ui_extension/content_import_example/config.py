@@ -26,6 +26,28 @@ and import the content from them:
     recurring_jobs
     inbound_webhooks
     orchestration_hooks
+    parameters - One or more json files can be placed in the /parameters/
+        directory - each json file should contain a single param or a list of
+        params. See the docstring for configure_params for more details. Ex.
+        Params file content:
+        [
+          {
+            "name": "aae_form_url",
+            "label": "Form URL",
+            "type": "STR",
+            "required": true,
+            "show_as_attribute": true,
+            "description": "The URL of the form to be submitted to"
+          },
+          {
+            "name": "aae_form_version",
+            "label": "Form Version",
+            "type": "INT",
+            "required": true,
+            "show_as_attribute": true,
+            "description": "The version of the form this blueprint calls"
+          }
+        ]
 
 To prepare CloudBolt content to use this method:
 1. Create a directory in the XUI directory for each type of content you want to
@@ -54,6 +76,7 @@ import os
 from os import path
 from packaging import version
 
+from c2_wrapper import create_custom_field
 from cbhooks.models import CloudBoltHook, RecurringActionJob, InboundWebHook, \
     ServerAction, HookPointAction, HookPoint
 from externalcontent.models import OSFamily
@@ -123,11 +146,50 @@ def run_config(xui_version):
 
 
 def configure_xui():
+    configure_params()
     configure_blueprints()
     configure_server_actions()
     configure_recurring_jobs()
     configure_inbound_webhooks()
     configure_orchestration_hooks()
+
+
+def configure_params():
+    """
+    Read any json files under /params/ to create any necessary params. These
+    files can be structured as either a dict with a single param or a list of
+    params in dict format. name, type, and label are required fields.
+
+    Valid keys for the param are: name (str), label (str), type (str: STR,
+    TXT, INT, IP, DT, ETXT, CODE, BOOL, DEC, PWD, TUP, URL), required (bool),
+    namespace (str), show_on_servers (bool), available_all_servers (bool),
+    show_as_attribute (bool), description (str), allow_multiple (bool)
+    :return:
+    """
+    params_dir = f'{XUI_PATH}/parameters/'
+    try:
+        param_files = os.listdir(params_dir)
+    except FileNotFoundError:
+        logger.info(f"No params directory found at {params_dir}")
+        return
+    if param_files:
+        for param_file in param_files:
+            logger.info(f"Starting import of param file : {param_file}")
+            param_path = f'{params_dir}{param_file}'
+            with open(param_path, 'r') as f:
+                param_json = json.load(f)
+            if type(param_json) == dict:
+                cf = create_param_from_dict(param_json)
+            elif type(param_json) == list:
+                for param in param_json:
+                    cf = create_param_from_dict(param)
+            else:
+                logger.info(f"Param file {param_file} is not a dict or list")
+
+
+def create_param_from_dict(param_dict):
+    cf = create_custom_field(**param_dict)
+    return cf
 
 
 def configure_blueprints():
@@ -171,7 +233,12 @@ def set_actions_to_remote_source(bp_dir, bp_json, created):
                     'discovery_plugin']
         for element in elements:
             if element == 'discovery_plugin':
-                actions = [bp_json[element]]
+                try:
+                    actions = [bp_json[element]]
+                except KeyError:
+                    logger.info(f"Blueprint: {bp_json['name']} does not have "
+                                f"a discovery plugin")
+                    continue
             else:
                 actions = bp_json[element]
             for action in actions:
@@ -233,6 +300,7 @@ def configure_server_actions():
     except FileNotFoundError:
         logger.info(f"No Server Actions directory found at "
                     f"{server_actions_dir}")
+        return
     for sa in server_actions:
         logger.info(f"Starting import of Server Action: {sa}")
         sa_file = f'{sa}.json'
