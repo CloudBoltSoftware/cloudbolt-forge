@@ -64,9 +64,15 @@ git clone https://github.com/CloudBoltSoftware/cloudbolt-forge.git
                 </ul>
 
                 <h4>Setting Up:</h4>
+                <p>Fire up a terminal session and punch in these commands.
+                   This step may not be required in the future versions of CloudBolt.
+                   Check that the jupyterd service is not running before starting it.
+                </p>
                 <pre><button class="btn" data-clipboard-target="#codeBlock2">                    
                     <i class="bi bi-clipboard"></i>
                 </button><code id="codeBlock2" class="language-bash">
+netstat -tlnp | grep "5555*" # check if it is running
+# if not running, start the service
 sudo mkdir /var/run/cloudbolt/jupyterd  
 chown cloudbolt /var/run/cloudbolt/jupyterd
 service jupyterd start  
