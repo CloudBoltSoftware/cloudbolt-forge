@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block security_message %}
+{% if gp.security_message %}
+<div class="full-container text-center security-message"> {{ gp.security_message|safe }} </div>
+{% endif %}
+<div class="full-container text-center security-message">
+    Please only use the Django Jupyter Notebook when given specific direction to do so by CloudBolt
+    support.
+    <br />If you cannot determine how to accomplish your goals without using the Django Jupyter Notebook, please let us
+    know.
+</div>
+{% endblock security_message %}
+
+{% block outercontent %}
+<iframe id="django-notebook-frame" src="{{ notebook_uri }}" class="seamless"
+    style="height: 100%; width: 100%;"></iframe>
+{% endblock outercontent %}
