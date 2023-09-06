@@ -1,6 +1,6 @@
 from django.conf.urls import url
-from xui.jupyter_notebook_new import views
+from xui.jupyter_notebook import views
 
 xui_urlpatterns = [
-    url(r'^notebook_new', views.jupyter_notebook_new_view, name='django_notebook_new'),
+    url(r'^notebook', views.jupyter_notebook_view, name='django_notebook'),
 ]
