@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+header {
+    background-color: #f8f9fa;
+    padding: 15px 0;
+    text-align: center;
+}
+
+h2, h3, h4, h5, h6 {
+    text-align: left;
+}
+
+code {
+    overflow-x: scroll;
+    overflow-Y: scroll;
+}
+
+
+.btn {
+    position: absolute;
+    top: -5px;
+    right: 5px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color:white;
+}
+
+.container-hmargin {
+    margin-right: 20%; /* Set the right margin */
+    margin-left: 20%;  /* Set the left margin */
+}
+

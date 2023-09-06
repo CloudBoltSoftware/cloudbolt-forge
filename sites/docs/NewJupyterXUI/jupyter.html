@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="jupyter-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/tomorrow-night-blue.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+
+<!-- and it's easy to individually load additional languages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/go.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+
+
+    
+    <title>CloudBolt Jupyter Notebook UI Extension</title>
+</head>
+
+<body>
+    
+        <div class="row">
+      
+          <div class="col-sm-8">
+          </div>
+          <div class="col-sm-4">
+              <svg>
+                  <image href="../img/CloudBoltLogoLarge.svg"></image>
+              </svg>
+          </div>
+        </div>
+
+        <div class="row">
+            <h1>Jupyter Notebook UI Extension</h1>
+        </div>
+
+        <div class = "container-hmargin">
+        <div class="row">
+
+                <h2>Introduction</h2>
+                <p>Experience the power of Jupyter Notebook right within your CloudBolt environment. Whether you're just beginning your Python journey or are an advanced user, Jupyter is the best python developer tool for everyone. Our integration ensures you can easily access the full capabilities of Jupyter Notebook directly from your CloudBolt dashboard, streamlining your development process and enhancing productivity.</p>
+
+                <h2>Installing and Running the Jupyter Notebook UI Extension</h2>
+                <h4>Download the Extension:</h4>
+                <ul>
+                    <li>Clone the CloudBolt Forge repository.</li>
+                </ul>
+                    <pre><button class="btn" data-clipboard-target="#codeBlock1">                    
+                            <i class="bi bi-clipboard"></i>
+                        </button><code id="codeBlock1" class="language-bash">
+git clone https://github.com/CloudBoltSoftware/cloudbolt-forge.git
+                        </code></pre>
+                <ul>
+                    <li> Zip the root directory of the UI extension.</li>
+                </ul>
+
+                <h4>Import the Extension:</h4>
+                <ul>
+                    <li>Head over to Admin -> UI Extensions page.</li>
+                    <li>Import the extension.</li>
+                    <li>Click on “Sync Static Assets”.</li>
+                </ul>
+
+                <h4>Setting Up:</h4>
+                <pre><button class="btn" data-clipboard-target="#codeBlock2">                    
+                    <i class="bi bi-clipboard"></i>
+                </button><code id="codeBlock2" class="language-bash">
+sudo mkdir /var/run/cloudbolt/jupyterd  
+chown cloudbolt /var/run/cloudbolt/jupyterd
+service jupyterd start  
+                </code></pre>
+
+                <h4>Accessing the Jupyter Notebook:</h4>
+                <ul>
+                    <li>Go to the “All Admin” page.</li>
+                    <li>You'll find the “Jupyter Notebook” link under the “Admin Extensions” section.</li>
+                    <li>Click on the link to launch the Jupyter Notebook.</li>
+                </ul>
+
+                <h4>Creating Files:</h4>
+                <ul>
+                    <li>By default, Jupyter opens in the /home/cloudbolt directory.</li>
+                    <li>Your notebook files will be saved there.</li>
+                    <li>Create a new Django Shell-Plus File and dive right in!</li>
+                </ul>
+                <img src = "images/JupyterFileExample.jpg" alt = "Jupyter Notebook" width = "100%">
+
+                <h2>Troubleshooting</h2>
+                <h4>Version Conflict error:</h4>
+                <p> A package has not been installed properly.
+                    Uninstall the package that is causing the error. 
+                    Make sure to uninstall all versions of the package.
+                    Then install the required version as shown:</p>
+                <pre><button class="btn" data-clipboard-target="#codeBlock3">                    
+                    <i class="bi bi-clipboard"></i>
+                </button><code id="codeBlock3" class="language-python">
+
+pip uninstall jupyter_client
+pip list | grep jupyter_client
+# if another version exists, uninstall it
+pip install jupyter_client== 7.4.9
+pip uninstall notebook
+pip list | grep notebook
+pip install notebook==6.4.12
+pip uninstall psutil
+pip list | grep psutil
+pip install psutil==5.9.4                   
+                </code></pre>
+
+                <h4>Multiple Jupyter Processes:</h4>
+                <p>
+                Starting Jupyter while another instance is running will initiate a new process 
+                connected to the next available port. This will cause Jupyter errors. 
+                If you encounter this problem, terminate all connections and restart jupyter: </p>    
+                <pre><button class="btn" data-clipboard-target="#codeBlock4">                    
+                    <i class="bi bi-clipboard"></i>
+                </button><code id="codeBlock4" class="language-python">
+netstat -tlnp | grep "5555*"
+tcp        0      0 127.0.0.1:55555         0.0.0.0:*               LISTEN      2975/python
+tcp        0      0 127.0.0.1:55556         0.0.0.0:*               LISTEN      3369/python
+tcp        0      0 127.0.0.1:55557         0.0.0.0:*               LISTEN      3822/python
+kill 2975 3369 3822
+[C 05:45:55.454 NotebookApp] received signal 15, stopping
+…
+service jupyterd restart
+Stopping jupyterd: SUCCESS (not running)
+Starting jupyterd: SUCCESS (running on 4177)
+[I 05:47:42.405 NotebookApp] Serving notebooks from local directory: /home/cloudbolt
+                                      
+                </code></pre>
+                <br>
+        <h4>Other Errors:</h4>
+        <p> Restart webserver, Sync Static Assets, Reboot the Server. </p>
+        </div>
+    </div>
+
+    <script>hljs.highlightAll();
+        new ClipboardJS('.btn');
+    </script>
+</body>
+
+</html>
