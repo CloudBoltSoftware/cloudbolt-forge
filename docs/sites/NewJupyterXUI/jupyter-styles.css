@@ -17,11 +17,13 @@ code {
     overflow-Y: scroll;
 }
 
-
+pre {
+    position: relative;
+}
 .btn {
     position: absolute;
     top: -5px;
-    right: 5px;
+    right:15px;
     background-color: transparent;
     border: none;
     cursor: pointer;
@@ -29,7 +31,7 @@ code {
 }
 
 .container-hmargin {
-    margin-right: 20%; /* Set the right margin */
-    margin-left: 20%;  /* Set the left margin */
+    margin-right: 20%;
+    margin-left: 20%; 
 }
 
