@@ -16,9 +16,6 @@ Through the URLs:
     The view imports the models
 
 
-
-HOWTO: PS - CMP Django Queries 
-https://cloudbolt.atlassian.net/wiki/spaces/CSPSO/pages/1470431469
 ## [Django Query Resources](https://docs.djangoproject.com/en/3.2/ref/models/querysets/)
 ### Query Examples
 ```python
