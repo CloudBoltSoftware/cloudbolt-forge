@@ -1,0 +1,150 @@
+{% load i18n %}
+{% load helper_tags %}
+<!doctype html>
+{% comment %}
+These IE conditionals enable our JavaScript to change the UI based on IE version.
+{% endcomment %}
+<!--[if IE 9]>    <html lang="en" class="ie ie9">  <![endif]-->
+<!--[if gt IE 9]> <html lang="en" class="ie">      <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+
+<head>
+    {% include "common/head_metadata.html" %}
+
+    <title>
+        {% if pagetitle %}
+        {{ pagetitle }}
+        {% else %}
+        {% block title %}{% endblock %}
+        {% endif %}
+        - {% portal_label %}
+    </title>
+
+    {% include "common/head_css_includes.html" %}
+
+    <style type="text/css" media="all">
+        {
+            % block inlinecss %
+        }
+
+            {
+            % endblock %
+        }
+    </style>
+
+    {% block extrastyle %}
+    {% endblock %}
+
+    {% block javascript %}
+    {% include "common/head_javascript_includes.html" %}
+    {% endblock javascript %}
+</head>
+
+
+<body data-topnav="{% block topnav %}{% endblock %}">
+    <a href="#content" class="show-on-focus">{% trans "Skip navigation" %}</a>
+    <div class="vbox">
+        <div id="header-container" class="box-shrink">
+            <div id="header">
+                {% if catalog_only_mode %}
+                {% include "common/header_embedded.html" %}
+                {% else %}
+                {% include "common/header.html" %}
+                {% endif %}
+            </div>
+
+            {% block extra_header %}{% endblock %}
+
+            {% block security_message %}
+            {% if gp.security_message %}
+            <div class="full-container text-center security-message">
+                {{ gp.security_message|sanitize_html_blacklisted_js|safe }} </div>
+            {% endif %}
+            {% endblock security_message %}
+
+            {% block mode_message %}
+            {% if gp.admin_only_mode %}
+            <div class="full-container text-center security-message">
+                {% url 'health_check:index' as the_url %}
+                {% blocktrans %}
+                Admin-only mode is enabled, non-Admins will not be able to log in until this is disabled on the
+                <a href="{{ the_url }}">System Status page</a>.
+                {% endblocktrans %}
+            </div>
+            {% endif %}
+            {% endblock mode_message %}
+        </div>
+
+        <div class="box-expand">
+            {% block outercontent %}
+            <div class="{% block fluidclass %}fluid-container{% endblock %}" role="main" aria-label="Content">
+                <div id="alert-box"></div>
+
+                {% block breadcrumbs %}
+                {% endblock breadcrumbs %}
+
+                <div id="content">
+                    {% block uplink %}
+                    {% if uplink %}
+                    <span class="uplink">
+                        {# Passing a url of None is a way to make the uplink not be a link, likely for security reasons #}
+                        {% if uplink.url is not None %}
+                        <a href="{{ uplink.url }}">{{ uplink.label }}</a>
+                        {% else %}
+                        {{ uplink.label }}
+                        {% endif %}
+                    </span>
+                    {% endif %}
+                    {% endblock uplink %}
+
+                    {% if pageheading %}
+                    <h1>{{ pageheading }}</h1>
+                    {% endif %}
+
+                    {% block content %}
+                    {% endblock content %}
+                </div>{# end #content #}
+
+            </div>
+            {% endblock outercontent %}
+        </div> {# end .box-expand #}
+
+        {% if catalog_only_mode %}
+        {% include "common/footer_embedded.html" %}
+        {% else %}
+        {% include "common/footer.html" %}
+        {% endif %}
+    </div> {# end .vbox #}
+
+    {# Element used as container for all dialogs. See c2.dialogs for more. #}
+    <div class="modal fade" tabindex="-1" id="dialog-modal" role="dialog" aria-modal="true"></div>
+
+    {% block scripts %}
+    {% comment %}
+    See http://developer.yahoo.com/blogs/ydn/posts/2007/07/high_performanc_5/
+    {% endcomment %}
+    {% endblock %}
+
+    <script type="text/javascript">
+        $(function () {
+            {% if messages %}
+            {% for message in messages %}
+            { # Show message from server - side views # }
+            c2.alerts.addGlobalAlert({{ message.message | sanitize_html_blacklisted_js | safe | to_json }}, '{{ message.tags }}', true);
+        {% endfor %}
+        {% endif %}
+
+        {% comment %}
+        Templates can insert onReady logic here for DRY but also to avoid
+        binding too many handlers to the event.
+        {% endcomment %}
+
+        {% block onReady %}
+        {% endblock %}
+    });
+    </script>
+</body>
+
+</html>
