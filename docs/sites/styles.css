@@ -35,3 +35,9 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 2px solid #003E8D;
     border-left: 2px solid  #008000;
 }
+
+.gradient-divider {
+    height: 2px; /* controls the thickness of line */
+    margin: 1em 1em;
+    background: linear-gradient(135deg, #00C6FF, #0072FF, #003E8D, #008000);
+}

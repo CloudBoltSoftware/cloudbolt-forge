@@ -8,7 +8,7 @@ header {
     text-align: center;
 }
 
-h2, h3, h4, h5, h6 {
+h3, h4, h5, h6 {
     text-align: left;
 }
 
@@ -22,12 +22,15 @@ pre {
 }
 .btn {
     position: absolute;
-    top: -5px;
-    right:15px;
+    top: -20px;
+    right:25px;
     background-color: transparent;
     border: none;
     cursor: pointer;
     color:white;
+}
+.btn:hover {
+    color: lightblue;
 }
 
 .container-hmargin {
