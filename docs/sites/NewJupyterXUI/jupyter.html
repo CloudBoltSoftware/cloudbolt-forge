@@ -47,13 +47,9 @@
                 <h2>Installing and Running the Jupyter Notebook UI Extension</h2>
                 <h4>Importing the extension:</h4>
                 <ul>
-                    <li>Download the jupyter_notebook_new.zip
-                        file from the CloudBolt Forge repository <a href="https://github.com/CloudBoltSoftware/cloudbolt-forge/tree/master/ui_extensions/jupyter_notebook_new/jupyter_notebook_new.zip">[Link]</a>.
+                    <li>Import the extension from the Content Library.
                     </li>
                     <li>Navigate to Admin -> UI Extensions page.</li>
-                    <li> Import the downloaded file.</li>
-                    <li>Alternatively, you can get the extension by importing it from
-                        the Content Library, when available.</li>
                     <li>Click on “Sync Static Assets”.</li>
                 </ul>
 
@@ -88,7 +84,8 @@ service httpd restart
             <div class="gradient-divider"></div>
 
             <h2>Troubleshooting</h2>
-                <h4>Version Conflict error:</h4>
+                <h4>Version Conflict error (This step is required in CentOS):</h4>
+
                 <p> A package has not been installed properly.
                     Uninstall the package that is causing the error. 
                     Make sure to uninstall all versions of the package.
