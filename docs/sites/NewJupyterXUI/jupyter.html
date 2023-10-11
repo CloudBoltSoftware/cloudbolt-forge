@@ -65,7 +65,7 @@ chown cloudbolt /var/run/cloudbolt/jupyterd
 service jupyterd restart
 service httpd restart  
                 </code></pre>
-
+<li> If you are running CentOS 7, you might require the first step from the troubleshooting section below.</li>
                 <h4>Accessing the Jupyter Notebook:</h4>
                 <ul>
                     <li>Go to the “All Admin” page.</li>
@@ -84,7 +84,7 @@ service httpd restart
             <div class="gradient-divider"></div>
 
             <h2>Troubleshooting</h2>
-                <h4>Version Conflict error (This step is required in CentOS):</h4>
+                <h4>Version Conflict error (usually a problem in CentOS 7 only):</h4>
 
                 <p> A package has not been installed properly.
                     Uninstall the package that is causing the error. 
