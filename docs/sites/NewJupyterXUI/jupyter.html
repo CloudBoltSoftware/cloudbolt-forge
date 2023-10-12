@@ -47,7 +47,9 @@
                 <p>Experience the power of Jupyter Notebook right within your CloudBolt environment. Whether you're just beginning your Python journey or are an advanced user, Jupyter is the best python developer tool for everyone. Our integration ensures you can easily access the full capabilities of Jupyter Notebook directly from your CloudBolt dashboard, streamlining your development process and enhancing productivity.</p>
                 <div class="gradient-divider"></div>
                 <h2>Installing and Running the Jupyter Notebook UI Extension</h2>
+
                 <h4>Importing the extension:</h4>
+
                 <ul>
                     <li>Import the extension from the Content Library.
                     </li>
@@ -56,19 +58,24 @@
                 </ul>
 
                 <h4>Setting Up:</h4>
-                <li>Open a terminal session and enter the following commands.
-                    (Note: This step might be unnecessary in future versions of CloudBolt.)
-                </li>
-                <pre><button class="btn" data-clipboard-target="#codeBlock2">                    
-                    <i class="bi bi-clipboard"></i>
-                </button><code id="codeBlock2" class="language-bash">
+
+                    <ul>
+                        <li>Open a terminal session and enter the following commands.
+                            (Note: This step might be unnecessary in future versions of CloudBolt.)
+                        </li>
+                        <pre><button class="btn" data-clipboard-target="#codeBlock2">
+                            <i class="bi bi-clipboard"></i>
+                        </button><code id="codeBlock2" class="language-bash">
 sudo mkdir /var/run/cloudbolt/jupyterd  
 chown cloudbolt /var/run/cloudbolt/jupyterd
 service jupyterd restart
 service httpd restart  
                 </code></pre>
-<li> If you are running CentOS 7, you might require the first step from the troubleshooting section below.</li>
+                        <li> If you are running CentOS 7, you might require the first step from the troubleshooting section below.</li>
+                    </ul>
+
                 <h4>Accessing the Jupyter Notebook:</h4>
+
                 <ul>
                     <li>Go to the “All Admin” page.</li>
                     <li>You'll find the “Jupyter Notebook” link under the “Admin Extensions” section.</li>
@@ -76,6 +83,7 @@ service httpd restart
                 </ul>
 
                 <h4>Creating Files:</h4>
+
                 <ul>
                     <li>By default, Jupyter starts in the /home/cloudbolt directory.</li>
                     <li>Your notebook files will be saved there.</li>
@@ -83,6 +91,7 @@ service httpd restart
                 </ul>
                 <img src = "images/JupyterFileExample.jpg" alt = "Jupyter Notebook" width = "100%">
             <br>&nbsp<br>
+
             <div class="gradient-divider"></div>
 
             <h2>Troubleshooting</h2>
@@ -133,11 +142,13 @@ Starting jupyterd: SUCCESS (running on 4177)
                 </code></pre>
         <br>
         <h4>Other troubleshooting tips:</h4>
-        <li> Restart webserver </li>
-        <li> Sync Static Assets </li>
-        <li> Reboot the Server </li>
-        <li> Make sure "cloudbolt" user is the owner of files in the UI extension (or chown cloudbolt filename)</li>
-        <li> Restart the Kernel: </li>
+            <ul>
+                <li> Restart webserver </li>
+                <li> Sync Static Assets </li>
+                <li> Reboot the Server </li>
+                <li> Make sure "cloudbolt" user is the owner of files in the UI extension (or chown cloudbolt filename)</li>
+                <li> Restart the Kernel: </li>
+            </ul>
 
         <img src = "images/KernelRestart.jpg" alt = "Kernel Restart" style="max-width:400px; display: block; margin: auto;">
 
