@@ -168,36 +168,42 @@ The Environment object has the following attributes:
 ```
 
 
-Install packages in XUI's frmo the shell or within a XUI
+## Install packages in XUI's from the shell or within a XUI
+Ensure pyYaml is installed, or install it.
 
-# Ensure pyYaml is installed, or install it.
-
+```python
 from utilities.run_command import execute_command
 try:
 import pyYAML
 except ImportError:
 execute_command("pip install pyYAML")
 import pyYAML
+```
 
-# Server Actions:
-
-iterate through a list of servers in the job
+## Server Actions:
+Iterate through a list of servers in the job
+```python
 for server in job.server_set.all()
+```
 
-Executing scripts remotely using a plug-in , this should utilize VMtools and bypass the need for WinRM.
-def execute_script(self, script_path=None, script_contents=None,
-script_args=None, timeout=120,
-file_extension=None, runas_username=None,
-runas_password=None, runas_key=None, run_with_sudo=False,
-show_streaming_output=True):
+## Executing scripts remotely using a plug-in
+This should utilize VMtools and bypass the need for WinRM.
+```python
+def execute_script(
+        self, script_path=None, script_contents=None,
+        script_args=None, timeout=120,
+        file_extension=None, runas_username=None,
+        runas_password=None, runas_key=None, run_with_sudo=False,
+        show_streaming_output=True):
 
-                       for *NIX:
-                       from common.methods import run_script_on_target_ssh
+        # for *NIX:
+        from common.methods import run_script_on_target_ssh
 
-content = f"""
-echo {resource.hostname}
-"""
-run_script_on_target_ssh(ip,none,content,username='ansible', key_name='ansible',key_location='global',timeout=120)
+    content = f"""
+        echo {resource.hostname}
+    """
+    run_script_on_target_ssh(ip,none,content,username='ansible', key_name='ansible',key_location='global',timeout=120)
+```
 
 ## Get or Create 
 Get or create an object in the database. This is useful for creating a new object if it doesn't exist, or getting the existing object if it does.
@@ -220,23 +226,23 @@ user, _ = User.objects.get_or_create(username='admin', defaults={
 
 ```
 
-# Enable / disable maintenance mode
+## Enable / disable maintenance mode
 ```bash
 /opt/cloudbolt/utilities/maintenance_mode.py on
 /opt/cloudbolt/utilities/maintenance_mode.py off
 ```
 
-# bypass SSO only login
+## Bypass SSO only login
 http://<cbhost>/accounts/login/?failure=True
 
 
-# restarting services
+## Restarting services
 ```bash
 supervisorctl restart jobengine:*
 service httpd restart
 ```
 
-# Cancel running sync vms job if you get this error:
+## Cancel running sync vms job if you get this error:
 A synchronization job for resource handler 'vCenter' is already running.
 when trying to run a sync vms for resource handler job
 ```python
@@ -245,7 +251,7 @@ for lock in DBLock.objects.all():
 ```
 
 
-# How to use Connection Info for username and password storage
+## How to use Connection Info for username and password storage
 ```python
 from utilities.models import ConnectionInfo
 
@@ -254,19 +260,19 @@ username = ci.username
 pwd = ci.password
 ```
 
-# check to see if a server is ready
+## Check to see if a server is ready
 ```python
 server.wait_for_os_readiness()
 ```
 
-# run an orchestration hook
+## Run an orchestration hook
 ```python
 oh = OrchestrationHook.objects.get(id=175)
 kwargs = {"server": server}
 oh.run(**kwargs)
 ```
 
-# how to use a key stored in cloudbolt for running a remote command
+## How to use a key stored in cloudbolt for running a remote command
 ```python
 from common.methods import run_script_on_target_ssh
 content = f"""
@@ -275,7 +281,7 @@ content = f"""
 run_script_on_target_ssh(ip,none,content,username='ansible', key_name='ansible',key_location='global',timeout=120)
 ```
 
-# how to get the api wrapper
+## How to get the api wrapper
 ```python
 #rh = AzureARMHandler.objects.first()
 rh = AWSHandler.objects.first()
@@ -283,7 +289,7 @@ w = rh.get_api_wrapper()
 client = w.compute_client
 ```
 
-# how to use the threadlogger
+## How to use the threadlogger
 ```python
 from utilities.logger import ThreadLogger
 
@@ -305,7 +311,7 @@ set_progress(output)
 ```
 
 
-# set the ip on a server
+## Set the ip on a server
 ```python
 nic1 = server.nics.first()
 nic1.ip = '10.1.1.1'
@@ -313,7 +319,7 @@ nic1.save()
 server.save()
 ```
 
-# how to get the vsphere API wrapper
+## How to get the vsphere API wrapper
 ```python
 VsphereResourceHandler.objects.all()
 vcenter = _[3]  # get the fourth one in the list from above
@@ -321,7 +327,7 @@ wrapper=vcenter.get_api_wrapper()
 si = wrapper._get_connection()
 ```
 
-# generate an options list from orchestration action
+## Generate an options list from orchestration action
 ```python
 def get_options_list(field, control_value=None, **kwargs):
     profile = kwargs.get("profile",None)
@@ -330,7 +336,7 @@ def get_options_list(field, control_value=None, **kwargs):
 ```
 
 
-# generate an options list for an action input
+## Generate an options list for an action input
 ```python
 from common.methods import set_progress
 
@@ -351,7 +357,7 @@ def generate_options_for_adgroups(**kwargs):
 ```
 
 
-# Find a items in vCenter via pyvmomi
+## Find a items in vCenter via pyvmomi
 ```python
 import pyVmomi
 from resourcehandlers.vmware.pyvmomi_wrapper import get_vm_by_uuid
@@ -373,7 +379,7 @@ for item in obj.recentTask:
 ```
 
 
-# run a recurring job
+## Run a recurring job
 ```python
 from jobs.models import RecurringJob
 
@@ -383,7 +389,7 @@ rj.spawn_new_job()
 ```
 
 
-# look for datastore size in vCenter
+## Look for datastore size in vCenter
 ```python
 rh=ResourceHandler.objects.get(id=1)
 w = rh.get_api_wrapper()
@@ -398,7 +404,7 @@ print(available)
 ```
 
 
-# sync an individual vm from vCenter
+## Sync an individual vm from vCenter
 ```python
 vm = {}
 vm['hostname'] = server.hostname
@@ -416,7 +422,7 @@ sync_class = SyncVMsClass()
 ```
 
 
-# update tags
+## Update tags
 ```python
 cf =  CustomField.objects.get(name='URL_2')
 server.set_value_for_custom_field(cf,'CloudTagissue-2.mdsol.com')
@@ -426,7 +432,7 @@ rh.update_tags(server)
 ```
 
 
-# Run remote commands
+## Run remote commands
 ```python
 from utilities.run_command import run_command, execute_command
 from common.methods import find_key_material
@@ -466,7 +472,7 @@ execute_command(
 ```
 
 
-# server execute remote commands
+## Server execute remote commands
 ```python
 server.execute_script(self, script_path=None, script_contents=None,
                        script_args=None, timeout=120,
@@ -481,7 +487,7 @@ server.execute_script(script_contents=cmd,runas_key=mykey)
 ```
 
 
-# add parameter (a.k.a custom field value)
+## Add parameter (a.k.a custom field value)
 ```python
 inet_allocated_ip_cf, _ = CustomField.objects.get_or_create(
     name='inet_allocated_ip_address',
@@ -505,7 +511,7 @@ server.save()
 ```
 
 
-# see the sample payload for a blueprint
+## See the sample payload for a blueprint
 ```python
 import json
 from servicecatalog.services.blueprint_service import BlueprintService
@@ -535,7 +541,7 @@ for bp in ServiceBlueprint.objects.filter(status="ACTIVE"):
 ```
 
 
-# see parameters in an order
+## See parameters in an order
 ```python
    
 #bpia = bp_order_item.blueprintitemarguments_set.filter(environment__isnull=False).first()
@@ -556,7 +562,7 @@ def run(job, *args, **kwargs):
 ```
 
 
-# get order informtion
+## Get order informtion
 ```python
 order = Order.objects.get(id=304)
 bp_order_item = order.orderitem_set.filter(blueprintorderitem__isnull=False).first()
@@ -571,7 +577,7 @@ for bpoi in bp_order_item.blueprintorderitem.blueprintitemarguments_set.all():
             print(f"Parameters: {cfv}")
 ```
 
-# Inbound web hook 
+## Inbound web hook 
 ```python
 from common.methods import set_progress
 from infrastructure.models import Server
@@ -594,7 +600,7 @@ def inbound_web_hook_post(*args, parameters={}, **kwargs):
 ```
 
 
-# Call the webhook
+## Call the webhook
 ```python
 # Inbound web hook POST -- uses json= instead of params= (like the GET)
 import json, requests, sys
@@ -609,7 +615,7 @@ response = requests.post(url, verify=False, json={'servername': 'Dev-125'})
 print(response.text)
 ```
 
-# Increase the number of jobengine workers
+## Increase the number of jobengine workers
 ```bash
 # Number of Processes:  By default, the CloudBolt appliance only runs one Job Engine process at a time. 
 # That process creates threads to run individual jobs. It could improve performance for customers to increase 
@@ -622,7 +628,7 @@ print(response.text)
 #Use the command supervisorctl reload.
 ```
 
-# Fix the WARNINGS 'encoded with obsolete method. Decrypting accordingly' in job logs
+## Fix the WARNINGS 'encoded with obsolete method. Decrypting accordingly' in job logs
 ```python
 # We used this code to re-save values using obsolete methods. 
 # The only real issue was the amount of time it takes to save millions of CustomFieldValue objects.
@@ -636,7 +642,7 @@ for cfv in CustomFieldValue.objects.exclude(pwd_value=''):
 ```
 
 
-#Add tag to servers
+## Add tag to servers
 ```python
 import os, sys
 
@@ -656,7 +662,7 @@ def run(job, logger=None, **kwargs):
     return "", "", ""
 ```
 
-# add tags to aws vm
+## Add tags to aws vm
 ```python
 from resourcehandlers.aws.models import AWSHandler
 
@@ -672,7 +678,7 @@ wrapper.update_instance_tags(s.resource_handler_svr_id,tags_dict)
 ```
 
 
-# How to get the email settings
+## How to get the email settings
 ```python
 gp = GlobalPreferences.objects.first()
 gp.smtp_host
@@ -681,7 +687,7 @@ gp.smtp_user
 gp.smtp_password
 ```
 
-# Enable cancel orphan jobs
+## Enable cancel orphan jobs
 ```bash
 # vi customer_settings.py
 from settings import FEATURE_REGISTRY
@@ -689,7 +695,7 @@ FEATURE_REGISTRY["jobengine::cancel_orphan_jobs"] = False
 ```
 
 
-# search job progress messages
+## Search job progress messages
 ```python
 ansible_build_step_id = 2
 bp_id = job.parent_job.children_jobs.all()[ansible_build_step_id]
@@ -701,7 +707,7 @@ for pm in bp_job.progressmessage_set.all():
 ```
 
 
-# write a progress message or a detailed progress message
+## Write a progress message or a detailed progress message
 ```python
 from jobs.models import Job, ProgressMessage
  
@@ -713,14 +719,14 @@ def run(job, *args, **kwargs):
     return "SUCCESS", "Sample output message", ""
  ```
 
-# bulk remove networks on an environment
+## Bulk remove networks on an environment
 ```python
 nets_to_remove = env.get_possible_networks().exclude(name__in=["a", "b", "c"])
 for net in nets_to_remove:
     env.remove_network(net.resourcenetwork_ptr, 1)
  ```
 
-# call a CloudBolt Remote Script
+## Call a CloudBolt Remote Script
 ```python
 remotescript = RemoteScriptHook.objects.filter(name=script_name).first()
 

@@ -28,16 +28,16 @@ If you have interesting customizations that you have developed, please share the
 ## Development
 The CloudBolt CMP utilizes Python as it's primary language.   
 
-For a _very_ brief primer on Python as a programming language and common methods for development, reference the [python primer](python_primer.md)
+For a _very_ brief primer on Python as a programming language and common methods for development, reference the [python primer](docs/python_primer.md)
 ## Reference Sheets
 
-The CloudBolt appliance is served from Linux, to CLI reference for those new to Linux [linux cheatsheet](linux_cheatsheet.md)
+The CloudBolt appliance is served from Linux, to CLI reference for those new to Linux [linux cheatsheet](docs/linux_cheatsheet.md)
 
 The CloudBolt CMP is built on the Django framework. As such, it is helpful to understand the basics of Django, primarily the syntax in templates and how to use the ORM.
 
-For general CloudBolt development, reference the [cheatsheet](cheatsheet.md)
+For general CloudBolt development, reference the [cheatsheet](docs/cheatsheet.md)
 
-For a _very_ brief primer on Django (which CMP is based), reference the [django crashcourse](django_crashcourse.md)
+For a _very_ brief primer on Django (which CMP is based), reference the [django crashcourse](docs/django_crashcourse.md)
 
 
 ## License
