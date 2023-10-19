@@ -1,10 +1,11 @@
-> :pushpin:  **Disclaimer:** This open-source repository is **not** a part of CloudBolt's official product offerings. 
+:pushpin:  ***Disclaimer:** This open-source repository is **not** a part of CloudBolt's official product offerings. 
 It represents the dedication and enthusiasm of our engineers to innovate, educate, 
 collaborate with customers, and contribute to the community. 
 While CloudBolt as an organization supports and encourages this initiative, we cannot guarantee the accuracy, 
 security, or functionality of the content. Think of this space as a sandbox - a place where everyone is invited to share, experiment, find and correct bugs, and make improvements. 
-In essence, this is our way of making valuable resources and tools available at no-cost to the wider tech community.
----  
+In essence, this is our way of making valuable resources and tools available at no-cost to the wider tech community.*
+##     
+  
 
 
 ![cb_logo](https://user-images.githubusercontent.com/1979246/178788740-95e6ec2f-c632-4486-890a-0971bd745f80.png)
