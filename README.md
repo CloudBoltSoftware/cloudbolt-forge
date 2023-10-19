@@ -1,4 +1,4 @@
-:pushpin:  ***Disclaimer:** This open-source repository is **not** a part of CloudBolt's official product offerings. 
+:pushpin:  ***Disclaimer:** This open-source repository is **not** part of CloudBolt's official product offerings. 
 It represents the dedication and enthusiasm of our engineers to innovate, educate, 
 collaborate with customers, and contribute to the community. 
 While CloudBolt as an organization supports and encourages this initiative, we cannot guarantee the accuracy, 
