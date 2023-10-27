@@ -1,0 +1,6 @@
+{
+    "TF_VAR_resource_group_name": "{{environment.resource_group_arm}}",
+    "TF_VAR_storage_account_name": "{{azure_storage_account_name}}",
+    "TF_VAR_storage_container_name": "{{azure_storage_container_name}}",
+    "TF_VAR_account_replication_type": "{{azure_storage_account_replication_type}}"
+  }
