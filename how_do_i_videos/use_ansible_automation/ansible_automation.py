@@ -31,6 +31,7 @@ from resources.models import Resource
 from common.methods import set_progress
 from utilities.models import ConnectionInfo
 from infrastructure.models import CustomField
+from ast import literal_eval
 import requests
 import json
 import time
@@ -50,7 +51,7 @@ def run(job=None, logger=None, server=None, resource=None, **kwargs):
     ansible_template_id = "{{ ansible_template_id }}"
     conn_info_id = "{{ ansible_automation }}"
     template_type = "{{ template_type }}"
-    extra_vars = eval("{{extra_vars}}")[0]
+    extra_vars = literal_eval("{{extra_vars}}")[0]
 
     if template_type not in ["workflow_job_templates", "job_templates"]:
         raise Exception(f"template_type is not equal to either "
