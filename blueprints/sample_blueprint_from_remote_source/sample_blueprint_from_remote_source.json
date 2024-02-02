@@ -1,0 +1,59 @@
+{
+    "any_group_can_deploy": true,
+    "auto_historical_resources": false,
+    "blueprint_image": null,
+    "deployment_items": [
+        {
+            "all_environments_enabled": true,
+            "allowed_os_families": null,
+            "applications": null,
+            "deploy_seq": 2,
+            "description": "",
+            "environment_selection_orchestration": null,
+            "execute_in_parallel": false,
+            "hostname_template": "",
+            "id": "BDI-ur30ucbi",
+            "name": "server",
+            "os_build": null,
+            "restrict_applications": false,
+            "show_on_order_form": false,
+            "tier_type": "server"
+        },
+        {
+            "action_name": "Action added in Sample Blueprint From RemoteSource",
+            "continue_on_failure": false,
+            "deploy_seq": 3,
+            "description": null,
+            "execute_in_parallel": false,
+            "id": "BDI-4kz9ngur",
+            "name": "Action added in Sample Blueprint From RemoteSource",
+            "run_on_scale_up": true,
+            "show_on_order_form": false,
+            "tier_type": "plugin"
+        }
+    ],
+    "description": "",
+    "favorited": false,
+    "id": "BP-l4qt4nog",
+    "is_manageable": true,
+    "is_orderable": true,
+    "labels": [],
+    "last_updated": "2024-02-02",
+    "management_actions": [],
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Sample Blueprint From Remote Source",
+    "resource_name_template": null,
+    "resource_type": {
+        "icon": "",
+        "id": "RT-at2r6e0j",
+        "label": "Service",
+        "lifecycle": "ACTIVE",
+        "list_view_columns": [],
+        "name": "service",
+        "plural_label": null
+    },
+    "sequence": 0,
+    "show_recipient_field_on_order_form": false,
+    "teardown_items": []
+}

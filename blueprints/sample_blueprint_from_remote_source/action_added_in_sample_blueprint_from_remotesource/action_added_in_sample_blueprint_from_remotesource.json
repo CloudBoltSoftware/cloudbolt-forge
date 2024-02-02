@@ -1,0 +1,14 @@
+{
+    "description": "",
+    "id": "OHK-5a8htglt",
+    "last_updated": "2024-02-02",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Action added in Sample Blueprint From RemoteSource",
+    "resource_technologies": [],
+    "script_filename": "cb_plugin_1706898870553853.py",
+    "shared": false,
+    "target_os_families": [],
+    "type": "CloudBolt Plug-in"
+}
