@@ -8,9 +8,10 @@ In essence, this is our way of making valuable resources and tools available at 
   
 
 
-![cb_logo](https://user-images.githubusercontent.com/1979246/178788740-95e6ec2f-c632-4486-890a-0971bd745f80.png)
+[//]: # (![cb_logo]&#40;https://raw.githubusercontent.com/CloudBoltSoftware/cloudbolt-forge/9816f35befdf1377d2b202f33447b492d4e90c33/docs/sites/img/CloudBoltLogoStacked.svg&#41;)
+<img src="https://raw.githubusercontent.com/CloudBoltSoftware/cloudbolt-forge/9816f35befdf1377d2b202f33447b492d4e90c33/docs/sites/img/CloudBoltLogoStacked.svg" alt="cb_logo" /><br><br>
 
-Welcome to the CloudBolt Forge, a public github repository used for sharing powerful content in CloudBolt.  This repository holds CloudBolt actions (AKA hooks), Blueprints, UI extensions, webhooks and other content.
+Welcome to the CloudBolt Forge, a public GitHub repository used for sharing powerful content in CloudBolt.  This repository holds CloudBolt actions (AKA hooks), Blueprints, UI extensions, webhooks and other content.
 
 If you have interesting customizations that you have developed, please share them! Even if they are rough-hewn, others may admire your work, improve on it, and re-share those improvements back with you.
 
