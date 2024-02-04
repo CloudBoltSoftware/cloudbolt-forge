@@ -9,7 +9,7 @@ In essence, this is our way of making valuable resources and tools available at 
 
 
 [//]: # (![cb_logo]&#40;https://raw.githubusercontent.com/CloudBoltSoftware/cloudbolt-forge/9816f35befdf1377d2b202f33447b492d4e90c33/docs/sites/img/CloudBoltLogoStacked.svg&#41;)
-<img src="https://raw.githubusercontent.com/CloudBoltSoftware/cloudbolt-forge/9816f35befdf1377d2b202f33447b492d4e90c33/docs/sites/img/CloudBoltLogoStacked.svg" alt="cb_logo" /><br><br>
+<img style="max-width: 500px;" src="https://raw.githubusercontent.com/CloudBoltSoftware/cloudbolt-forge/9816f35befdf1377d2b202f33447b492d4e90c33/docs/sites/img/CloudBoltLogoStacked.svg" alt="cb_logo" /><br><br>
 
 Welcome to the CloudBolt Forge, a public GitHub repository used for sharing powerful content in CloudBolt.  This repository holds CloudBolt actions (AKA hooks), Blueprints, UI extensions, webhooks and other content.
 
