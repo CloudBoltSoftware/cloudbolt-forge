@@ -17,24 +17,33 @@ iframe {
     height: 100%;            /* or any specific height */
     text-align: center; 
 }
-
-h1, h2, h3, h4, h5, h6 {
-
-        text-align: center;
-        padding: 20px;
-        background: linear-gradient(135deg, #00C6FF, #0072FF, #003E8D, #008000);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-
+h1 {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #008B8B, #097969, #008B8B, #0072FF, #003E8D, #008000);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 3em;
 }
+h2, h3, h4, h5, h6 {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #00C6FF, #0072FF, #003E8D, #008000);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 
 .div-with-colored-frame {
-    border-top: 2px solid #00C6FF;
-    border-right: 2px solid #0072FF;
-    border-bottom: 2px solid #003E8D;
+    border-top: 2px solid #003E8D;
+    border-right: 2px solid #008B8B;
+    border-bottom: 2px solid #00C6FF;
     border-left: 2px solid  #008000;
 }
+
+
 
 .gradient-divider {
     height: 2px; /* controls the thickness of line */
