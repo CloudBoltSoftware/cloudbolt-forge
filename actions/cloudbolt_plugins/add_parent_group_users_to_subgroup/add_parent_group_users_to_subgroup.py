@@ -1,7 +1,7 @@
 #!/bin/env python
 """
-An example CloudBolt post-group-creation hook script that adds the user permissions
-from its parent group.
+An example CloudBolt post-group-creation hook script that adds the user 
+permissions from its parent group.
 """
 from common.methods import set_progress
 
