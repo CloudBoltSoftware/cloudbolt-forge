@@ -1,0 +1,16 @@
+{
+    "description": "",
+    "environments": [],
+    "groups": [],
+    "id": "OHK-r6qsjrds",
+    "last_updated": "2024-02-13",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "eb-remote-bp-action-shared",
+    "resource_technologies": [],
+    "script_filename": "cb_plugin_1707841897555114_AROECC1.py",
+    "shared": true,
+    "target_os_families": [],
+    "type": "CloudBolt Plug-in"
+}

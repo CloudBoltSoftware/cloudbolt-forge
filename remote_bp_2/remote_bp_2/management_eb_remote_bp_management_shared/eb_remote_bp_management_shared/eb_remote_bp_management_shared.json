@@ -1,0 +1,19 @@
+{
+    "action_input_default_values": [],
+    "base_action_name": "eb-remote-bp-management-shared",
+    "dangerous": false,
+    "dialog_message": "",
+    "enabled": true,
+    "extra_classes": "fas fa-bolt",
+    "id": "RSA-fpox72nq",
+    "is_synchronous": false,
+    "label": "eb-remote-bp-management-shared",
+    "last_updated": "2024-02-13",
+    "list_view_visible": true,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "new_tab_url": null,
+    "requires_approval": false,
+    "sequence": null,
+    "submit_button_label": ""
+}
