@@ -1,0 +1,66 @@
+{
+    "any_group_can_deploy": true,
+    "auto_historical_resources": false,
+    "blueprint_image": null,
+    "deployment_items": [
+        {
+            "action_name": "eb-remote-bp-action-shared",
+            "continue_on_failure": false,
+            "deploy_seq": 1,
+            "description": null,
+            "enabled": true,
+            "enabled_environments": [],
+            "execute_in_parallel": false,
+            "id": "BDI-p14rvv26",
+            "name": "eb-remote-bp-action-shared",
+            "run_on_scale_up": true,
+            "show_on_order_form": false,
+            "tier_type": "plugin"
+        }
+    ],
+    "description": "",
+    "discovery_plugin": {
+        "href": "/api/v3/cmp/actions/OHK-g1ji8k44/",
+        "title": "eb-remote-bp-discovery-shared"
+    },
+    "favorited": false,
+    "groups_that_can_deploy": [
+        {
+            "href": "/api/v3/cmp/groups/GRP-ioxz8ri0/",
+            "title": "operations"
+        }
+    ],
+    "groups_that_can_manage": [
+        {
+            "href": "/api/v3/cmp/groups/GRP-ioxz8ri0/",
+            "title": "operations"
+        }
+    ],
+    "id": "BP-3virxbk6",
+    "is_manageable": true,
+    "is_orderable": true,
+    "labels": [],
+    "last_updated": "2024-02-13",
+    "management_actions": [
+        {
+            "enabled": true,
+            "label": "eb-remote-bp-management-shared"
+        }
+    ],
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "EB Remote Blueprint Test",
+    "resource_name_template": null,
+    "resource_type": {
+        "icon": "",
+        "id": "RT-wtoyrbjm",
+        "label": "Service",
+        "lifecycle": "ACTIVE",
+        "list_view_columns": [],
+        "name": "service",
+        "plural_label": null
+    },
+    "sequence": 0,
+    "show_recipient_field_on_order_form": false,
+    "teardown_items": []
+}

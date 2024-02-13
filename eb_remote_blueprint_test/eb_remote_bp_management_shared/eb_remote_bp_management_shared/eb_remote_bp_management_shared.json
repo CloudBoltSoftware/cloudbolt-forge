@@ -1,0 +1,14 @@
+{
+    "description": "",
+    "id": "OHK-9us4u4zi",
+    "last_updated": "2024-02-13",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "eb-remote-bp-management-shared",
+    "resource_technologies": [],
+    "script_filename": "cb_plugin_1707842912464647_C1ai465.py",
+    "shared": true,
+    "target_os_families": [],
+    "type": "CloudBolt Plug-in"
+}
