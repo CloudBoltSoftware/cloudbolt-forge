@@ -1,5 +1,5 @@
 """
-eb-remote-bp-action-shared ORIGINAL
+eb-remote-bp-action-shared MODIFIED
 """
 from common.methods import set_progress
 
