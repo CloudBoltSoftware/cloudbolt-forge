@@ -1,6 +1,6 @@
 {
     "any_group_can_deploy": true,
-    "auto_historical_resources": false,
+    "auto_historical_resources": true,
     "blueprint_image": null,
     "deployment_items": [
         {
