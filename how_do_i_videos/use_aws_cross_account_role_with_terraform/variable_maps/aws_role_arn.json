@@ -1,0 +1,5 @@
+{
+    "TF_VAR_role_arn": "{{environment.resource_handler.awshandler.role_arn}}",
+    "AWS_ACCESS_KEY_ID": "{{environment.resource_handler.awshandler.account_profile.username}}",
+    "AWS_SECRET_ACCESS_KEY": "{{environment.resource_handler.awshandler.account_profile.password}}"
+}
