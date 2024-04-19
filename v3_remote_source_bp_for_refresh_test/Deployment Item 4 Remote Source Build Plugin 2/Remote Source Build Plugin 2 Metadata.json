@@ -1,0 +1,14 @@
+{
+    "description": "The 2nd build item of type plugin, where both the build item and the plugin itself are deleted by the test",
+    "id": "OHK-1ywity2p",
+    "last_updated": "2024-04-19",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Remote Source Build Plugin 2",
+    "resource_technologies": [],
+    "script_filename": "Remote Source Build Plugin 2 Script.py",
+    "shared": false,
+    "target_os_families": [],
+    "type": "CloudBolt Plug-in"
+}

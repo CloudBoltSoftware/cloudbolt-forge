@@ -1,0 +1,14 @@
+{
+    "description": "The first resource action on the Remote Source BP, deleted by the test",
+    "id": "OHK-1wzd584w",
+    "last_updated": "2024-04-19",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Remote Source Resource Action 1",
+    "resource_technologies": [],
+    "script_filename": "Sub File for Hook of Remote Source Resource Action 1 Script.py",
+    "shared": false,
+    "target_os_families": [],
+    "type": "CloudBolt Plug-in"
+}

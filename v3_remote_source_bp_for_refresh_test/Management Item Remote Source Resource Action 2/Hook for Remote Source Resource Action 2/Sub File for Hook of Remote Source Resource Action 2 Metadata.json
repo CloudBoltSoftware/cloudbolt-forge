@@ -1,0 +1,21 @@
+{
+    "commandline_args": null,
+    "credentials": "YOUR_CREDENTIALS",
+    "description": "The second Resource Action for the Remote Source BP, where both the Resource Action and base action are deleted by the test",
+    "execution_timeout": 120,
+    "id": "OHK-6dkrc15j",
+    "last_updated": "2024-04-19",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Remote Source Resource Action 2",
+    "remove_after_run": true,
+    "resource_technologies": [],
+    "run_with_sudo": false,
+    "script_filename": "Sub File for Hook of Remote Source Resource Action 2 Script.py",
+    "shared": false,
+    "target_os_families": [
+        "Linux"
+    ],
+    "type": "Remote Script"
+}

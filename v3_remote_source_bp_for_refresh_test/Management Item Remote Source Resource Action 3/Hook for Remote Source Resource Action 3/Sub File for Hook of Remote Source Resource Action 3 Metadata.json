@@ -1,0 +1,18 @@
+{
+    "body": "This is a test!!",
+    "description": "The third Resource Action for the Remote Source BP, which is removed from the BP (but not deleted) by the testT",
+    "from_address": null,
+    "id": "OHK-b5x5h8ce",
+    "last_updated": "2024-04-19",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Remote Source Resource Action 3",
+    "resource_technologies": [],
+    "script_filename": "Sub File for Hook of Remote Source Resource Action 3 Script.py",
+    "send_to_address": null,
+    "send_to_job_owner": true,
+    "shared": false,
+    "subject": "Testing Remote Source BP Refresh",
+    "type": "Email Hook"
+}

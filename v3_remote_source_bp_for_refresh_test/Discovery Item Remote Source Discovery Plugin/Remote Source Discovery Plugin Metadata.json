@@ -1,0 +1,14 @@
+{
+    "description": "The original discovery plugin for the Remote Source BP, which is replaced by the test",
+    "id": "OHK-2ke8hoa1",
+    "last_updated": "2024-04-19",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Remote Source Discovery Plugin",
+    "resource_technologies": [],
+    "script_filename": "Remote Source Discovery Plugin Script.py",
+    "shared": false,
+    "target_os_families": [],
+    "type": "CloudBolt Plug-in"
+}

@@ -1,0 +1,14 @@
+{
+    "description": "The first build item of type plugin, where the build item will be deleted by the test",
+    "id": "OHK-8wfv2ww3",
+    "last_updated": "2024-04-19",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Remote Source Build Plugin 1",
+    "resource_technologies": [],
+    "script_filename": "Remote Source Build Plugin 1 Script.py",
+    "shared": false,
+    "target_os_families": [],
+    "type": "CloudBolt Plug-in"
+}

@@ -1,0 +1,19 @@
+{
+    "action_input_default_values": [],
+    "base_action_name": "Remote Source Resource Action 2",
+    "dangerous": false,
+    "dialog_message": "",
+    "enabled": true,
+    "extra_classes": "",
+    "id": "RSA-z858a50i",
+    "is_synchronous": false,
+    "label": "Remote Source Resource Action 2",
+    "last_updated": "2024-04-19",
+    "list_view_visible": true,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "new_tab_url": null,
+    "requires_approval": false,
+    "sequence": null,
+    "submit_button_label": ""
+}

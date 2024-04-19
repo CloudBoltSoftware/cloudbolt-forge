@@ -1,0 +1,237 @@
+{
+    "any_group_can_deploy": true,
+    "auto_historical_resources": false,
+    "deployment_items": [
+        {
+            "all_environments_enabled": true,
+            "allowed_os_families": null,
+            "applications": null,
+            "deploy_seq": 1,
+            "description": "First PSSI, will get deleted by test",
+            "enabled_environments": [],
+            "environment_selection_orchestration": null,
+            "execute_in_parallel": false,
+            "hostname_template": "",
+            "id": "BDI-8nq46lt3",
+            "name": "PSSI 1",
+            "os_build": null,
+            "restrict_applications": false,
+            "show_on_order_form": true,
+            "tier_type": "server"
+        },
+        {
+            "all_environments_enabled": true,
+            "allowed_os_families": null,
+            "applications": null,
+            "deploy_seq": 2,
+            "description": "2nd PSSI",
+            "enabled_environments": [],
+            "environment_selection_orchestration": null,
+            "execute_in_parallel": false,
+            "hostname_template": "",
+            "id": "BDI-lr2c5v0r",
+            "name": "PSSI 2",
+            "os_build": null,
+            "restrict_applications": false,
+            "show_on_order_form": true,
+            "tier_type": "server"
+        },
+        {
+            "action_name": "Remote Source Build Plugin 1",
+            "continue_on_failure": false,
+            "deploy_seq": 3,
+            "description": null,
+            "enabled": true,
+            "enabled_environments": [],
+            "execute_in_parallel": false,
+            "id": "BDI-pcsiqwet",
+            "name": "Remote Source Build Plugin 1",
+            "run_on_scale_up": true,
+            "show_on_order_form": true,
+            "tier_type": "plugin"
+        },
+        {
+            "action_name": "Remote Source Build Plugin 2",
+            "continue_on_failure": false,
+            "deploy_seq": 4,
+            "description": null,
+            "enabled": true,
+            "enabled_environments": [],
+            "execute_in_parallel": false,
+            "id": "BDI-wqjlqupv",
+            "name": "Remote Source Build Plugin 2",
+            "run_on_scale_up": true,
+            "show_on_order_form": true,
+            "tier_type": "plugin"
+        }
+    ],
+    "description": "Used to test pushing to repos from CB, refreshing a BP from a Remote Source URL, and other GitOps fun.",
+    "discovery_plugin": {
+        "href": "/api/v3/cmp/actions/OHK-2ke8hoa1/",
+        "title": "Remote Source Discovery Plugin"
+    },
+    "favorited": true,
+    "icon": "farfaraway_hUm5J4R.jpeg",
+    "id": "BP-me6187kk",
+    "is_manageable": true,
+    "is_orderable": true,
+    "labels": [],
+    "last_updated": "2024-04-19",
+    "management_actions": [
+        {
+            "enabled": true,
+            "label": "Remote Source Resource Action 1"
+        },
+        {
+            "enabled": true,
+            "label": "Remote Source Resource Action 2"
+        },
+        {
+            "enabled": true,
+            "label": "Remote Source Resource Action 3"
+        }
+    ],
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "v3 Remote Source BP for Refresh Test in GitHub",
+    "parameters": [
+        {
+            "allow_multiple": false,
+            "available_all_servers": false,
+            "constraints": "Unconstrained",
+            "description": "Notes that will be added to AWS or VMware hosts during provisioning. You may use parameterized templates in this field. Ex. 'Creator={{ server.owner }} Portal={{ portal.site_url }}'. For more info, see the docs on hostname templates.",
+            "destination": "Build Items",
+            "field_dependency_controlling_set": [
+                {
+                    "controlling-field": {
+                        "name": "password"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "HIDE",
+                    "dependent-field": {
+                        "name": "annotation"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                }
+            ],
+            "field_dependency_dependent_set": [],
+            "gen_options_hooks": [
+                {
+                    "enabled": false,
+                    "name": "Generate options for 'Annotation'"
+                }
+            ],
+            "global_options": [],
+            "id": "CF-6yxlrkwc",
+            "label": "Annotation",
+            "name": "annotation",
+            "options": [],
+            "placeholder": null,
+            "relevant_osfamilies": [],
+            "required": false,
+            "show_as_attribute": true,
+            "show_on_servers": true,
+            "type": "TXT",
+            "value_pattern_string": null
+        },
+        {
+            "allow_multiple": false,
+            "available_all_servers": false,
+            "constraints": "Unconstrained",
+            "description": "This is the password that CB will change the VM to use",
+            "destination": "Resource",
+            "field_dependency_controlling_set": [],
+            "field_dependency_dependent_set": [],
+            "global_options": [],
+            "id": "CF-2znox6y1",
+            "label": "New Password",
+            "name": "new_password",
+            "options": [],
+            "placeholder": null,
+            "relevant_osfamilies": [],
+            "required": true,
+            "show_as_attribute": false,
+            "show_on_servers": false,
+            "type": "PWD",
+            "value_pattern_string": null
+        },
+        {
+            "allow_multiple": false,
+            "available_all_servers": false,
+            "constraints": "Unconstrained",
+            "description": "This is the password that CB will attempt to use, in conjunction with the username in the Username parameter, to perform actions on a server",
+            "destination": "Build Items",
+            "field_dependency_controlling_set": [],
+            "field_dependency_dependent_set": [
+                {
+                    "controlling-field": {
+                        "name": "password"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "SHOWHIDE",
+                    "dependent-field": {
+                        "name": "chef_environment"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                },
+                {
+                    "controlling-field": {
+                        "name": "password"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "HIDE",
+                    "dependent-field": {
+                        "name": "annotation"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                }
+            ],
+            "global_options": [],
+            "id": "CF-ds9hkqqp",
+            "label": "Password",
+            "name": "password",
+            "options": [],
+            "placeholder": null,
+            "relevant_osfamilies": [],
+            "required": false,
+            "show_as_attribute": false,
+            "show_on_servers": false,
+            "type": "PWD",
+            "value_pattern_string": null
+        }
+    ],
+    "resource_name_template": null,
+    "resource_type": {
+        "icon": "",
+        "id": "RT-zkvar6h3",
+        "label": "Service",
+        "lifecycle": "ACTIVE",
+        "list_view_columns": [],
+        "name": "service",
+        "plural_label": null
+    },
+    "sequence": 0,
+    "show_recipient_field_on_order_form": false,
+    "teardown_items": [
+        {
+            "action_name": "Remote Source Teardown Item",
+            "continue_on_failure": false,
+            "deploy_seq": 5,
+            "description": null,
+            "enabled": true,
+            "enabled_environments": [],
+            "execute_in_parallel": false,
+            "id": "BDI-bjpbag6j",
+            "name": "Remote Source Teardown Item",
+            "run_on_scale_up": true,
+            "show_on_order_form": true,
+            "tier_type": "teardown_script"
+        }
+    ]
+}
