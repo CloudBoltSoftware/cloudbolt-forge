@@ -1,0 +1,45 @@
+{
+    "any-group-can-deploy": true,
+    "auto-historical-resources": false,
+    "build-items": [
+        {
+            "action-name": "Build Subnet",
+            "continue-on-failure": false,
+            "deploy-seq": 1,
+            "description": null,
+            "execute-in-parallel": false,
+            "name": "Build Subnet",
+            "run-on-scale-up": true,
+            "show-on-order-form": true,
+            "type": "plugin"
+        }
+    ],
+    "description": "Create a subnet in a VPC associated with an existing CloudBolt Environment.",
+    "favorited": false,
+    "icon": "aws_subnet_1mCgJw9.png",
+    "is-orderable": true,
+    "management-actions": [],
+    "name": "AWS Subnet",
+    "resource-name-template": "AWS Subnet 000X",
+    "resource-type": {
+        "icon": "",
+        "label": "AWS Subnet",
+        "lifecycle": "ACTIVE",
+        "list-view-columns": [],
+        "name": "aws_subnet",
+        "plural-label": "AWS Subnets"
+    },
+    "sequence": 0,
+    "show-recipient-field-on-order-form": false,
+    "teardown-items": [
+        {
+            "action-name": "Delete Subnet",
+            "continue-on-failure": false,
+            "deploy-seq": -1,
+            "description": null,
+            "execute-in-parallel": false,
+            "name": "Delete Subnet",
+            "type": "teardown_plugin"
+        }
+    ]
+}

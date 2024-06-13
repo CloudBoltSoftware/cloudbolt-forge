@@ -1,0 +1,10 @@
+{
+    "description": "",
+    "max-retries": 0,
+    "name": "Delete Subnet",
+    "resource-technologies": [],
+    "script-filename": "cb_plugin_1605666168750486_WIucDJx_HgkL5JW.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}
