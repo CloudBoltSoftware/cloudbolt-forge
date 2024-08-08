@@ -1,0 +1,39 @@
+{
+    "action_input_default_values": [],
+    "action_inputs": [
+        {
+            "allow-multiple": true,
+            "available-all-servers": false,
+            "description": "",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": true,
+            "id": "CF-ssrkct3b",
+            "label": "Features To Install",
+            "name": "FEATURES_TO_INSTALL",
+            "placeholder": null,
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR",
+            "value-pattern-string": ""
+        }
+    ],
+    "base_action_name": "Install Windows Features",
+    "dangerous": false,
+    "dialog_message": "<p>\r\nThis Server Action will install one or more Windows Server Features. To install features, add them to the field below. Feature names should correspond to the Name of the corresponding feature which can be listed by running <b>Get-WindowsFeature</b> in Powershell on Windows Server. For example, to install IIS, specify it's feature name which is <b>Web-Server</b>.\r\n</p>",
+    "enabled": true,
+    "extra_classes": "fas fa-bolt",
+    "id": "SVA-3cjxrkn4",
+    "is_synchronous": false,
+    "label": "Install Windows Server Features",
+    "last_updated": "2024-08-08",
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "new_tab_url": null,
+    "requires_approval": false,
+    "sequence": null,
+    "submit_button_label": "Install"
+}

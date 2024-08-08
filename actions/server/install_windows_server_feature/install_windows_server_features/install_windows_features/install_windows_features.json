@@ -1,0 +1,42 @@
+{
+    "action_inputs": [
+        {
+            "allow_multiple": true,
+            "available_all_servers": false,
+            "description": "",
+            "field_dependency_controlling_set": [],
+            "field_dependency_dependent_set": [],
+            "global_options": [],
+            "hide_if_default_value": true,
+            "id": "CF-ssrkct3b",
+            "label": "Features To Install",
+            "name": "FEATURES_TO_INSTALL",
+            "placeholder": null,
+            "relevant_osfamilies": [],
+            "required": true,
+            "show_as_attribute": false,
+            "show_on_servers": false,
+            "type": "STR",
+            "value_pattern_string": ""
+        }
+    ],
+    "commandline_args": null,
+    "credentials": "YOUR_CREDENTIALS",
+    "description": "Takes a list of Window Server Features as a multi-valued string input and attempts to install them via Powershell.",
+    "execution_timeout": 3600,
+    "id": "OHK-uq297ovk",
+    "last_updated": "2024-08-08",
+    "max_retries": 0,
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Install Windows Features",
+    "remove_after_run": true,
+    "resource_technologies": [],
+    "run_with_sudo": false,
+    "script_filename": "install_features.ps1",
+    "shared": false,
+    "target_os_families": [
+        "Windows"
+    ],
+    "type": "Remote Script"
+}
