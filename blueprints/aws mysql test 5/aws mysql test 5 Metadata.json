@@ -1,0 +1,42 @@
+{
+    "any_group_can_deploy": true,
+    "auto_historical_resources": false,
+    "blueprint_image": null,
+    "deployment_items": [
+        {
+            "continue_on_failure": false,
+            "deploy_seq": 1,
+            "description": "Create, delete and synchronise AWS MySQL Database Instance.\r\n\r\n*Note : AWS MySQL Service is only available in below regions*\r\n\r\n**'af-south-1', \r\n 'ap-east-1',\r\n 'ap-northeast-1',\r\n 'ap-northeast-2',\r\n 'ap-northeast-3',\r\n 'ap-south-2',\r\n 'ap-southeast-1',\r\n 'ap-southeast-2',\r\n 'ap-southeast-3',\r\n 'ap-southeast-4',\r\n 'ca-central-1',\r\n 'eu-central-1',\r\n 'eu-central-2',\r\n 'eu-north-1',\r\n 'eu-south-1',\r\n 'eu-south-2',\r\n 'eu-west-1',\r\n 'eu-west-2',\r\n 'eu-west-3',\r\n 'il-central-1',\r\n 'me-central-1',\r\n 'me-south-1',\r\n 'sa-east-1',\r\n 'us-east-1',\r\n 'us-east-2',\r\n 'us-west-1',\r\n 'us-west-2'**",
+            "execute_in_parallel": false,
+            "id": "BDI-z9077f50",
+            "name": "AWS MySQL",
+            "restrict_execution_scope": true,
+            "show_on_order_form": false,
+            "tier_type": "blueprint"
+        }
+    ],
+    "description": "",
+    "favorited": false,
+    "id": "BP-1gb4x9zb",
+    "is_manageable": true,
+    "is_orderable": true,
+    "labels": [],
+    "last_updated": "2024-11-21",
+    "management_actions": [],
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "aws mysql test 5",
+    "resource_name_template": null,
+    "resource_type": {
+        "icon": "",
+        "id": "RT-wtoyrbjm",
+        "label": "Service",
+        "lifecycle": "ACTIVE",
+        "list_view_columns": [],
+        "name": "service",
+        "plural_label": null
+    },
+    "sequence": 0,
+    "show_recipient_field_on_order_form": false,
+    "teardown_items": []
+}
