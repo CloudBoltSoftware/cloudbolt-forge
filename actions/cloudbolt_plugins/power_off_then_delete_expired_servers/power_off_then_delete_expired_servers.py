@@ -16,7 +16,7 @@ import datetime
 from common.methods import create_decom_job_for_servers
 from jobs.models import Job
 from utilities.logger import ThreadLogger
-from utilities.mail import send_mail
+from utilities.mail import email
 from utilities.mail import InvalidConfigurationException
 
 logger = ThreadLogger(__name__)
@@ -134,10 +134,16 @@ def email_owner(body, server):
         logger.debug('Server has no owner, will not send email')
         return
 
-    email = server.owner.user.email
+    address = server.owner.user.email
     subject = 'CloudBolt: Server expiration warning!'
     try:
-        send_mail(subject, body, None, [email])
+        email(
+            recipients=[address],
+            context={
+                "subject": subject,
+                "message": body
+            }
+        )
     except InvalidConfigurationException:
         logger.debug('Cannot connect to email (SMTP) server')
 
