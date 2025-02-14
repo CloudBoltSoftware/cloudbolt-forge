@@ -1,0 +1,2 @@
+# CloudBolt Shared Modules
+This repository contains example shared modules for CloudBolt. These modules are intended to be used for consolidating the calls to a single endpoint to make it easier to manage and maintain. They are often used to create Wrapper classes to handle REST calls for a specific API. The Shared Modules are written in Python and are intended to be used in CloudBolt Actions. 
