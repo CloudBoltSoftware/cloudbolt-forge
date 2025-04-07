@@ -1,0 +1,11 @@
+{
+    "description": "",
+    "execution-timeout": 120,
+    "max-retries": 0,
+    "name": "Sync OS versions AD to CB",
+    "resource-technologies": [],
+    "script-filename": "cb_plugin_1604344305994213_UGgl0a7.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "PowerShell Plug-in"
+}
