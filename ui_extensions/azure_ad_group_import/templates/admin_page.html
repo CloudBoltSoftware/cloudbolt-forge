@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
+{% load helper_tags %}
+{% load tab_tags %}
+{% block topnav %}Azure AD Groups{% endblock %}
+{% block title %}Azure AD Groups{% endblock %}
+
+{% block content %}
+    <span class="uplink"><a href="{% url 'admin_home' %}">Admin</a></span>
+    <h1>Azure AD Groups V2</h1>
+    {% include "azure_ad_group_import/templates/tab-groups.html" %}
+{% endblock %}

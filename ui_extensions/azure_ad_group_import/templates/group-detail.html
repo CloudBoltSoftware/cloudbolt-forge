@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+{% load helper_tags %}
+{% load tab_tags %}
+{% block topnav %}Azure AD Group Detail{% endblock %}
+{% block title %}Azure AD Group Detail{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Azure AD Group Detail</h2>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% else %}
+        <pre style="background-color: #f8f9fa; padding: 1em; border-radius: 5px; white-space: pre-wrap;">{{ group|safe }}</pre>
+    {% endif %}
+
+    <a href="{% url 'azure_ad_groups_list' %}" class="btn btn-secondary mt-3">← Back to Group List</a>
+</div>
+{% endblock %}
