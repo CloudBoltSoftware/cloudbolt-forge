@@ -9,7 +9,7 @@ terraform {
 
 provider "google" {
   project = var.gcp_project_name
-  credentials = var.gcp_credentials_json
+  credentials = var.web_client_json
   # credentials = jsondecode(var.gcp_credentials_json)
 }
 
