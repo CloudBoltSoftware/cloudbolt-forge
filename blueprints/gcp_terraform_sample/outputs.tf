@@ -1,3 +1,3 @@
-output "debug_creds" {
-  value = var.gcp_authentication
-}
+# output "debug_creds" {
+#   value = var.gcp_authentication
+# }
