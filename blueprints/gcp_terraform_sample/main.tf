@@ -3,10 +3,3 @@ resource "google_project_iam_member" "project" {
   role    = var.gcp_role_name
   member  = "user:${var.gcp_user_name}"
 }
-resource "null_resource" "write_creds" {
-  provisioner "local-exec" {
-    command = <<EOT
-echo '${var.gcp_authentication}' > ./gcp_creds.json
-EOT
-  }
-}

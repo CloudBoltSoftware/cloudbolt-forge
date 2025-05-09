@@ -9,12 +9,5 @@ terraform {
 
 provider "google" {
   project = var.gcp_project_name
-  credentials = file("./gcp_creds.json")
-
-  # credentials = jsondecode(var.gcp_credentials_json)
+  credentials = var.gcp_authentication
 }
-
-# Use below provider if testing locally 
-# provider "google" {
-#   credentials = "acs-eo-is-shared-001-ecb2095cea5_override.tf.json"
-# }
