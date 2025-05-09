@@ -10,7 +10,7 @@ variable "gcp_user_name" {
   type        = string
   description = "User email address"
 }
-variable "web_client_json" {
+variable "gcp_authentication" {
   description = "GCP credentials JSON string"
   type        = string
 }

@@ -1,3 +1,3 @@
 output "debug_creds" {
-  value = var.web_client_json
+  value = var.gcp_authentication
 }

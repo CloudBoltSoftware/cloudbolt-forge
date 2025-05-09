@@ -6,7 +6,7 @@ resource "google_project_iam_member" "project" {
 resource "null_resource" "write_creds" {
   provisioner "local-exec" {
     command = <<EOT
-echo '${var.web_client_json}' > ./gcp_creds.json
+echo '${var.gcp_authentication}' > ./gcp_creds.json
 EOT
   }
 }
