@@ -9,7 +9,7 @@ terraform {
 
 provider "google" {
   project = var.gcp_project_name
-  credentials = file("/tmp/gcp_creds.json")
+  credentials = file("./gcp_creds.json")
 
   # credentials = jsondecode(var.gcp_credentials_json)
 }
