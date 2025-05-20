@@ -37,6 +37,13 @@ variable "db_authorized_networks" {
   }))
 }
 
+variable "gcp_authorized_networks" {
+  description = "List of authorized networks with name and CIDR"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+}
 
 variable "gcp_db_name" {
   description = "Name of the database to create"
