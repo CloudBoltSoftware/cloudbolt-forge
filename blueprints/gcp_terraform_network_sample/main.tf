@@ -5,16 +5,15 @@ resource "google_sql_database_instance" "default" {
   project          = var.gcp_project_name
 
   settings {
-    tier              = var.gcp_tier
-    availability_type = var.gcp_availability_type
+    tier              = "db-f1-micro"
 
     ip_configuration {
       ipv4_enabled = true
-      dynamic "db_authorized_networks" {
-        for_each = authorized_networks
+      dynamic "authorized_networks" {
+        for_each = var.db_authorized_networks
         content {
-          name  = authorized_networks.value.name        #Cidr name
-          value = authorized_networks.value.cidr        #Cidr value  
+          name  = db_authorized_networks.value.name        #Cidr name
+          value = db_authorized_networks.value.value        #Cidr value  
         }
       }
     }
