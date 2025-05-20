@@ -10,7 +10,7 @@ resource "google_sql_database_instance" "default" {
 
     ip_configuration {
       ipv4_enabled = true
-      dynamic "authorized_networks" {
+      dynamic "db_authorized_networks" {
         for_each = authorized_networks
         content {
           name  = authorized_networks.value.name        #Cidr name
