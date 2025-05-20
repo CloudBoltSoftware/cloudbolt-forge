@@ -51,5 +51,4 @@ variable "gcp_db_user" {
 variable "gcp_db_password" {
   description = "Database user password"
   type        = string
-  sensitive   = true
 }
