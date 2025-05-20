@@ -4,7 +4,6 @@ db_authorized_networks = [
     cidr = var.gcp_authorized_networks_cidr
   },
 ]
-gcp_project_id = "customer-success-gcp-project"
 # gcp_project_name = "customer-success-gcp-project"
 gcp_region = "us-east1"
 gcp_db_instance_name = "customer-success-db-instance"
