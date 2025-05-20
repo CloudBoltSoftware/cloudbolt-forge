@@ -1,0 +1,4 @@
+{
+  "TF_VAR_gcp_network_name": "{{gcp_network_name}}",
+  "TF_VAR_gcp_network_cidr": "{{gcp_gcp_network_cidr}}"
+}
