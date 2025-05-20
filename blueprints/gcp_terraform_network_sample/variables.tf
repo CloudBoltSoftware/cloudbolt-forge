@@ -34,9 +34,12 @@ variable "gcp_availability_type" {
   default     = "ZONAL"
 }
 
-variable "gcp_authorized_networks" {
-  description = "List of authorized networks to connect to the DB"
-  type = string
+variable "db_authorized_networks" {
+  description = "List of authorized networks with name and CIDR"
+  type = list(object({
+    name  = string
+    value = string
+  }))
 }
 
 
