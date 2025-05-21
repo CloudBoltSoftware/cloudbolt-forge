@@ -1,9 +1,0 @@
-gcp_region = "us-east1"
-gcp_db_instance_name = "customer-success-db-instance"
-gcp_database_version = "POSTGRES_15"
-gcp_tier = "db-f1-micro"
-gcp_availability_type = "ZONAL"
-gcp_db_name = "oparlak_test_db"
-gcp_db_user = "oparlak_db_user"
-gcp_db_password = "Tl!v@1453"
-db_authorized_networks = var.gcp_authorized_networks

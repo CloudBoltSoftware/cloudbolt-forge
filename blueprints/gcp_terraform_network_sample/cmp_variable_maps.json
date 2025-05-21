@@ -1,5 +1,0 @@
-{
-  "TF_VAR_gcp_project_name": "{{gcp_project_name}}",
-  "TF_VAR_gcp_authorized_networks_cidr": "{{gcp_authorized_networks_cidr}}",
-  "TF_VAR_gcp_authorized_networks_name": "{{gcp_authorized_networks_name}}"
-}
