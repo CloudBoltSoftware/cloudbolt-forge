@@ -1,0 +1,5 @@
+{
+  "TF_VAR_gcp_role_name": "{{gcp_role_name}}",
+  "TF_VAR_gcp_user_name": "{{gcp_user_name}}",
+  "TF_VAR_gcp_project_name": "{{gcp_project_name}}"
+}
