@@ -1,7 +1,7 @@
 {
     "any_group_can_deploy": true,
     "auto_historical_resources": false,
-    "blueprint_image": null,
+    "blueprint_image": "/static/uploads/blueprints/SQL-Database.png",
     "deployment_items": [
         {
             "all_environments_enabled": true,
@@ -45,7 +45,7 @@
     "name": "Sample Blueprint From Remote Source",
     "resource_name_template": null,
     "resource_type": {
-        "icon": "",
+        "icon": "SQL-Database.png",
         "id": "RT-at2r6e0j",
         "label": "Service",
         "lifecycle": "ACTIVE",
