@@ -2,7 +2,11 @@ import os
 
 from django.conf import settings
 from django.core.management import call_command
-from django.contrib.staticfiles.templatetags.staticfiles import static
+import django
+if int(django.get_version()[0]) < 3:
+    from django.contrib.staticfiles.templatetags.staticfiles import static
+else:
+    from django.templatetags.static import static
 from django.shortcuts import render
 from django.utils.html import mark_safe
 from extensions.views import dashboard_extension
