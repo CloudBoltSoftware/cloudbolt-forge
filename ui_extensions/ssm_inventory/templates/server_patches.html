@@ -1,0 +1,44 @@
+{% load helper_tags %}
+{% load tab_tags %}
+{% load i18n %}
+
+<div class="container-fluid">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="btn-toolbar">
+                <strong>AWS SSM Patches for Server: <i>{{ server.hostname }}</i></strong>
+                <span class="pull-right">
+                    <a class="btn open-dialog cb-btn-primary"
+                        title="Patch {{server.hostname}} via SSM"
+                        href="{% url 'ssm_inventory_patch_ec2' server.id %}">
+                        <i class="fas fa-file-export"></i> Patch EC2 Instance
+                    </a>
+                </span>
+            </div>
+            <table id="virtual-machine-ssm-patches-table"
+                data-table
+                data-table-no-auto-init
+                data-table-source="{% url 'ssm_patch_json' server.id %}"
+            >
+                <thead>
+                    <tr>
+                        <th>{% trans 'Title' %}</th>
+                        <th>{% trans 'KB ID' %}</th>
+                        <th>{% trans 'Classification' %}</th>
+                        <th>{% trans 'Severity' %}</th>
+                        <th>{% trans 'State' %}</th>
+                        <th>{% trans 'InstalledTime' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# content is loaded asynchronously #}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function(){
+      c2.dataTables.init('#virtual-machine-ssm-patches-table');
+    });
+</script>

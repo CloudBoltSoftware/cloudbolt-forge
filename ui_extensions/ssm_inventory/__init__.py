@@ -1,0 +1,1 @@
+ALLOWED_XUI_EXTENSIONS = [".py", ".html", ".pyc", ".png", ".jpg"]

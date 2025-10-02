@@ -1,0 +1,55 @@
+{% load helper_tags %}
+{% load tab_tags %}
+{% load i18n %}
+
+<div class="container-fluid">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="btn-toolbar">
+                <strong>Currently Available Patches for Azure Server: <i>{{ server.hostname }}</i></strong>
+                <span class="pull-right">
+                    <a class="btn open-dialog cb-btn-primary"
+                        title="Scan {{server.hostname}} for Patches"
+                        href="{% url 'az_scan_for_patches' server.id %}">
+                        <i class="fas fa-search"></i> Scan for Patches
+                    </a>
+                    <a class="btn open-dialog cb-btn-primary"
+                        title="Apply all patches to {{server.hostname}} "
+                        href="{% url 'az_apply_all_patches' server.id %}">
+                        <i class="fas fa-plus-square"></i> Apply all Patches
+                    </a>
+                </span>
+            </div>
+            <p>
+                If no patches are listed, first run the "Scan for Patches" action to search for currently available patches.
+            </p>
+            <table id="virtual-machine-azure-patches-table"
+                data-table
+                data-table-no-auto-init
+                data-table-source="{% url 'az_patches_inventory_json' server.id %}"
+            >
+                <thead>
+                    <tr>
+                    <th>{% trans 'Update Name' %}</th>
+                    <th>{% trans 'Classifications' %}</th>
+                    {% if server.os_family.name == 'Windows' %}
+                    <th>{% trans 'KB ID' %}</th>
+                    <th>{% trans 'Reboot Required' %}</th>
+                    <th>{% trans 'Published Date' %}</th>
+                    {% else %}
+                    <th>{% trans 'Version' %}</th>
+                    {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {# content is loaded asynchronously #}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function(){
+      c2.dataTables.init('#virtual-machine-azure-patches-table');
+    });
+</script>
