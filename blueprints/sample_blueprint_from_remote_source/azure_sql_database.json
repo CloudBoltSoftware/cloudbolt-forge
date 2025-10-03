@@ -1,0 +1,73 @@
+{
+    "any_group_can_deploy": true,
+    "auto_historical_resources": true,
+    "blueprint_image": "/static/uploads/blueprints/SQL-Database.png",
+    "deployment_items": [
+        {
+            "action_name": "test_test_test",
+            "continue_on_failure": false,
+            "deploy_seq": 0,
+            "description": null,
+            "enabled": true,
+            "execute_in_parallel": false,
+            "id": "BDI-ureioxht",
+            "name": "test_test_test",
+            "rate": null,
+            "run_on_scale_up": true,
+            "show_on_order_form": false,
+            "tier_type": "plugin"
+        }
+    ],
+    "description": "# Overview\r\n\r\nAzure SQL Database is a fully managed platform as a service (PaaS) database engine that handles most of the database management functions such as upgrading, patching, backups, and monitoring without user involvement. Azure SQL Database is always running on the latest stable version of the SQL Server database engine and patched OS with 99.99% availability. PaaS capabilities built into Azure SQL Database enable you to focus on the domain-specific database administration and optimization activities that are critical for your business.\r\n\r\n### Links\r\n- [Official Docs](https://docs.microsoft.com/en-us/azure/azure-sql/database/sql-database-paas-overview?view=azuresql)\r\n- [Internal Docs](https://projektportal.dvag.com/confluence/display/STRATUS/Azure+SQL+Database)",
+    "discovery_plugin": {
+        "href": "/api/v3/cmp/actions/OHK-ztqzlsej/",
+        "title": "azure_sql"
+    },
+    "favorited": false,
+    "icon": "SQL-Database.png",
+    "id": "BP-tttc6m7p",
+    "is_manageable": true,
+    "is_orderable": true,
+    "labels": [
+        {
+            "color": null,
+            "id": "TAG-k8y6upok",
+            "image": null,
+            "name": "Database",
+            "sequence": 0
+        }
+    ],
+    "last_updated": "2025-05-23",
+    "management_actions": [],
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "Azure SQL Database",
+    "resource_name_template": "sqldb-{{database_name}}",
+    "resource_type": {
+        "icon": "fas fa-database",
+        "id": "RT-h0npsxst",
+        "label": "Database",
+        "lifecycle": "ACTIVE",
+        "list_view_columns": [],
+        "name": "database",
+        "plural_label": null
+    },
+    "sequence": 41,
+    "show_recipient_field_on_order_form": false,
+    "teardown_items": [
+        {
+            "action_name": "Resource Teardown (2)",
+            "continue_on_failure": false,
+            "deploy_seq": -1,
+            "description": null,
+            "enabled": true,
+            "execute_in_parallel": false,
+            "id": "BDI-i8dobbge",
+            "name": "Resource Teardown",
+            "rate": null,
+            "run_on_scale_up": true,
+            "show_on_order_form": false,
+            "tier_type": "teardown_plugin"
+        }
+    ]
+}
