@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load static %}
+{% load helper_tags %}
+{% load tab_tags %}
+{% block topnav %}Azure AD Groups{% endblock %}
+{% block title %}Azure AD Groups{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Azure AD Groups</h2>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="resource_handler">Select Azure Resource Handler</label>
+            <select name="resource_handler" id="resource_handler" class="form-control w-50 d-inline-block">
+                {% for rh in resource_handlers %}
+                    <option value="{{ rh.id }}" {% if rh.id == selected_rh_id %}selected{% endif %}>{{ rh.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Load Groups</button>
+        </div>
+    </form>
+
+    {% if groups %}
+        <table class="table table-bordered table-hover mt-4">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Azure Group</th>
+                    <th>CMP Group</th>
+                    <th>CMP Group Type</th>
+                    <th>CMP Parent Group</th>
+                    <th>Add to CMP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in groups %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'azure_group_detail' group.id %}" target="_blank">
+                                {{ group.displayName }}
+                            </a>
+                        </td>
+                        {% if group.cmp_group %}
+                            <td>
+                                <a href="/groups/{{ group.cmp_group.id }}/" target="_blank">
+                                    {{ group.cmp_group.name }}
+                                </a>
+                            </td>
+                            <td>{{ group.cmp_group.type.group_type }}</td>
+                            <td>{% if group.cmp_group.parent %}{{ group.cmp_group.parent.name }}{% else %}-{% endif %}</td>
+                            <td><span class="text-success">✔ {{ group.cmp_group.id }}</span></td>
+                        {% else %}
+                            <td>Not in CMP</td>
+                            <td>
+                                <form class="create-group-form">
+                                    <input type="hidden" name="name" value="{{ group.displayName }}">
+                                    <div class="form-inline">
+                                        <select class="form-control mr-2" name="group_type_id" required>
+                                            {% for gt in group_types %}
+                                                <option value="{{ gt.id }}">{{ gt.group_type }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                            </td>
+                            <td>
+                                    <select class="form-control mr-2" name="parent_group_id">
+                                        <option value="">---</option>
+                                        {% for pg in parent_groups %}
+                                            <option value="{{ pg.id }}">{{ pg.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                            </td>
+                            <td>
+                                    <button type="submit" class="btn btn-sm btn-success">+</button>
+                                </form>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h5 class="mt-5">CMP Groups not in Azure AD</h5>
+        <table class="table table-bordered table-striped w-75">
+            <thead class="thead-light">
+                <tr>
+                    <th>CMP Group ID</th>
+                    <th>CMP Group Name</th>
+                    <th>CMP Group Parent</th>
+                    <th>CMP Group Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for g in cmp_only_groups %}
+                    <tr>
+                        <td>{{ g.id }}</td>
+                        <td>
+                            <a href="/groups/{{ g.id }}/" target="_blank">
+                                {{ g.name }}
+                            </a>
+                        </td>
+                        <td>{% if g.parent %}{{ g.parent.name }}{% else %}-{% endif %}</td>
+                        <td>{{ g.type.group_type }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            
+        </table>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".create-group-form").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const json = {};
+                formData.forEach((v, k) => json[k] = v);
+
+                fetch("{% url 'create_cmp_group' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify(json)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "created") {
+                        location.reload();
+                    } else if (data.status === "exists") {
+                        alert("Group already exists");
+                    } else {
+                        alert("Error: " + JSON.stringify(data));
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+oparlak
+

@@ -1,0 +1,21 @@
+{
+    "description": null,
+    "enabled": true,
+    "icon_url": "",
+    "id": "XUI-jy50b4dz",
+    "label": "Order Report",
+    "last_updated": "2025-04-18",
+    "maximum_version_required": "",
+    "minimum_version_required": "8.6",
+    "name": "order_report_xui",
+    "package_contents": [
+        "order_report_xui/views.py",
+        "order_report_xui/__init__.py",
+        "order_report_xui/forms.py",
+        "order_report_xui/urls.py",
+        "order_report_xui/templates/table.html",
+        "order_report_xui/static/order_status.png",
+        "order_report_xui/static/order_summary.png"
+    ],
+    "version": ""
+}
