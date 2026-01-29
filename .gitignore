@@ -61,3 +61,4 @@ target/
 .DS_Store
 *.swp
 .vscode
+blueprints/gcp_terraform_sample/gcp_creds.json
