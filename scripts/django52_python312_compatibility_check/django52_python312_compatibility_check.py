@@ -499,13 +499,267 @@ THIRD_PARTY_PATTERNS = [
     },
 ]
 
+# =============================================================================
+# DJANGO 5.0+ SPECIFIC PATTERNS
+# These are additional deprecations/removals in Django 5.0 and 5.2
+# =============================================================================
+
+DJANGO_5X_PATTERNS = [
+    # Django 5.0 removals
+    {
+        'pattern': r'django\.utils\.timezone\.utc\b',
+        'issue_type': 'timezone_utc_deprecated',
+        'severity': Severity.HIGH,
+        'description': 'django.utils.timezone.utc is deprecated in Django 5.0',
+        'recommended_fix': 'Use datetime.timezone.utc or ZoneInfo("UTC")',
+        'django_version': '5.0 (deprecated)',
+        'auto_fixable': True,
+    },
+    {
+        'pattern': r'from\s+django\.utils\.timezone\s+import\s+.*\butc\b',
+        'issue_type': 'timezone_utc_import',
+        'severity': Severity.HIGH,
+        'description': 'Importing utc from django.utils.timezone is deprecated',
+        'recommended_fix': 'Use datetime.timezone.utc or ZoneInfo("UTC")',
+        'django_version': '5.0 (deprecated)',
+        'auto_fixable': True,
+    },
+    {
+        'pattern': r'\.index_together\s*=',
+        'issue_type': 'index_together_deprecated',
+        'severity': Severity.HIGH,
+        'description': 'Meta.index_together is deprecated in Django 5.1',
+        'recommended_fix': 'Use Meta.indexes with models.Index() instead',
+        'django_version': '5.1 (deprecated)',
+        'auto_fixable': False,
+    },
+    {
+        'pattern': r'request\.user\.is_authenticated\(\)',
+        'issue_type': 'is_authenticated_callable',
+        'severity': Severity.CRITICAL,
+        'description': 'is_authenticated is a property, not a method (since Django 1.10)',
+        'recommended_fix': 'Use request.user.is_authenticated (without parentheses)',
+        'django_version': '1.10+ (property)',
+        'auto_fixable': True,
+    },
+    {
+        'pattern': r'request\.user\.is_anonymous\(\)',
+        'issue_type': 'is_anonymous_callable',
+        'severity': Severity.CRITICAL,
+        'description': 'is_anonymous is a property, not a method (since Django 1.10)',
+        'recommended_fix': 'Use request.user.is_anonymous (without parentheses)',
+        'django_version': '1.10+ (property)',
+        'auto_fixable': True,
+    },
+    # Django 5.0 - PickleSerializer removed
+    {
+        'pattern': r'django\.contrib\.sessions\.serializers\.PickleSerializer',
+        'issue_type': 'pickle_serializer_removed',
+        'severity': Severity.CRITICAL,
+        'description': 'PickleSerializer was removed in Django 5.0',
+        'recommended_fix': 'Use JSONSerializer (default) or implement custom serializer',
+        'django_version': '5.0 (removed)',
+        'auto_fixable': False,
+    },
+    # Django 5.0 - length_is filter removed
+    {
+        'pattern': r'\|\s*length_is\s*:',
+        'issue_type': 'length_is_removed',
+        'severity': Severity.HIGH,
+        'description': 'The length_is template filter was removed in Django 5.0',
+        'recommended_fix': 'Use the length filter with comparison: {% if value|length == 4 %}',
+        'django_version': '5.0 (removed)',
+        'auto_fixable': False,
+    },
+    # Django 5.0 - Caching changes
+    {
+        'pattern': r'django\.core\.cache\.backends\.db\.DatabaseCache',
+        'issue_type': 'database_cache_key_change',
+        'severity': Severity.INFO,
+        'description': 'DatabaseCache key handling changed in Django 5.0',
+        'recommended_fix': 'Review cache key generation if using custom keys',
+        'django_version': '5.0 (changed)',
+        'auto_fixable': False,
+    },
+]
+
+# =============================================================================
+# TIMEZONE PATTERNS (pytz → zoneinfo migration)
+# CloudBolt 2025.1.x uses zoneinfo instead of pytz
+# =============================================================================
+
+TIMEZONE_PATTERNS = [
+    {
+        'pattern': r'import\s+pytz',
+        'issue_type': 'pytz_import',
+        'severity': Severity.HIGH,
+        'description': 'pytz is deprecated in favor of zoneinfo (Python 3.9+)',
+        'recommended_fix': 'Use: from zoneinfo import ZoneInfo',
+        'python_version': '3.9+ (use zoneinfo)',
+        'auto_fixable': True,
+    },
+    {
+        'pattern': r'from\s+pytz\s+import',
+        'issue_type': 'pytz_from_import',
+        'severity': Severity.HIGH,
+        'description': 'pytz is deprecated in favor of zoneinfo (Python 3.9+)',
+        'recommended_fix': 'Use: from zoneinfo import ZoneInfo',
+        'python_version': '3.9+ (use zoneinfo)',
+        'auto_fixable': True,
+    },
+    {
+        'pattern': r'pytz\.timezone\s*\(',
+        'issue_type': 'pytz_timezone',
+        'severity': Severity.HIGH,
+        'description': 'pytz.timezone() is deprecated',
+        'recommended_fix': 'Use: ZoneInfo("timezone_name")',
+        'python_version': '3.9+ (use zoneinfo)',
+        'auto_fixable': True,
+    },
+    {
+        'pattern': r'pytz\.utc',
+        'issue_type': 'pytz_utc',
+        'severity': Severity.HIGH,
+        'description': 'pytz.utc is deprecated',
+        'recommended_fix': 'Use: ZoneInfo("UTC")',
+        'python_version': '3.9+ (use zoneinfo)',
+        'auto_fixable': True,
+    },
+    {
+        'pattern': r'pytz\.UnknownTimeZoneError',
+        'issue_type': 'pytz_exception',
+        'severity': Severity.HIGH,
+        'description': 'pytz.UnknownTimeZoneError should be replaced',
+        'recommended_fix': 'Use: except (KeyError, zoneinfo.ZoneInfoNotFoundError)',
+        'python_version': '3.9+ (use zoneinfo)',
+        'auto_fixable': False,
+    },
+]
+
+# =============================================================================
+# DATETIME PATTERNS (CloudBolt-specific)
+# CloudBolt 2025.1.x uses utilities.datetime.utcnow_naive()
+# =============================================================================
+
+DATETIME_PATTERNS = [
+    {
+        'pattern': r'datetime\.datetime\.now\s*\(\s*\)',
+        'issue_type': 'datetime_now',
+        'severity': Severity.MEDIUM,
+        'description': 'datetime.datetime.now() should use CloudBolt utility for timezone consistency',
+        'recommended_fix': 'Use: from utilities.datetime import utcnow_naive; utcnow_naive()',
+        'django_version': 'CloudBolt 2025.1+',
+        'auto_fixable': False,
+    },
+    {
+        'pattern': r'datetime\.now\s*\(\s*\)',
+        'issue_type': 'datetime_now_short',
+        'severity': Severity.MEDIUM,
+        'description': 'datetime.now() should use CloudBolt utility for timezone consistency',
+        'recommended_fix': 'Use: from utilities.datetime import utcnow_naive; utcnow_naive()',
+        'django_version': 'CloudBolt 2025.1+',
+        'auto_fixable': False,
+    },
+    {
+        'pattern': r'datetime\.datetime\.utcnow\s*\(\s*\)',
+        'issue_type': 'datetime_utcnow',
+        'severity': Severity.MEDIUM,
+        'description': 'datetime.datetime.utcnow() is deprecated in Python 3.12',
+        'recommended_fix': 'Use: from utilities.datetime import utcnow_naive; utcnow_naive()',
+        'python_version': '3.12 (deprecated)',
+        'auto_fixable': False,
+    },
+    {
+        'pattern': r'datetime\.utcnow\s*\(\s*\)',
+        'issue_type': 'datetime_utcnow_short',
+        'severity': Severity.MEDIUM,
+        'description': 'datetime.utcnow() is deprecated in Python 3.12',
+        'recommended_fix': 'Use: from utilities.datetime import utcnow_naive; utcnow_naive()',
+        'python_version': '3.12 (deprecated)',
+        'auto_fixable': False,
+    },
+]
+
+# =============================================================================
+# DJANGO 4.2+ BEHAVIOR CHANGES
+# =============================================================================
+
+DJANGO_BEHAVIOR_PATTERNS = [
+    {
+        'pattern': r'\.all\(\)\.count\(\)',
+        'issue_type': 'queryset_all_count',
+        'severity': Severity.INFO,
+        'description': 'Consider using .count() directly without .all()',
+        'recommended_fix': 'Use: queryset.count() instead of queryset.all().count()',
+        'django_version': '4.0+',
+        'auto_fixable': False,
+    },
+    {
+        'pattern': r'assertFormError\s*\([^,]+,\s*[^,]+,\s*[^,]+,\s*None\s*\)',
+        'issue_type': 'assertformerror_none',
+        'severity': Severity.MEDIUM,
+        'description': 'assertFormError signature changed in Django 4.1',
+        'recommended_fix': 'Update to new assertFormError signature',
+        'django_version': '4.1 (changed)',
+        'auto_fixable': False,
+    },
+]
+
+# =============================================================================
+# PACKAGE VERSION SPECIFIC PATTERNS
+# These patterns detect usage that may break with updated packages
+# =============================================================================
+
+PACKAGE_PATTERNS = [
+    # django-crispy-forms 2.0+
+    {
+        'pattern': r'crispy_forms\.layout\.Field\s*\([^)]*template\s*=',
+        'issue_type': 'crispy_forms_field_template',
+        'severity': Severity.MEDIUM,
+        'description': 'crispy-forms 2.0 changed Field template parameter handling',
+        'recommended_fix': 'Review crispy-forms 2.0 migration guide',
+        'django_version': 'crispy-forms 2.0+',
+        'auto_fixable': False,
+    },
+    # django-reversion 6.0+
+    {
+        'pattern': r'reversion\.register\s*\([^)]*follow\s*=',
+        'issue_type': 'reversion_follow_deprecated',
+        'severity': Severity.MEDIUM,
+        'description': 'django-reversion follow parameter behavior changed in 6.0',
+        'recommended_fix': 'Review django-reversion 6.0 migration guide',
+        'django_version': 'django-reversion 6.0+',
+        'auto_fixable': False,
+    },
+    # django-taggit 6.0+
+    {
+        'pattern': r'TaggableManager\s*\([^)]*through\s*=\s*None',
+        'issue_type': 'taggit_through_none',
+        'severity': Severity.MEDIUM,
+        'description': 'django-taggit 6.0 changed through parameter handling',
+        'recommended_fix': 'Review django-taggit 6.0 migration guide',
+        'django_version': 'django-taggit 6.0+',
+        'auto_fixable': False,
+    },
+]
+
 
 class CompatibilityScanner:
     """Scans files for Django and Python compatibility issues."""
     
     def __init__(self, verbose: bool = False):
         self.verbose = verbose
-        self.all_patterns = DJANGO_PATTERNS + PYTHON_PATTERNS + THIRD_PARTY_PATTERNS
+        # Combine all pattern lists for upgrade path: Django 3.2 → 4.2 → 5.2
+        self.all_patterns = (
+            DJANGO_PATTERNS + 
+            DJANGO_5X_PATTERNS +
+            TIMEZONE_PATTERNS + 
+            DATETIME_PATTERNS + 
+            PYTHON_PATTERNS + 
+            THIRD_PARTY_PATTERNS +
+            DJANGO_BEHAVIOR_PATTERNS +
+            PACKAGE_PATTERNS
+        )
         self._compile_patterns()
     
     def _compile_patterns(self):
