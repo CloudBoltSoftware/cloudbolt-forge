@@ -46,6 +46,76 @@ sudo ./run_auto_fix.sh --verbose
 
 **Backup Location:** `/var/tmp/cloudbolt_compatibility_backups/`
 
+## Backup and Restore
+
+### Automatic Backups
+
+The auto-fix tool **creates backups by default** before modifying any files. This ensures you can always restore your original code if needed.
+
+| Mode | Backups Created? | Changes Made? |
+|------|------------------|---------------|
+| Default (`./run_auto_fix.sh`) | ✅ Yes | ✅ Yes |
+| Dry Run (`--dry-run`) | ❌ No | ❌ No (preview only) |
+| No Backup (`--no-backup`) | ❌ No | ✅ Yes (not recommended) |
+
+### Backup Location
+
+All backups are saved to:
+```
+/var/tmp/cloudbolt_compatibility_backups/
+```
+
+Backup files are named with the original path and timestamp:
+```
+var_opt_cloudbolt_proserv_my_plugin.py.20260204_143022.bak
+```
+
+### How to Restore Files
+
+If you need to restore a file to its original state:
+
+```bash
+# List all backups
+ls -la /var/tmp/cloudbolt_compatibility_backups/
+
+# Find backups for a specific file
+ls /var/tmp/cloudbolt_compatibility_backups/ | grep "my_plugin"
+
+# Restore a file
+cp /var/tmp/cloudbolt_compatibility_backups/var_opt_cloudbolt_proserv_my_plugin.py.20260204_143022.bak \
+   /var/opt/cloudbolt/proserv/my_plugin.py
+
+# Restore all backups (use with caution)
+cd /var/tmp/cloudbolt_compatibility_backups/
+for f in *.bak; do
+    original_path=$(echo "$f" | sed 's/\./\//g' | sed 's/_bak$//' | sed 's/^/\//')
+    echo "Would restore: $f -> $original_path"
+done
+```
+
+### Best Practice Workflow
+
+1. **Run dry-run first** to preview changes:
+   ```bash
+   sudo ./run_auto_fix.sh --dry-run
+   ```
+
+2. **Review the preview** output carefully
+
+3. **Apply fixes** (with automatic backups):
+   ```bash
+   sudo ./run_auto_fix.sh
+   ```
+
+4. **Test your CloudBolt instance** thoroughly
+
+5. **If issues occur**, restore from backups
+
+6. **Run the compatibility check again** to verify:
+   ```bash
+   sudo ./run_compatibility_check.sh
+   ```
+
 ## Command Line Options
 
 ### Compatibility Check Options
@@ -316,5 +386,6 @@ For assistance with compatibility issues:
 
 ## Version History
 
+- **1.0.2** - Added Django 5.x patterns, timezone/datetime patterns, package patterns, and expanded auto-fix rules
 - **1.0.1** - Scripts now auto-configure CloudBolt environment (no manual setup needed)
 - **1.0.0** - Initial release with Django 5.2.x and Python 3.12.x checks
