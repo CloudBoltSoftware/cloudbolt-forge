@@ -161,11 +161,11 @@ done
 
 | Level | Meaning | Action Required |
 |-------|---------|-----------------|
-| **CRITICAL** | Code will fail immediately after upgrade | **MUST fix before upgrading** |
-| **HIGH** | Deprecated code that may cause issues | Should fix before upgrading |
-| **MEDIUM** | Deprecated but still functional | Fix when possible |
-| **LOW** | Minor issues or style recommendations | Optional |
-| **INFO** | Informational notes | No action required |
+|  **CRITICAL** | Code will fail immediately after upgrade | **MUST fix before upgrading** |
+|  **HIGH** | Deprecated code that may cause issues | Should fix before upgrading |
+|  **MEDIUM** | Deprecated but still functional | Fix when possible |
+|  **LOW** | Minor issues or style recommendations | Optional |
+|  **INFO** | Informational notes | No action required |
 
 ### Common Issues and Fixes
 

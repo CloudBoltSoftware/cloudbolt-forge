@@ -12,7 +12,7 @@ Run as root or cloudbolt user to access all directories.
 This script can use CloudBolt's Django environment if available, or run standalone.
 
 Author: Maryam Faiz
-Version: 1.0.2
+Version: 1.0.3
 """
 
 import os
@@ -584,11 +584,65 @@ DJANGO_5X_PATTERNS = [
 ]
 
 # =============================================================================
-# TIMEZONE PATTERNS (pytz → zoneinfo migration)
-# CloudBolt 2025.1.x uses zoneinfo instead of pytz
+# DJANGO 5.2 PATTERNS
 # =============================================================================
 
-TIMEZONE_PATTERNS = [
+DJANGO_52_PATTERNS = [
+    {
+        'pattern': r'\.find\s*\([^)]*\ball\s*=',
+        'issue_type': 'staticfiles_find_all_deprecated',
+        'severity': Severity.MEDIUM,
+        'description': "The 'all' argument of django.contrib.staticfiles.finders.find() is deprecated in Django 5.2",
+        'recommended_fix': "Use the 'find_all' argument instead of 'all'",
+        'django_version': '5.2 (deprecated)',
+        'auto_fixable': False,
+    },
+    {
+        'pattern': r'ArrayAgg\s*\([^)]*ordering\s*=',
+        'issue_type': 'postgres_arrayagg_ordering_deprecated',
+        'severity': Severity.MEDIUM,
+        'description': "The 'ordering' keyword of ArrayAgg is deprecated in Django 5.2",
+        'recommended_fix': "Use the 'order_by' argument instead of 'ordering'",
+        'django_version': '5.2 (deprecated)',
+        'auto_fixable': False,
+    },
+    {
+        'pattern': r'JSONBAgg\s*\([^)]*ordering\s*=',
+        'issue_type': 'postgres_jsonbagg_ordering_deprecated',
+        'severity': Severity.MEDIUM,
+        'description': "The 'ordering' keyword of JSONBAgg is deprecated in Django 5.2",
+        'recommended_fix': "Use the 'order_by' argument instead of 'ordering'",
+        'django_version': '5.2 (deprecated)',
+        'auto_fixable': False,
+    },
+    {
+        'pattern': r'StringAgg\s*\([^)]*ordering\s*=',
+        'issue_type': 'postgres_stringagg_ordering_deprecated',
+        'severity': Severity.MEDIUM,
+        'description': "The 'ordering' keyword of StringAgg is deprecated in Django 5.2",
+        'recommended_fix': "Use the 'order_by' argument instead of 'ordering'",
+        'django_version': '5.2 (deprecated)',
+        'auto_fixable': False,
+    },
+]
+
+# Related filter / reverse relation on unsaved instance (Django 5.2).
+# Runtime warnings are logged by the compatibility app; see Admin > Compatibility Warning Messages.
+DJANGO_UNSAVED_INSTANCE_PATTERNS = [
+    {
+        'pattern': r'\.filter\s*\([^)]*=\s*\w*instance\w*\s*\)',
+        'issue_type': 'related_filter_instance_usage',
+        'severity': Severity.INFO,
+        'description': 'Using a model instance in .filter(fk=instance) requires the instance to be saved in Django 5.2+',
+        'recommended_fix': 'Save the instance first or use instance.pk. Warnings are logged by the compatibility app.',
+        'django_version': '5.2 (behavior)',
+        'auto_fixable': False,
+    },
+]
+
+# =============================================================================
+# TIMEZONE PATTERNS (pytz -> zoneinfo)
+# =============================================================================
     {
         'pattern': r'import\s+pytz',
         'issue_type': 'pytz_import',
@@ -751,11 +805,13 @@ class CompatibilityScanner:
         self.verbose = verbose
         # Combine all pattern lists for upgrade path: Django 3.2 → 4.2 → 5.2
         self.all_patterns = (
-            DJANGO_PATTERNS + 
+            DJANGO_PATTERNS +
             DJANGO_5X_PATTERNS +
-            TIMEZONE_PATTERNS + 
-            DATETIME_PATTERNS + 
-            PYTHON_PATTERNS + 
+            DJANGO_52_PATTERNS +
+            DJANGO_UNSAVED_INSTANCE_PATTERNS +
+            TIMEZONE_PATTERNS +
+            DATETIME_PATTERNS +
+            PYTHON_PATTERNS +
             THIRD_PARTY_PATTERNS +
             DJANGO_BEHAVIOR_PATTERNS +
             PACKAGE_PATTERNS
@@ -1193,8 +1249,8 @@ class ReportGenerator:
 </head>
 <body>
     <div class="container">
-        <h1>🔍 CloudBolt Compatibility Report</h1>
-        <p class="subtitle">Django 5.2.x & Python 3.12.x Readiness Assessment</p>
+        <h1>CloudBolt Compatibility Report</h1>
+        <p class="subtitle">Django 5.2.x / Python 3.12.x</p>
         
         <div class="meta-grid">
             <div class="meta-card">
@@ -1259,7 +1315,7 @@ class ReportGenerator:
         if r.issues_by_type:
             html += '''
         <div class="section">
-            <div class="section-header">📊 Issues by Type</div>
+            <div class="section-header">Issues by Type</div>
             <div class="section-content">
                 <div class="issues-by-type">
 '''
@@ -1280,7 +1336,7 @@ class ReportGenerator:
         if files_with_issues:
             html += '''
         <div class="section">
-            <div class="section-header">📁 Detailed Findings</div>
+            <div class="section-header">Detailed Findings</div>
             <div class="section-content">
 '''
             for result in files_with_issues:
@@ -1302,7 +1358,7 @@ class ReportGenerator:
                             <div class="issue-details">
                                 <p><strong>Line {issue.line_number}:</strong> {issue.description}</p>
                                 <p>Found: <code class="code">{issue.deprecated_code}</code></p>
-                                <p class="fix">💡 Fix: {issue.recommended_fix}</p>
+                                <p class="fix">Fix: {issue.recommended_fix}</p>
 '''
                         if issue.django_version:
                             html += f'                                <p><small>Django: {issue.django_version}</small></p>\n'
@@ -1321,7 +1377,7 @@ class ReportGenerator:
             html += '''
         <div class="section">
             <div class="section-content no-issues">
-                ✅ No compatibility issues found! Your code is ready for Django 5.2.x and Python 3.12.x
+                No compatibility issues found.
             </div>
         </div>
 '''
@@ -1548,13 +1604,13 @@ def main():
     print()
     
     if critical_count > 0:
-        print("⚠️  CRITICAL issues found! These MUST be fixed before upgrading.")
+        print("CRITICAL issues found. Fix before upgrading.")
         sys.exit(1)
     elif high_count > 0:
-        print("⚠️  HIGH priority issues found. These should be fixed before upgrading.")
+        print("HIGH priority issues found. Fix before upgrading.")
         sys.exit(0)
     else:
-        print("✅ No critical issues found. Review medium/low priority items as needed.")
+        print("No critical issues. Review medium/low as needed.")
         sys.exit(0)
 
 

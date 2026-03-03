@@ -19,7 +19,7 @@ Run as root or cloudbolt user to access all directories.
 This script can use CloudBolt's Django environment if available, or run standalone.
 
 Author: Maryam Faiz
-Version: 1.0.2
+Version: 1.0.3
 """
 
 import os
@@ -86,7 +86,7 @@ class FileFixReport:
 
 class AutoFixer:
     """Automatically fixes Django and Python compatibility issues."""
-    
+
     # Define fix patterns: (pattern_to_find, replacement, fix_type, description)
     FIX_PATTERNS = [
         # Django URL imports - handle various import styles
@@ -239,7 +239,7 @@ class AutoFixer:
             'description': 'Replace request.is_ajax() with headers check',
         },
         
-        # render_to_response
+        # render_to_response (import only; render_to_response()→render() needs request added manually)
         {
             'pattern': r'^(\s*)from django\.shortcuts import (.*)render_to_response(.*)$',
             'replacement': r'\1from django.shortcuts import \2render\3',
@@ -493,16 +493,38 @@ class AutoFixer:
             'description': 'Replace typing.Type with built-in type',
         },
         
-        # =============================================================================
-        # url() function replacement
-        # =============================================================================
-        # Note: url() calls need to be changed to re_path() or path()
-        # This is a simple replacement - complex patterns may need manual review
+        # url() -> re_path() for regex patterns (complex cases may need manual review)
         {
             'pattern': r'\burl\s*\(\s*r(["\'])',
             'replacement': r're_path(r\1',
             'fix_type': 'url_function_call',
             'description': 'Replace url() with re_path() for regex patterns',
+        },
+        # Django 5.2: find(all=) -> find(find_all=)
+        {
+            'pattern': r'\.find\s*\(([^,]+),\s*all\s*=\s*',
+            'replacement': r'.find(\1, find_all=',
+            'fix_type': 'staticfiles_find_all',
+            'description': "Replace deprecated 'all' with 'find_all' in find()",
+        },
+        # ArrayAgg/JSONBAgg/StringAgg: ordering= -> order_by=
+        {
+            'pattern': r'ArrayAgg\s*\(([^)]*)\bordering\s*=\s*',
+            'replacement': r'ArrayAgg(\1order_by=',
+            'fix_type': 'postgres_arrayagg_order_by',
+            'description': "Replace 'ordering' with 'order_by' in ArrayAgg()",
+        },
+        {
+            'pattern': r'JSONBAgg\s*\(([^)]*)\bordering\s*=\s*',
+            'replacement': r'JSONBAgg(\1order_by=',
+            'fix_type': 'postgres_jsonbagg_order_by',
+            'description': "Replace 'ordering' with 'order_by' in JSONBAgg()",
+        },
+        {
+            'pattern': r'StringAgg\s*\(([^)]*)\bordering\s*=\s*',
+            'replacement': r'StringAgg(\1order_by=',
+            'fix_type': 'postgres_stringagg_order_by',
+            'description': "Replace 'ordering' with 'order_by' in StringAgg()",
         },
     ]
     
