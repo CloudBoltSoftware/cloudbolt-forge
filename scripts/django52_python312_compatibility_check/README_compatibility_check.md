@@ -27,11 +27,28 @@ sudo ./run_compatibility_check.sh --output /tmp/my_report.txt
 
 **Default Output Location:** `/var/tmp/cloudbolt_compatibility_report_<timestamp>.txt`
 
+### Run the compatibility check (Python)
 
+You can run the scanner directly with Python (no `.sh` script required):
+
+```bash
+# From the directory containing the scripts
+python django52_python312_compatibility_check.py
+
+
+# Other formats
+python django52_python312_compatibility_check.py --output-format json
+python django52_python312_compatibility_check.py --output-format html
+
+# Custom output file
+python django52_python312_compatibility_check.py --output-file /tmp/my_report.txt
+```
 
 ## Auto-Fix Tool
 
-After running the compatibility check, you can automatically fix many issues:
+After running the compatibility check, you can automatically fix many issues. **Manual fixes are still required** for issues the script cannot change safely; always review the scanner report and fix remaining items manually
+
+### Using the Bash Script
 
 ```bash
 # Preview changes without modifying files (RECOMMENDED FIRST)
@@ -44,7 +61,42 @@ sudo ./run_auto_fix.sh
 sudo ./run_auto_fix.sh --verbose
 ```
 
+### Run the auto-fix (Python)
+
+You can run the auto-fix script directly with Python:
+
+```bash
+# Preview changes without modifying files (run this first)
+python django52_python312_auto_fix.py --dry-run
+
+# Apply fixes (creates backups by default)
+python django52_python312_auto_fix.py
+
+# With verbose output
+python django52_python312_auto_fix.py --verbose
+```
+
 **Backup Location:** `/var/tmp/cloudbolt_compatibility_backups/`
+
+### Manual fixes still required
+
+The auto-fix script only applies changes it can do safely. The following **require manual changes** (see also the docstring at the top of `django52_python312_auto_fix.py`):
+
+| Item | What to do |
+|------|------------|
+| **rest_framework_jwt** | Migrate to `djangorestframework-simplejwt`. |
+| **render_to_response(...) calls** | Add `request` as first argument to `render()`. |
+| **imp module** | Use `importlib` instead. |
+| **six.moves** | Replace with direct imports per case. |
+| **Meta.index_together** | Use `Meta.indexes`. |
+| **PickleSerializer** | Use `JSONSerializer` or a custom serializer. |
+| **default_app_config, MIDDLEWARE_CLASSES** | Update app config and middleware structure. |
+| **asyncio.coroutine, Task.all_tasks/current_task** | Use `async def`, `asyncio.all_tasks` / `asyncio.current_task`. |
+| **length_is template filter** | Use `length` filter with comparison. |
+| **pytz.UnknownTimeZoneError** | Use `KeyError` or `ZoneInfoNotFoundError`. |
+| **datetime.now() / datetime.utcnow()** | Use CloudBolt `utilities.datetime` if required. |
+| **assertFormError, crispy-forms, reversion, taggit** | Follow each package’s migration guide. |
+| **Related filter on unsaved instance** | Save the instance first or use `.pk`; see Admin > Compatibility Warning Messages. |
 
 ## Backup and Restore
 
@@ -54,9 +106,9 @@ The auto-fix tool **creates backups by default** before modifying any files. Thi
 
 | Mode | Backups Created? | Changes Made? |
 |------|------------------|---------------|
-| Default (`./run_auto_fix.sh`) | ✅ Yes | ✅ Yes |
-| Dry Run (`--dry-run`) | ❌ No | ❌ No (preview only) |
-| No Backup (`--no-backup`) | ❌ No | ✅ Yes (not recommended) |
+| Default (`./run_auto_fix.sh`) |  Yes | Yes |
+| Dry Run (`--dry-run`) | No | No (preview only) |
+| No Backup (`--no-backup`) |  No |  Yes (not recommended) |
 
 ### Backup Location
 
