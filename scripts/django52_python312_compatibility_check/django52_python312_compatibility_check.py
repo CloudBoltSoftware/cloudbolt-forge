@@ -643,6 +643,8 @@ DJANGO_UNSAVED_INSTANCE_PATTERNS = [
 # =============================================================================
 # TIMEZONE PATTERNS (pytz -> zoneinfo)
 # =============================================================================
+
+TIMEZONE_PATTERNS = [
     {
         'pattern': r'import\s+pytz',
         'issue_type': 'pytz_import',
