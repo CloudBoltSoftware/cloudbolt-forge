@@ -97,6 +97,7 @@ The auto-fix script only applies changes it can do safely. The following **requi
 | **datetime.now() / datetime.utcnow()** | Use CloudBolt `utilities.datetime` if required. |
 | **assertFormError, crispy-forms, reversion, taggit** | Follow each package’s migration guide. |
 | **Related filter on unsaved instance** | Save the instance first or use `.pk`; see Admin > Compatibility Warning Messages. |
+| **DRF: from rest_framework.serializers import NullBooleanField** | Use `BooleanField(allow_null=True)` and update imports (in-code `serializers.NullBooleanField` is auto-fixed). |
 
 ## Backup and Restore
 
@@ -206,6 +207,19 @@ done
    - Server Actions
    - Resource Actions
    - Shared Modules
+
+### Scanner coverage (DRF 3.11→3.15, Python 3.9→3.12)
+
+The scanner looks for **syntax and API usage** that breaks or is deprecated in Django REST Framework 3.12–3.15 and Python 3.9–3.12. It does **not** detect purely behavioral changes.
+
+| Area | What the scanner covers | Not covered (behavioral; test manually) |
+|------|--------------------------|----------------------------------------|
+| **DRF 3.14** | `serializer.is_valid(True)` → use `raise_exception=True`; `serializers.NullBooleanField` → `BooleanField(allow_null=True)` | Permission `\|` (OR) semantics change |
+| **DRF 3.15** | — | SearchFilter / `get_search_terms` behavior; UniqueConstraint validation; serializer field default propagation |
+| **Python 3.10** | `collections.Callable`, `collections.Mapping`, etc. → `collections.abc` | — |
+| **Python 3.12** | `distutils`, `imp`, `asynchat`, `asyncore`, `smtpd` removed; pytz → zoneinfo | Stricter exception reporting (review bare `except:` / broad `except Exception`) |
+
+**DRF / pytz:** The script flags `get_search_terms` usage (INFO) so you can review SearchFilter behavior. Pytz usage is covered (imports and calls → zoneinfo).
 
 ## Understanding the Report
 

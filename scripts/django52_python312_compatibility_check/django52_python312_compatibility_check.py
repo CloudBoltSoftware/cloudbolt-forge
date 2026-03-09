@@ -477,6 +477,39 @@ PYTHON_PATTERNS = [
         'recommended_fix': 'Use set[T] instead of Set[T]',
         'python_version': '3.9+ (deprecated)',
     },
+    # Python 3.12 removed modules
+    {
+        'pattern': r'import\s+asynchat\b',
+        'issue_type': 'asynchat_removed',
+        'severity': Severity.CRITICAL,
+        'description': 'asynchat module is removed in Python 3.12',
+        'recommended_fix': 'Rewrite using asyncio',
+        'python_version': '3.12 (removed)',
+    },
+    {
+        'pattern': r'import\s+asyncore\b',
+        'issue_type': 'asyncore_removed',
+        'severity': Severity.CRITICAL,
+        'description': 'asyncore module is removed in Python 3.12',
+        'recommended_fix': 'Rewrite using asyncio',
+        'python_version': '3.12 (removed)',
+    },
+    {
+        'pattern': r'import\s+smtpd\b',
+        'issue_type': 'smtpd_removed',
+        'severity': Severity.CRITICAL,
+        'description': 'smtpd module is removed in Python 3.12',
+        'recommended_fix': 'Use aiosmtpd or another async SMTP implementation',
+        'python_version': '3.12 (removed)',
+    },
+    {
+        'pattern': r'from\s+(asynchat|asyncore|smtpd)\s+import',
+        'issue_type': 'legacy_async_import_removed',
+        'severity': Severity.CRITICAL,
+        'description': 'asynchat, asyncore, and smtpd are removed in Python 3.12',
+        'recommended_fix': 'Rewrite using asyncio or alternative libraries',
+        'python_version': '3.12 (removed)',
+    },
 ]
 
 # Third-party library patterns that may cause issues
@@ -496,6 +529,58 @@ THIRD_PARTY_PATTERNS = [
         'description': 'simplejson is rarely needed, standard json module is sufficient',
         'recommended_fix': 'Consider using standard library json module',
         'python_version': '3.x',
+    },
+]
+
+# =============================================================================
+# DRF (Django REST Framework) 3.12–3.15 patterns
+# =============================================================================
+
+DRF_PATTERNS = [
+    {
+        'pattern': r'\.is_valid\s*\(\s*True\s*\)',
+        'issue_type': 'drf_is_valid_positional',
+        'severity': Severity.HIGH,
+        'description': 'DRF 3.14: is_valid() no longer accepts positional args; use keyword raise_exception',
+        'recommended_fix': 'Use serializer.is_valid(raise_exception=True) instead of is_valid(True)',
+        'django_version': 'DRF 3.14',
+        'auto_fixable': True,
+    },
+    {
+        'pattern': r'\.is_valid\s*\(\s*False\s*\)',
+        'issue_type': 'drf_is_valid_positional',
+        'severity': Severity.HIGH,
+        'description': 'DRF 3.14: is_valid() no longer accepts positional args; use keyword raise_exception',
+        'recommended_fix': 'Use serializer.is_valid(raise_exception=False) or is_valid()',
+        'django_version': 'DRF 3.14',
+        'auto_fixable': True,
+    },
+    {
+        'pattern': r'serializers\.NullBooleanField\b',
+        'issue_type': 'drf_null_boolean_field_removed',
+        'severity': Severity.HIGH,
+        'description': 'DRF 3.14: serializers.NullBooleanField has been removed',
+        'recommended_fix': 'Use serializers.BooleanField(allow_null=True) instead',
+        'django_version': 'DRF 3.14',
+        'auto_fixable': True,
+    },
+    {
+        'pattern': r'from\s+rest_framework\.serializers\s+import\s+.*\bNullBooleanField\b',
+        'issue_type': 'drf_null_boolean_field_import',
+        'severity': Severity.HIGH,
+        'description': 'DRF 3.14: NullBooleanField removed from rest_framework.serializers',
+        'recommended_fix': 'Use BooleanField(allow_null=True) and update imports',
+        'django_version': 'DRF 3.14',
+        'auto_fixable': False,
+    },
+    {
+        'pattern': r'get_search_terms\s*\(',
+        'issue_type': 'drf_searchfilter_behavior',
+        'severity': Severity.INFO,
+        'description': 'DRF 3.15: SearchFilter behavior aligned to Django admin; quoted phrases and null char handling changed',
+        'recommended_fix': 'Review custom search implementations and get_search_terms usage',
+        'django_version': 'DRF 3.15',
+        'auto_fixable': False,
     },
 ]
 
@@ -815,6 +900,7 @@ class CompatibilityScanner:
             DATETIME_PATTERNS +
             PYTHON_PATTERNS +
             THIRD_PARTY_PATTERNS +
+            DRF_PATTERNS +
             DJANGO_BEHAVIOR_PATTERNS +
             PACKAGE_PATTERNS
         )

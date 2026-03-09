@@ -18,6 +18,44 @@ Options:
 Run as root or cloudbolt user to access all directories.
 This script can use CloudBolt's Django environment if available, or run standalone.
 
+AUTO-FIXED (this script applies these changes):
+    - django.conf.urls url() -> re_path import and url(r'...') -> re_path(r'...')
+    - MemcachedCache -> PyMemcacheCache
+    - NullBooleanField -> BooleanField(null=True)
+    - ugettext / ugettext_lazy imports -> gettext / gettext_lazy
+    - force_text / smart_text -> force_str / smart_str (imports and calls)
+    - request.is_ajax() -> headers check
+    - postgres JSONField import -> django.db.models.JSONField
+    - USE_L10N = True/False -> commented out
+    - render_to_response import -> render (call sites need request added by hand)
+    - distutils LooseVersion/StrictVersion -> packaging.version.Version
+    - six import and six.text_type / six.string_types -> str
+    - collections.Callable, Iterable, etc. -> collections.abc.*
+    - django.utils.timezone.utc -> datetime.timezone.utc
+    - .is_authenticated() / .is_anonymous() -> property (no parentheses)
+    - pytz import, pytz.timezone(), pytz.utc -> zoneinfo.ZoneInfo
+    - typing.Dict/List/Tuple/Set -> dict/list/tuple/set
+    - staticfiles find(..., all=) -> find(..., find_all=)
+    - ArrayAgg/JSONBAgg/StringAgg ordering= -> order_by=
+    - DRF: serializer.is_valid(True/False) -> is_valid(raise_exception=...)
+    - DRF: serializers.NullBooleanField -> BooleanField(allow_null=True)
+
+MANUAL CHANGES REQUIRED (scanner may report these; fix by hand):
+    - rest_framework_jwt -> migrate to djangorestframework-simplejwt
+    - default_app_config, MIDDLEWARE_CLASSES -> config/structure changes
+    - render_to_response(...) calls -> add request as first arg to render()
+    - imp module -> use importlib
+    - six.moves -> replace with direct imports per case
+    - asyncio.coroutine, Task.all_tasks, Task.current_task -> async def, asyncio.all_tasks/current_task
+    - Meta.index_together -> Meta.indexes
+    - PickleSerializer -> use JSONSerializer or custom serializer
+    - length_is template filter -> use length filter with comparison
+    - pytz.UnknownTimeZoneError -> KeyError or ZoneInfoNotFoundError
+    - datetime.now() / datetime.utcnow() -> use CloudBolt utilities.datetime if required
+    - assertFormError, crispy-forms, reversion, taggit API changes -> see package migration guides
+    - related filter on unsaved instance -> save instance first or use .pk (runtime; see compatibility app)
+    - DRF: from rest_framework.serializers import NullBooleanField -> BooleanField(allow_null=True) and update imports
+
 Author: Maryam Faiz
 Version: 1.0.3
 """
@@ -525,6 +563,32 @@ class AutoFixer:
             'replacement': r'StringAgg(\1order_by=',
             'fix_type': 'postgres_stringagg_order_by',
             'description': "Replace 'ordering' with 'order_by' in StringAgg()",
+        },
+        # DRF 3.14: is_valid() positional -> keyword
+        {
+            'pattern': r'\.is_valid\s*\(\s*True\s*\)',
+            'replacement': '.is_valid(raise_exception=True)',
+            'fix_type': 'drf_is_valid_positional',
+            'description': 'DRF 3.14: use is_valid(raise_exception=True)',
+        },
+        {
+            'pattern': r'\.is_valid\s*\(\s*False\s*\)',
+            'replacement': '.is_valid(raise_exception=False)',
+            'fix_type': 'drf_is_valid_positional',
+            'description': 'DRF 3.14: use is_valid(raise_exception=False)',
+        },
+        # DRF 3.14: serializers.NullBooleanField removed
+        {
+            'pattern': r'serializers\.NullBooleanField\s*\(\s*\)',
+            'replacement': 'serializers.BooleanField(allow_null=True)',
+            'fix_type': 'drf_null_boolean_field',
+            'description': 'DRF 3.14: use BooleanField(allow_null=True)',
+        },
+        {
+            'pattern': r'serializers\.NullBooleanField\b',
+            'replacement': 'serializers.BooleanField(allow_null=True)',
+            'fix_type': 'drf_null_boolean_field',
+            'description': 'DRF 3.14: use BooleanField(allow_null=True) (class reference)',
         },
     ]
     
