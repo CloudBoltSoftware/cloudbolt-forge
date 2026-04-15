@@ -1,7 +1,6 @@
 {
     "any_group_can_deploy": true,
     "auto_historical_resources": false,
-    "blueprint_image": "/static/uploads/blueprints/348753.png",
     "deployment_items": [
         {
             "all_environments_enabled": true,
@@ -37,12 +36,12 @@
     ],
     "description": "",
     "favorited": false,
-    "icon": "348753.png",
+    "icon": "348753_6q47pIe.png",
     "id": "BP-l4qt4nog",
     "is_manageable": true,
     "is_orderable": true,
     "labels": [],
-    "last_updated": "2025-05-23",
+    "last_updated": "2026-04-15",
     "management_actions": [],
     "maximum_version_required": "",
     "minimum_version_required": "8.6",
