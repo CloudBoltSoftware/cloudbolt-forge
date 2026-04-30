@@ -1,0 +1,135 @@
+{
+    "action-inputs": [
+        {
+            "available-all-servers": false,
+            "description": "The Availability Zone or Local Zone for the subnet.\r\n\r\nDefault: AWS selects one for you. If you create more than one subnet in your VPC, we do not necessarily select a different zone for each subnet.",
+            "field-dependency-controlling-set": [
+                {
+                    "controlling-field": {
+                        "name": "AWS_ENV_ID_a192"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "REGENOPTIONS",
+                    "dependent-field": {
+                        "name": "AWS_AVAIL_ZONE_a192"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                }
+            ],
+            "field-dependency-dependent-set": [
+                {
+                    "controlling-field": {
+                        "name": "AWS_AVAIL_ZONE_a192"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "REGENOPTIONS",
+                    "dependent-field": {
+                        "name": "AWS_VPC_CIDR_a192"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                }
+            ],
+            "global-options": [],
+            "hide-if-default-value": false,
+            "label": "Availability Zone",
+            "name": "AWS_AVAIL_ZONE",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [
+                {
+                    "controlling-field": {
+                        "name": "AWS_ENV_ID_a192"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "REGENOPTIONS",
+                    "dependent-field": {
+                        "name": "AWS_AVAIL_ZONE_a192"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                }
+            ],
+            "global-options": [],
+            "hide-if-default-value": false,
+            "label": "AWS Environment",
+            "name": "AWS_ENV_ID",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "The IPv4 network range for the subnet, in CIDR notation. For example, 10.0.0.0/24 . We modify the specified CIDR block to its canonical form; for example, if you specify 100.68.0.18/18 , we modify it to 100.68.0.0/18 .",
+            "field-dependency-controlling-set": [],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": false,
+            "label": "Subnet IPv4 CIDR Address",
+            "name": "AWS_SUBNET_CIDR",
+            "regex-constraint": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(3[0-2]|[1-2][0-9]|[0-9]))$",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        },
+        {
+            "available-all-servers": false,
+            "description": "This is the CIDR address associated with the selected VPC, and is for informational purposes only.",
+            "field-dependency-controlling-set": [
+                {
+                    "controlling-field": {
+                        "name": "AWS_AVAIL_ZONE_a192"
+                    },
+                    "custom-field-options": [],
+                    "dependency-type": "REGENOPTIONS",
+                    "dependent-field": {
+                        "name": "AWS_VPC_CIDR_a192"
+                    },
+                    "maximum": null,
+                    "minimum": null,
+                    "regex": ""
+                }
+            ],
+            "field-dependency-dependent-set": [],
+            "global-options": [],
+            "hide-if-default-value": false,
+            "label": "VPC IPv4 CIDR Address",
+            "name": "AWS_VPC_CIDR",
+            "relevant-osfamilies": [],
+            "required": true,
+            "show-as-attribute": false,
+            "show-on-servers": false,
+            "type": "STR"
+        }
+    ],
+    "action-inputs-sequence": [
+        "AWS_ENV_ID",
+        "AWS_VPC_CIDR",
+        "AWS_AVAIL_ZONE",
+        "AWS_SUBNET_CIDR"
+    ],
+    "description": "",
+    "max-retries": 0,
+    "name": "Build Subnet",
+    "resource-technologies": [],
+    "script-filename": "cb_plugin_1605664239999382_ocUIYRM_Rtj6rXs.py",
+    "shared": "False",
+    "target-os-families": [],
+    "type": "CloudBolt Plug-in"
+}
