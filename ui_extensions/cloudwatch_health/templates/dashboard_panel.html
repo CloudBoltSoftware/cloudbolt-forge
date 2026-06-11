@@ -1,0 +1,54 @@
+{% extends "dashboard/card.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block card_id %}cloudwatch-health-card{% endblock %}
+{% block heading %}{% trans "AWS CloudWatch Health" %}{% endblock %}
+
+{% block card_body %}
+<div id="cwh-root">
+    <div id="cwh-status" class="text-muted" style="margin-bottom:8px;">
+        {% trans "Loading CloudWatch metrics…" %}
+    </div>
+
+    <!-- Per-instance gauge tiles (CPU %, Memory %, status check) -->
+    <div id="cwh-tiles" class="row"></div>
+
+    <!-- Multi-instance / volume column charts -->
+    <div class="row">
+        <div class="col-md-6"><div id="cwh-disk-used" style="height:260px;"></div></div>
+        <div class="col-md-6"><div id="cwh-free-mem" style="height:260px;"></div></div>
+        <div class="col-md-6"><div id="cwh-disk-busy" style="height:260px;"></div></div>
+        <div class="col-md-6"><div id="cwh-diskio-read" style="height:260px;"></div></div>
+        <div class="col-md-6"><div id="cwh-network" style="height:260px;"></div></div>
+        <div class="col-md-6"><div id="cwh-status-check" style="height:260px;"></div></div>
+        <div class="col-md-6"><div id="cwh-volume-queue" style="height:260px;"></div></div>
+        <div class="col-md-6"><div id="cwh-burst-balance" style="height:260px;"></div></div>
+    </div>
+
+    <!-- RDS (admin / when present) -->
+    <div id="cwh-rds-section" style="display:none;">
+        <h4 style="margin-top:16px;">{% trans "RDS" %}</h4>
+        <div id="cwh-rds-tiles" class="row"></div>
+    </div>
+</div>
+
+<style>
+.cwh-tile { background:#f7f7f7; border:1px solid #e3e3e3; border-radius:4px;
+            padding:10px; margin-bottom:10px; }
+.cwh-tile h5 { margin:0 0 6px; font-size:12px; color:#555;
+               white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cwh-metric { font-size:22px; font-weight:600; }
+.cwh-bar { height:8px; border-radius:4px; background:#ddd; margin-top:6px; overflow:hidden; }
+.cwh-bar > span { display:block; height:100%; }
+.cwh-ok { background:#5cb85c; } .cwh-warn { background:#f0ad4e; } .cwh-crit { background:#d9534f; }
+</style>
+
+<script type="text/javascript">
+    window.CWH_CONFIG = {
+        metricsUrl: "{% url 'cloudwatch_health_metrics' %}",
+        widgets: {{ widget_catalog_json|safe }}
+    };
+</script>
+<script type="text/javascript" src="{% static 'cloudwatch_health/charts.js' %}"></script>
+{% endblock card_body %}
