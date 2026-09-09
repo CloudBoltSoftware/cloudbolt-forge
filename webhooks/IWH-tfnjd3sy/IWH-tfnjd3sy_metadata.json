@@ -1,0 +1,11 @@
+{
+    "action_input_default_values": [],
+    "authentication_method": "token",
+    "dependencies": {
+        "hook": "plugins/OHK-xbcod3fq"
+    },
+    "id": "IWH-tfnjd3sy",
+    "label": "bussiness_application",
+    "token": "4L_2MXZLvEvW6rjvQLiAccqU62Wr6pX2cQa7_RJVaVY",
+    "uri_path": "IWH-tfnjd3sy"
+}
