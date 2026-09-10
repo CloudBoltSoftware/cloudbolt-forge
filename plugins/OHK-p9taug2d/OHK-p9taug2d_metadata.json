@@ -1,0 +1,11 @@
+{
+    "description": "",
+    "id": "OHK-p9taug2d",
+    "max_retries": 0,
+    "name": "Action added in Sample Blueprint From RemoteSource (3) (1)",
+    "resource_technologies": [],
+    "script_filename": "OHK-p9taug2d_script.py",
+    "shared": false,
+    "target_os_families": [],
+    "type": "CloudBolt Plug-in"
+}

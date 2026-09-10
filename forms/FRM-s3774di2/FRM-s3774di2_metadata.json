@@ -1,0 +1,8 @@
+{
+    "created": "2026-09-10 11:20:43.845250",
+    "id": "FRM-s3774di2",
+    "json": "{\"title\": \"test_custom_permission\", \"logo\": \"\", \"completedHtml\": \"<p class=\\\"custom-order-form-completed\\\">Your action request is being processed.</p>\", \"loadingHtml\": \"<p class=\\\"custom-order-form-loading\\\">Loading action form...</p>\", \"showPageNumbers\": false, \"showQuestionNumbers\": false, \"clearInvisibleValues\": \"none\", \"completeText\": \"Run\", \"pages\": [{\"name\": \"action_details\", \"elements\": [{\"type\": \"text\", \"name\": \"custom_form_id\", \"visible\": false, \"defaultValue\": \"FRM-s3774di2\", \"readOnly\": true}, {\"type\": \"text\", \"name\": \"object_type\", \"visible\": false, \"defaultValue\": \"resource\", \"readOnly\": true}, {\"type\": \"text\", \"name\": \"action_id\", \"visible\": false, \"defaultValue\": \"RSA-0kbkjucf\", \"readOnly\": true}, {\"type\": \"text\", \"name\": \"action-input.test\", \"title\": \"Test\", \"isRequired\": true}]}]}",
+    "modified": "2026-09-10 11:20:43.856282",
+    "rendering_mode": "vue",
+    "supported_languages": ""
+}

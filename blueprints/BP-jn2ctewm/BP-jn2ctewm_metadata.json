@@ -1,0 +1,73 @@
+{
+    "any_group_can_deploy": true,
+    "auto_historical_resources": false,
+    "deployment_items": [
+        {
+            "all_environments_enabled": true,
+            "allowed_os_families": null,
+            "applications": null,
+            "deploy_seq": 2,
+            "description": "",
+            "environment_selection_orchestration": null,
+            "execute_in_parallel": false,
+            "hostname_template": "",
+            "id": "BDI-lomcp60a",
+            "name": "server",
+            "os_build": null,
+            "rate": null,
+            "restrict_applications": false,
+            "show_on_order_form": false,
+            "tier_type": "server"
+        },
+        {
+            "action_name": "Action added in Sample Blueprint From RemoteSource (3) (1)",
+            "continue_on_failure": false,
+            "dependencies": {
+                "hook": "plugins/OHK-p9taug2d"
+            },
+            "deploy_seq": 3,
+            "description": null,
+            "enabled": true,
+            "execute_in_parallel": false,
+            "id": "BDI-3jno497e",
+            "name": "Action added in Sample Blueprint From RemoteSource",
+            "rate": null,
+            "run_on_scale_up": true,
+            "show_on_order_form": false,
+            "tier_type": "plugin"
+        }
+    ],
+    "deployment_permissions": [],
+    "description": "",
+    "favorited": false,
+    "icon": "348753_aPum14P.png",
+    "id": "BP-jn2ctewm",
+    "is_orderable": true,
+    "labels": [],
+    "last_updated": "2026-09-10",
+    "management_actions": [
+        {
+            "dependencies": {
+                "resource_action": "resource_actions/RSA-0kbkjucf"
+            },
+            "enabled": true,
+            "label": "test_custom_permission"
+        }
+    ],
+    "metadata_version": "2026.1.0",
+    "name": "Remote Blueprint-Duplicate (1)",
+    "resource_name_template": null,
+    "resource_type": {
+        "icon": "",
+        "id": "RT-ok95ata0",
+        "internal_only": false,
+        "label": "Service",
+        "lifecycle": "ACTIVE",
+        "list_view_columns": [],
+        "name": "service",
+        "plural_label": null
+    },
+    "sequence": 0,
+    "show_recipient_field_on_order_form": false,
+    "teardown_items": []
+}
