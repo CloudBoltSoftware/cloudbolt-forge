@@ -11,7 +11,7 @@ checks fail, to configured Alert Channels.
 * Copy the entire `health_checks' directory into your `/proserv/ directory, then run it, via
 `python create.py`. This file will create necessary objects for configuring and running the health checks rule. 
 This will only work from the proserv directory.  
-* Configure one or more [alert channels](http://docs.cloudbolt.io/multi-channel-alerts.html). 
+* Configure one or more [alert channels](https://docs.cloudbolt.io/docs/cmp/configure/access-and-security/security/multi-channel-alerts/). 
 This is required in order for the alerting to work in the action. 
   * Use alert category, "health_check" in your comma-delimited list of alert categories for any
   and all alert channels you wish to use for health checks

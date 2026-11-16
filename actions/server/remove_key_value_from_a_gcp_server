@@ -2,7 +2,7 @@
 1) This script runs as a server action and removes 'sysprep-specialize-script-ps1' key from a server that lives in GCP.
 2) Before running this script, learn about startup-scripts and 'sysprep-specialize-script-ps1' at
    https://cloud.google.com/compute/docs/instances/startup-scripts 
-   https://docs.cloudbolt.io/articles/#!cloudbolt-latest-docs/google-cloud-platform/a/h3_1032975431
+   https://docs.cloudbolt.io/docs/cmp/configure/infrastructure/resource-handlers/gcp/#run-startup-scripts-on-gcp-servers
 
 
 Script Prerequisites:

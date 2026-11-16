@@ -6,7 +6,7 @@ To use this plugin, set it under 'Display Condition'
 on the server action page.  (/actions/server_actions/)
 
 Reference:
-https://docs.cloudbolt.io/articles/#!cloudbolt-latest-docs/server-actions/
+https://docs.cloudbolt.io/docs/cmp/use/orchestration/actions/server-actions/
 
 """
 
