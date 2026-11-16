@@ -9,4 +9,4 @@ This Plugin can be useful for the case where you want some users in AD to have a
 
 Security groups should exist within AD for requesters that end in "-Gold", "-Bronze", and "-Silver", plus one group each for viewers, approvers, resource admins, and group admins.
 
-See the [CloudBolt docs](http://docs.cloudbolt.io/) for more information on User Permission Synchronization with AD.
+See the [CloudBolt docs](https://docs.cloudbolt.io/docs/cmp/configure/access-and-security/groups-roles-permissions/permission-sync/) for more information on User Permission Synchronization with AD.

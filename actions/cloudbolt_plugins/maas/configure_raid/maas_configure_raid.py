@@ -1,7 +1,7 @@
 """
 This is a MAAS-specific sample of plug-in code for a 'During Resource Provisioning' Action.
 Please see the Plugin Actions documentation for more examples of plug-in code:
-https://docs.cloudbolt.io/articles/#!cloudbolt-latest-docs/cloudbolt-plug-ins
+https://docs.cloudbolt.io/docs/cmp/use/orchestration/plugins/
 """
 import json
 import uuid

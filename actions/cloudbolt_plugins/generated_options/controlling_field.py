@@ -7,7 +7,7 @@ Attaching this as an action item on a blueprint will
 2. After the action input is created, the generate options method can be created. 
 
 For further reading, consult the documentation:
-https://docs.cloudbolt.io/articles/#!cloudbolt-latest-docs/advanced-option-returns
+https://docs.cloudbolt.io/docs/cmp/configure/order-forms-and-pricing/parameters/generated-options/option-return-formats/
 """
 # Importing set_progress allows us to view output of the job while it is running
 from common.methods import set_progress
